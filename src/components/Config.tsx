@@ -65,6 +65,7 @@ const modeOptions = [
 
 const tunStackOptions = [
   ['gvisor', 'gVisor'],
+  ['mixed', 'Mixed'],
   ['system', 'System'],
   ['lwip', 'LWIP'],
 ];

@@ -54,6 +54,7 @@ const langOptions = [
   ['zh-cn', '简体中文'],
   ['zh-tw', '繁體中文'],
   ['en', 'English'],
+  ['vi', 'Vietnamese'],
 ];
 
 const modeOptions = [
@@ -65,8 +66,8 @@ const modeOptions = [
 
 const tunStackOptions = [
   ['gvisor', 'gVisor'],
+  ['mixed', 'Mixed'],
   ['system', 'System'],
-  ['lwip', 'LWIP'],
 ];
 
 const mapState = (s: State) => ({

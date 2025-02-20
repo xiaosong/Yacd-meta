@@ -262,7 +262,7 @@ function ConfigImpl({
         <div>
           <div className={s0.label}>Mode</div>
           <Select
-            options={modeOptions}
+            options={configState['mode-list'] ? configState['mode-list'].map(value => [value, value]) : modeOptions}
             selected={configState.mode.toLowerCase()}
             onChange={(e) => handleInputOnChange({ name: 'mode', value: e.target.value })}
           />

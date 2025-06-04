@@ -41,6 +41,7 @@ export const data = {
   chart_style: 'Kiểu biểu đồ',
   latency_test_url: 'URL kiểm tra độ trễ',
   lang: 'Ngôn ngữ',
+  proxy_provider: 'nhà cung cấp proxy',
   update_all_rule_provider: 'Cập nhật tất cả nhà cung cấp quy tắc',
   update_all_proxy_provider: 'Cập nhật tất cả nhà cung cấp proxy',
   reload_config_file: 'Tải lại tệp cấu hình',
@@ -74,7 +75,8 @@ export const data = {
   delete: 'Xóa',
   add_tag: 'Thêm thẻ',
   client_tag: 'Thẻ khách hàng',
-  sourceip_tip: 'Thêm / vào đầu để sử dụng biểu thức chính quy, nếu không sẽ là kết quả khớp chính xác(By Ohoang7)',
+  sourceip_tip:
+    'Thêm / vào đầu để sử dụng biểu thức chính quy, nếu không sẽ là kết quả khớp chính xác(By Ohoang7)',
   disconnect: 'Đóng kết nối',
   internel: 'Kết nối nội bộ',
 };

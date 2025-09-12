@@ -41,6 +41,7 @@ export const data = {
   chart_style: 'Chart Style',
   latency_test_url: 'Latency Test URL',
   lang: 'Language',
+  proxy_provider: 'Proxy Provider',
   update_all_rule_provider: 'Update all rule providers',
   update_all_proxy_provider: 'Update all proxy providers',
   reload_config_file: 'Reload config file',

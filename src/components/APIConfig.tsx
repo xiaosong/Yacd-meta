@@ -46,9 +46,9 @@ function APIConfig({ dispatch }) {
   }, []);
 
   const onConfirm = useCallback(() => {
-    let unconfirmedBaseURL = baseURL;
+    let unconfirmedBaseURL = baseURL || 'http://127.0.0.1:9090';
     if (unconfirmedBaseURL) {
-      const prefix = baseURL.substring(0, 7);
+      const prefix = unconfirmedBaseURL.substring(0, 7);
       if (prefix.includes(':/')) {
         // same logic in verify function
         if (prefix !== 'http://' && prefix !== 'https:/') {

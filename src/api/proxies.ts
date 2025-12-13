@@ -1,4 +1,5 @@
 import { getURLAndInit } from '../misc/request-helper';
+import { ClashAPIConfig } from '../types';
 
 const endpoint = '/proxies';
 
@@ -73,6 +74,21 @@ export async function healthcheckProviderByName(config, name) {
   const options = { ...init, method: 'GET' };
   return await fetch(
     url + '/providers/proxies/' + encodeURIComponent(name) + '/healthcheck',
+    options
+  );
+}
+
+export async function healthcheckProviderProxy(
+  config: ClashAPIConfig,
+  providerName: string,
+  proxyName: string
+) {
+  const { url, init } = getURLAndInit(config);
+  const options = { ...init, method: 'GET' };
+  return await fetch(
+    `${url}/providers/proxies/${encodeURIComponent(providerName)}/${encodeURIComponent(
+      proxyName
+    )}/healthcheck`,
     options
   );
 }

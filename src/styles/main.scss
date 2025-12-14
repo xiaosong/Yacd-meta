@@ -124,6 +124,8 @@ body {
   --bg-log-info-tag: #454545;
   --bg-modal: #1f1f20;
   --bg-near-transparent: rgba(255, 255, 255, 0.1);
+  /* Background used for latency pill; theme-aware to preserve readability */
+  --bg-latency: rgba(85, 85, 85, 0.596);
   --bg-tooltip: #111;
   --bc-tooltip: #555;
   --select-border-color: #040404;
@@ -162,6 +164,7 @@ body {
   --bg-log-info-tag: #888;
   --bg-modal: #fbfbfb;
   --bg-near-transparent: rgba(0, 0, 0, 0.1);
+  --bg-latency: rgba(255, 255, 255, 0.863);
   --bg-tooltip: #f0f0f0;
   --bc-tooltip: #ccc;
   --select-border-color: #999999;

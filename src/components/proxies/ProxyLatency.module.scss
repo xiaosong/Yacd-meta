@@ -9,7 +9,8 @@
   gap: 4px;
   border-radius: 9999px;
   border: 1px solid var(--color-proxy-border);
-  background: var(--bg-near-transparent);
+  /* Use theme-aware latency background with sensible default */
+  background: var(--bg-latency, #ffffff);
   color: var(--color-text);
   font-size: 0.75em;
   transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease,

@@ -138,6 +138,25 @@ export function healthcheckProviderByName(apiConfig: ClashAPIConfig, name: strin
   };
 }
 
+function updateDelayEntry(
+  dispatch: DispatchFn,
+  getState: GetStateFn,
+  name: string,
+  patch: { number?: number; error?: string; testing?: boolean; updatedAt?: number }
+) {
+  const delayPrev = getDelay(getState());
+  const prev = delayPrev[name] || {};
+  dispatch('store/proxies#delay', (s: State) => {
+    s.proxies.delay = {
+      ...delayPrev,
+      [name]: {
+        ...prev,
+        ...patch,
+      },
+    };
+  });
+}
+
 async function closeGroupConns(
   apiConfig: ClashAPIConfig,
   groupName: string,
@@ -268,25 +287,28 @@ export function switchProxy(apiConfig: ClashAPIConfig, groupName: string, itemNa
 
 function requestDelayForProxyOnce(apiConfig: ClashAPIConfig, name: string) {
   return async (dispatch: DispatchFn, getState: GetStateFn) => {
-    const latencyTestUrl = getLatencyTestUrl(getState());
-    const res = await proxiesAPI.requestDelayForProxy(apiConfig, name, latencyTestUrl);
     let error = '';
-    if (res.ok === false) {
-      error = res.statusText;
+    let delayNumber: number | undefined;
+    try {
+      const latencyTestUrl = getLatencyTestUrl(getState());
+      const res = await proxiesAPI.requestDelayForProxy(apiConfig, name, latencyTestUrl);
+      if (res.ok === false) {
+        error = res.statusText;
+      }
+      const body = await res.json();
+      delayNumber = body?.delay;
+    } catch (err) {
+      error = (err as Error).message;
     }
-    const { delay } = await res.json();
 
-    const delayPrev = getDelay(getState());
-    const delayNext = {
-      ...delayPrev,
-      [name]: {
-        error,
-        number: delay,
-      },
-    };
+    const normalizedDelay =
+      typeof delayNumber === 'number' && delayNumber > 0 ? delayNumber : undefined;
 
-    dispatch('requestDelayForProxyOnce', (s) => {
-      s.proxies.delay = delayNext;
+    updateDelayEntry(dispatch, getState, name, {
+      error,
+      number: normalizedDelay,
+      testing: false,
+      updatedAt: Date.now(),
     });
   };
 }
@@ -320,6 +342,41 @@ export function requestDelayAll(apiConfig: ClashAPIConfig) {
       await healthcheckProviderByNameInternal(apiConfig, p.name);
     }
     await dispatch(fetchProxies(apiConfig));
+  };
+}
+
+export function healthcheckProxy(apiConfig: ClashAPIConfig, name: string) {
+  return async (dispatch: DispatchFn, getState: GetStateFn) => {
+    updateDelayEntry(dispatch, getState, name, { testing: true, error: '' });
+
+    let delayNumber: number | undefined;
+    let error = '';
+    try {
+      const proxy = getProxies(getState())[name];
+      const providerName = proxy?.providerName;
+      const latencyTestUrl = getLatencyTestUrl(getState());
+      const res = providerName
+        ? await proxiesAPI.healthcheckProviderProxy(apiConfig, providerName, name)
+        : await proxiesAPI.requestDelayForProxy(apiConfig, name, latencyTestUrl);
+      if (res.ok === false) {
+        error = res.statusText;
+      }
+      const body = await res.json().catch(() => undefined);
+      delayNumber = body?.delay;
+    } catch (err) {
+      error = (err as Error).message || 'Request failed';
+    }
+
+    const normalizedDelay =
+      typeof delayNumber === 'number' && delayNumber > 0 ? delayNumber : undefined;
+
+    const errorMessage = error || (normalizedDelay === undefined ? 'Timeout' : '');
+    updateDelayEntry(dispatch, getState, name, {
+      number: normalizedDelay,
+      error: errorMessage,
+      testing: false,
+      updatedAt: Date.now(),
+    });
   };
 }
 
@@ -370,13 +427,12 @@ function formatProxyProviders(providersInput: ProvidersRaw): {
     const names = [];
     for (let j = 0; j < proxiesArr.length; j++) {
       const proxy = proxiesArr[j];
-      proxies[proxy.name] = proxy;
+      proxies[proxy.name] = { ...proxy, providerName: provider.name };
       names.push(proxy.name);
     }
 
-    // mutate directly
-    provider.proxies = names;
-    providers.push(provider);
+    const formattedProvider = { ...provider, proxies: names };
+    providers.push(formattedProvider);
   }
 
   return {
@@ -389,6 +445,7 @@ export const actions = {
   requestDelayForProxies,
   closeModalClosePrevConns,
   closePrevConnsAndTheModal,
+  healthcheckProxy,
 };
 
 export const proxyFilterText = atom({

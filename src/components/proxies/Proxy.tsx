@@ -3,10 +3,11 @@ import cx from 'clsx';
 import * as React from 'react';
 
 import { keyCodes } from '~/misc/keycode';
-import { getLatencyTestUrl } from '~/store/app';
-import { ProxyItem } from '~/store/types';
+import { getClashAPIConfig, getLatencyTestUrl } from '~/store/app';
+import { DispatchFn, ProxyItem } from '~/store/types';
+import { ClashAPIConfig } from '~/types';
 
-import { getDelay, getProxies } from '../../store/proxies';
+import { getDelay, getProxies, healthcheckProxy } from '../../store/proxies';
 import { connect } from '../StateProvider';
 import s0 from './Proxy.module.scss';
 import { ProxyLatency } from './ProxyLatency';
@@ -65,12 +66,12 @@ type ProxyProps = {
   name: string;
   now?: boolean;
   proxy: ProxyItem;
-  latency: any;
+  latency: { number?: number; error?: string; testing?: boolean };
   httpsLatencyTest: boolean;
   isSelectable?: boolean;
-  udp: boolean;
-  tfo: boolean;
   onClick?: (proxyName: string) => unknown;
+  apiConfig: ClashAPIConfig;
+  dispatch: DispatchFn;
 };
 
 function ProxySmallImpl({
@@ -86,7 +87,7 @@ function ProxySmallImpl({
   const latencyNumber = latency?.number ?? delay;
   const color = useMemo(
     () => getProxyDotBackgroundColor({ number: latencyNumber }, httpsLatencyTest),
-    [latencyNumber]
+    [latencyNumber, httpsLatencyTest]
   );
 
   const title = useMemo(() => {
@@ -161,13 +162,22 @@ function ProxyImpl({
   httpsLatencyTest,
   isSelectable,
   onClick,
+  apiConfig,
+  dispatch,
 }: ProxyProps) {
   const delay = proxy.history[proxy.history.length - 1]?.delay;
-  const latencyNumber = latency?.number ?? delay;
+  const latencyNumber =
+    typeof latency?.number === 'number'
+      ? latency.number
+      : typeof delay === 'number'
+      ? delay
+      : undefined;
+  const hasLatencyNumber = typeof latencyNumber === 'number' && latencyNumber > 0;
   const color = useMemo(
-    () => getLabelColor({ number: latencyNumber }, httpsLatencyTest),
-    [latencyNumber]
+    () => getLabelColor({ number: hasLatencyNumber ? latencyNumber : undefined }, httpsLatencyTest),
+    [hasLatencyNumber, latencyNumber, httpsLatencyTest]
   );
+  const isTestingLatency = Boolean(latency?.testing);
 
   const doSelect = React.useCallback(() => {
     isSelectable && onClick && onClick(name);
@@ -210,7 +220,10 @@ function ProxyImpl({
     });
   }, [isSelectable, now, latency]);
 
-  // const latencyNumber = latency?.number ?? proxy.history[proxy.history.length - 1]?.delay;
+  const runLatencyTest = React.useCallback(() => {
+    if (isTestingLatency) return;
+    dispatch(healthcheckProxy(apiConfig, name));
+  }, [apiConfig, dispatch, isTestingLatency, name]);
 
   return (
     <div
@@ -241,7 +254,13 @@ function ProxyImpl({
           {formatTfo(proxy.tfo)}
         </div>
 
-        {latencyNumber ? <ProxyLatency number={latencyNumber} color={color} /> : null}
+        <ProxyLatency
+          number={hasLatencyNumber ? latencyNumber : undefined}
+          color={color}
+          isTesting={isTestingLatency}
+          error={latency?.error}
+          onClick={runLatencyTest}
+        />
       </div>
     </div>
   );
@@ -256,6 +275,7 @@ const mapState = (s: any, { name }) => {
     proxy: proxy,
     latency: delay[name],
     httpsLatencyTest: latencyTestUrl.startsWith('https://'),
+    apiConfig: getClashAPIConfig(s),
   };
 };
 

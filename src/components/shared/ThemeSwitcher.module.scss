@@ -24,6 +24,8 @@
   position: relative;
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: var(--sz);
   height: var(--sz);
   select {
     cursor: pointer;

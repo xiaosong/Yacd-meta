@@ -1,23 +1,19 @@
 @import '~/styles/utils/custom-media';
 
-.root,
-.section {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(49%, 1fr));
-  max-width: 900px;
-  gap: 5px;
-  @media (--breakpoint-not-small) {
-    gap: 15px;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  }
+.root {
+  max-width: 1000px;
+  padding: 30px 20px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.root,
 .section {
-  padding: 6px 15px 10px;
-  @media (--breakpoint-not-small) {
-    padding: 10px 40px 15px;
-  }
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  align-items: start;
 }
 
 .wrapSwitch {
@@ -38,6 +34,35 @@
 }
 
 .label {
-  padding: 15px 0;
-  font-size: small;
+  padding: 10px 0 8px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, #999);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sectionTitle {
+  padding: 10px 0;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-main);
+}
+
+.card {
+  background: var(--bg-near-transparent, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(10px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: var(--border-color-hover, rgba(255, 255, 255, 0.15));
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
 }

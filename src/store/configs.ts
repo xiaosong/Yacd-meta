@@ -160,20 +160,44 @@ export function upgradeCore(apiConfig: ClashAPIConfig) {
       });
   };
 }
-export function updateGeoDatabasesFile(apiConfig: ClashAPIConfig) {
+
+export function upgradeGeo(apiConfig: ClashAPIConfig) {
   return async (dispatch: DispatchFn) => {
     configsAPI
-      .updateGeoDatabasesFile(apiConfig)
+      .upgradeGeo(apiConfig)
       .then(
         (res) => {
           if (res.ok === false) {
             // eslint-disable-next-line no-console
-            console.log('Error update geo databases file', res.statusText);
+            console.log('Error upgrade geo', res.statusText);
           }
         },
         (err) => {
           // eslint-disable-next-line no-console
-          console.log('Error update geo databases file', err);
+          console.log('Error upgrade geo', err);
+          throw err;
+        }
+      )
+      .then(() => {
+        dispatch(fetchConfigs(apiConfig));
+      });
+  };
+}
+
+export function upgradeUI(apiConfig: ClashAPIConfig) {
+  return async (dispatch: DispatchFn) => {
+    configsAPI
+      .upgradeUI(apiConfig)
+      .then(
+        (res) => {
+          if (res.ok === false) {
+            // eslint-disable-next-line no-console
+            console.log('Error upgrade ui', res.statusText);
+          }
+        },
+        (err) => {
+          // eslint-disable-next-line no-console
+          console.log('Error upgrade ui', err);
           throw err;
         }
       )

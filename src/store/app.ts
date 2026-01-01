@@ -19,6 +19,7 @@ export const getProxySortBy = (s: State) => s.app.proxySortBy;
 export const getHideUnavailableProxies = (s: State) => s.app.hideUnavailableProxies;
 export const getAutoCloseOldConns = (s: State) => s.app.autoCloseOldConns;
 export const getLogStreamingPaused = (s: State) => s.app.logStreamingPaused;
+export const getProxiesLayout = (s: State) => s.app.proxiesLayout;
 
 const saveStateDebounced = debounce(saveState, 600);
 
@@ -168,8 +169,9 @@ const defaultState: StateApp = {
   // how proxies are sorted in a group or provider
   proxySortBy: 'Natural',
   hideUnavailableProxies: false,
-  autoCloseOldConns: false,
+  autoCloseOldConns: true,
   logStreamingPaused: false,
+  proxiesLayout: 'single',
 };
 
 function parseConfigQueryString() {

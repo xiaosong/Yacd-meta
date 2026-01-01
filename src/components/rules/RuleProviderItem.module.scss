@@ -2,14 +2,11 @@
   display: flex;
   align-items: center;
   height: 100%;
-  padding: 12px 16px;
-  border-radius: 8px;
-  border: 1px solid var(--color-bg-card-border, rgba(0, 0, 0, 0.05));
+  padding: 16px 20px;
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: var(--color-focus-blue);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    background: var(--bg-near-transparent);
 
     .refreshButton {
       opacity: 1;
@@ -21,9 +18,9 @@
   width: 32px;
   flex-shrink: 0;
   color: var(--color-text-secondary);
-  font-size: 0.8rem;
-  opacity: 0.5;
-  font-family: 'Roboto Mono', monospace;
+  font-size: 11px;
+  opacity: 0.4;
+  font-family: var(--font-mono);
 }
 
 .middle {
@@ -42,9 +39,9 @@
 }
 
 .name {
-  font-size: 1rem;
+  font-size: 14px;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--color-text-highlight);
 }
 
 .badgeGroup {
@@ -56,9 +53,9 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.7rem;
+  font-size: 10px;
   color: var(--color-text-secondary);
-  background: var(--color-bg-secondary, rgba(0, 0, 0, 0.05));
+  background: var(--bg-near-transparent);
   padding: 2px 6px;
   border-radius: 4px;
   text-transform: uppercase;
@@ -69,7 +66,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.8rem;
+  font-size: 11px;
   color: var(--color-text-secondary);
 }
 
@@ -86,10 +83,12 @@
   transition: all 0.2s ease;
   padding: 8px !important;
   border-radius: 50% !important;
+  color: var(--color-text-secondary);
 
   &:hover {
     opacity: 1;
-    background: var(--color-bg-secondary, rgba(0, 0, 0, 0.1)) !important;
+    color: var(--color-focus-blue);
+    background: var(--bg-near-transparent) !important;
   }
 }
 

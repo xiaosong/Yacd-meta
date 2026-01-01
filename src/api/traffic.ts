@@ -11,8 +11,8 @@ const traffic = {
   labels: Array(Size)
     .fill(0)
     .map((_, i) => Date.now() - (Size - i) * 1000),
-  up: Array(Size).fill(0),
-  down: Array(Size).fill(0),
+  up: Array(Size).fill(null),
+  down: Array(Size).fill(null),
 
   size: Size,
   subscribers: [],

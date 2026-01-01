@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import { keyCodes } from '~/misc/keycode';
 import { getClashAPIConfig, getLatencyTestUrl } from '~/store/app';
-import { DispatchFn, ProxyItem } from '~/store/types';
+import { DelayMapping, DispatchFn, ProxiesMapping, ProxyItem } from '~/store/types';
 import { ClashAPIConfig } from '~/types';
 
 import { getDelay, getProxies, healthcheckProxy } from '../../store/proxies';
@@ -237,17 +237,14 @@ function ProxyImpl({
         <ProxyNameTooltip label={name} aria-label={`proxy name: ${name}`}>
           <span>{name}</span>
         </ProxyNameTooltip>
-        <span className={s0.proxyType} style={{ paddingLeft: 4, opacity: 0.6, color: '#51A8DD' }}>
+        <span className={s0.udpType} style={{ paddingLeft: 4 }}>
           {formatUdpType(proxy.udp, proxy.xudp)}
         </span>
       </div>
 
       <div className={s0.row}>
         <div className={s0.row}>
-          <span
-            className={s0.proxyType}
-            style={{ paddingRight: 4, opacity: 0.6, color: '#F596AA' }}
-          >
+          <span className={s0.proxyType} style={{ paddingRight: 4 }}>
             {formatProxyType(proxy.type)}
           </span>
 
@@ -266,6 +263,33 @@ function ProxyImpl({
   );
 }
 
+function getLatency(
+  proxies: ProxiesMapping,
+  delay: DelayMapping,
+  name: string,
+  visited = new Set<string>()
+) {
+  if (visited.has(name)) return undefined;
+  visited.add(name);
+
+  const latency = delay[name];
+  if (latency && (latency.testing || typeof latency.number === 'number' || latency.error)) {
+    return latency;
+  }
+
+  const proxy = proxies[name];
+  if (proxy && proxy.now && proxies[proxy.now]) {
+    return getLatency(proxies, delay, proxy.now, visited);
+  }
+
+  const delayFromHistory = proxy?.history?.[proxy.history.length - 1]?.delay;
+  if (typeof delayFromHistory === 'number' && delayFromHistory > 0) {
+    return { number: delayFromHistory };
+  }
+
+  return latency;
+}
+
 const mapState = (s: any, { name }) => {
   const proxies = getProxies(s);
   const delay = getDelay(s);
@@ -273,7 +297,7 @@ const mapState = (s: any, { name }) => {
   const proxy = proxies[name] || { name, history: [] };
   return {
     proxy: proxy,
-    latency: delay[name],
+    latency: getLatency(proxies, delay, name),
     httpsLatencyTest: latencyTestUrl.startsWith('https://'),
     apiConfig: getClashAPIConfig(s),
   };

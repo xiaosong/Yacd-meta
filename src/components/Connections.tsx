@@ -30,7 +30,7 @@ import { Fab, position as fabPosition } from './shared/Fab';
 import { connect } from './StateProvider';
 import SvgYacd from './SvgYacd';
 
-const { useEffect, useState, useRef, useCallback } = React;
+const { useEffect, useState, useRef, useCallback, useMemo } = React;
 const ALL_SOURCE_IP = 'ALL_SOURCE_IP';
 
 const sourceMapInit = localStorage.getItem('sourceMap')
@@ -110,11 +110,24 @@ function getNameFromSource(
 
 function formatConnectionDataItem(
   i: ConnectionItem,
-  prevKv: Record<string, { upload: number; download: number }>,
+  prevKv: Record<string, FormattedConn>,
   now: number,
   sourceMap: { reg: string; name: string }[]
 ): FormattedConn {
-  const { id, metadata, upload, download, start, chains, rule, rulePayload } = i;
+  const { id, upload, download, start, chains, rule, rulePayload, metadata } = i;
+  const prev = prevKv[id];
+
+  if (prev) {
+    return {
+      ...prev,
+      upload,
+      download,
+      start: now - prev.startTime,
+      downloadSpeedCurr: download - prev.download,
+      uploadSpeedCurr: upload - prev.upload,
+    };
+  }
+
   const {
     host,
     destinationPort,
@@ -128,29 +141,28 @@ function formatConnectionDataItem(
     sniffHost,
   } = metadata;
   // host could be an empty string if it's direct IP connection
-  let host2 = host;
-  if (host2 === '') host2 = destinationIP;
-  const prev = prevKv[id];
+  const host2 = host || destinationIP;
   const source = `${sourceIP}:${sourcePort}`;
+  const startTime = new Date(start).valueOf();
 
-  const ret = {
+  return {
     id,
     upload,
     download,
-    start: now - new Date(start).valueOf(),
+    start: now - startTime,
+    startTime,
     chains: modifyChains(chains),
     rule: !rulePayload ? rule : `${rule} :: ${rulePayload}`,
     ...metadata,
     host: `${host2}:${destinationPort}`,
-    sniffHost: sniffHost ? sniffHost : '-',
+    sniffHost: sniffHost || '-',
     type: `${type}(${network})`,
     source: getNameFromSource(sourceIP, sourceMap, source),
-    downloadSpeedCurr: download - (prev ? prev.download : 0),
-    uploadSpeedCurr: upload - (prev ? prev.upload : 0),
-    process: process ? process : '-',
+    downloadSpeedCurr: 0,
+    uploadSpeedCurr: 0,
+    process: process || '-',
     destinationIP: remoteDestination || destinationIP || host,
   };
-  return ret;
 }
 function modifyChains(chains: string[]): string {
   if (!Array.isArray(chains) || chains.length === 0) {
@@ -161,19 +173,12 @@ function modifyChains(chains: string[]): string {
     return chains[0];
   }
 
-  //倒序
-  if (chains.length === 2) {
-    return `${chains[1]} -> ${chains[0]}`;
-  }
-
-  const first = chains.pop();
-  const last = chains.shift();
-  return `${first} -> ${last}`;
+  return `${chains[chains.length - 1]} -> ${chains[0]}`;
 }
 
-function renderTableOrPlaceholder(columns, hiddenColumns, conns: FormattedConn[]) {
+function renderTableOrPlaceholder(columns, hiddenColumns, conns: FormattedConn[], height: number) {
   return conns.length > 0 ? (
-    <ConnectionTable data={conns} columns={columns} hiddenColumns={hiddenColumns} />
+    <ConnectionTable data={conns} columns={columns} hiddenColumns={hiddenColumns} height={height} />
   ) : (
     <div className={s.placeHolder}>
       <SvgYacd width={200} height={200} c1="var(--color-text)" />
@@ -254,10 +259,16 @@ function Conn({ apiConfig }) {
   const [filterKeyword, setFilterKeyword] = useState('');
   const [filterSourceIpStr, setFilterSourceIpStr] = useState(ALL_SOURCE_IP);
 
-  const filteredConns = filterConns(conns, filterKeyword, filterSourceIpStr);
-  const filteredClosedConns = filterConns(closedConns, filterKeyword, filterSourceIpStr);
+  const filteredConns = useMemo(
+    () => filterConns(conns, filterKeyword, filterSourceIpStr),
+    [conns, filterKeyword, filterSourceIpStr]
+  );
+  const filteredClosedConns = useMemo(
+    () => filterConns(closedConns, filterKeyword, filterSourceIpStr),
+    [closedConns, filterKeyword, filterSourceIpStr]
+  );
 
-  const getConnIpList = (conns: FormattedConn[]) => {
+  const connIpSet = useMemo(() => {
     return [
       [ALL_SOURCE_IP, t('All')],
       ...Array.from(new Set(conns.map((x) => x.sourceIP)))
@@ -266,8 +277,7 @@ function Conn({ apiConfig }) {
           return [value, getNameFromSource(value, sourceMap).trim() || t('internel')];
         }),
     ];
-  };
-  const connIpSet = getConnIpList(conns);
+  }, [conns, t, sourceMap]);
   // const ClosedConnIpSet = getConnIpList(closedConns);
 
   const [isCloseFilterModalOpen, setIsCloseFilterModalOpen] = useState(false);
@@ -308,10 +318,12 @@ function Conn({ apiConfig }) {
         const idx = x.findIndex((conn: ConnectionItem) => conn.id === c.id);
         if (idx < 0) closed.push(c);
       }
-      setClosedConns((prev) => {
-        // keep max 100 entries
-        return [...closed, ...prev].slice(0, 101);
-      });
+      if (closed.length > 0) {
+        setClosedConns((prev) => {
+          // keep max 100 entries
+          return [...closed, ...prev].slice(0, 101);
+        });
+      }
       // if previous connections and current connections are both empty
       // arrays, we wont update state to avaoid rerender
       if (x && (x.length !== 0 || prevConnsRef.current.length !== 0) && !isRefreshPaused) {
@@ -350,86 +362,91 @@ function Conn({ apiConfig }) {
 
   return (
     <div>
-      <div className={s.header}>
-        <ContentHeader title={t('Connections')} />
-        <div className={s.inputWrapper}>
-          <Input
-            type="text"
-            name="filter"
-            autoComplete="off"
-            className={s.input}
-            placeholder={t('Search')}
-            onChange={(e) => setFilterKeyword(e.target.value)}
-          />
-        </div>
-      </div>
       <Tabs>
-        <div className={s.controls}>
-          <div className={s.tabGroup}>
-            <TabList className={s.tabList}>
-              <Tab>
-                <span>{t('Active')}</span>
-                <span className={s.connQty}>
-                  {/* @ts-expect-error ts-migrate(2786) FIXME: 'ConnQty' cannot be used as a JSX component. */}
-                  <ConnQty qty={filteredConns.length} />
-                </span>
-              </Tab>
-              <Tab>
-                <span>{t('Closed')}</span>
-                <span className={s.connQty}>
-                  {/* @ts-expect-error ts-migrate(2786) FIXME: 'ConnQty' cannot be used as a JSX component. */}
-                  <ConnQty qty={filteredClosedConns.length} />
-                </span>
-              </Tab>
-            </TabList>
-            <Select
-              options={connIpSet}
-              selected={filterSourceIpStr}
-              className={s.sourceSelect}
-              onChange={(e) => setFilterSourceIpStr(e.target.value)}
-            />
+        <ContentHeader>
+          <div className={s.controls}>
+            <div className={s.tabGroup}>
+              <TabList className={s.tabList}>
+                <Tab>
+                  <span>{t('Active')}</span>
+                  <span className={s.connQty}>
+                    {/* @ts-expect-error ts-migrate(2786) FIXME: 'ConnQty' cannot be used as a JSX component. */}
+                    <ConnQty qty={filteredConns.length} />
+                  </span>
+                </Tab>
+                <Tab>
+                  <span>{t('Closed')}</span>
+                  <span className={s.connQty}>
+                    {/* @ts-expect-error ts-migrate(2786) FIXME: 'ConnQty' cannot be used as a JSX component. */}
+                    <ConnQty qty={filteredClosedConns.length} />
+                  </span>
+                </Tab>
+              </TabList>
+              <Select
+                options={connIpSet}
+                selected={filterSourceIpStr}
+                className={s.sourceSelect}
+                onChange={(e) => setFilterSourceIpStr(e.target.value)}
+              />
+            </div>
+            <div style={{ flex: 1 }} />
+            <div className={s.inputWrapper}>
+              <Input
+                type="text"
+                name="filter"
+                autoComplete="off"
+                className={s.input}
+                placeholder={t('Search')}
+                onChange={(e) => setFilterKeyword(e.target.value)}
+              />
+            </div>
+            <div className={s.toolbar}>
+              <button
+                className={s.toolbarBtn}
+                onClick={openCloseAllModal}
+                title={t('close_all_connections')}
+              >
+                <IconClose size={15} />
+              </button>
+              <button
+                className={s.toolbarBtn}
+                onClick={openCloseFilterModal}
+                title={t('close_filter_connections')}
+              >
+                <IconClose size={13} />
+                <span className={s.toolbarBtnBadge}>F</span>
+              </button>
+              <span className={s.toolbarDivider} />
+              <button
+                className={s.toolbarBtn}
+                onClick={() => setModalColumn(true)}
+                title={t('manage_column')}
+              >
+                <Settings size={15} />
+              </button>
+              <button className={s.toolbarBtn} onClick={resetColumns} title={t('reset_column')}>
+                <RefreshCcw size={15} />
+              </button>
+              <button className={s.toolbarBtn} onClick={openModalSource} title={t('client_tag')}>
+                <Tag size={15} />
+              </button>
+            </div>
           </div>
-          <div className={s.toolbar}>
-            <button
-              className={s.toolbarBtn}
-              onClick={openCloseAllModal}
-              title={t('close_all_connections')}
-            >
-              <IconClose size={15} />
-            </button>
-            <button
-              className={s.toolbarBtn}
-              onClick={openCloseFilterModal}
-              title={t('close_filter_connections')}
-            >
-              <IconClose size={13} />
-              <span className={s.toolbarBtnBadge}>F</span>
-            </button>
-            <span className={s.toolbarDivider} />
-            <button
-              className={s.toolbarBtn}
-              onClick={() => setModalColumn(true)}
-              title={t('manage_column')}
-            >
-              <Settings size={15} />
-            </button>
-            <button className={s.toolbarBtn} onClick={resetColumns} title={t('reset_column')}>
-              <RefreshCcw size={15} />
-            </button>
-            <button className={s.toolbarBtn} onClick={openModalSource} title={t('client_tag')}>
-              <Tag size={15} />
-            </button>
-          </div>
-        </div>
-        <div ref={refContainer} style={{ padding: 30, paddingBottom: 10, paddingTop: 10 }}>
+        </ContentHeader>
+        <div ref={refContainer} className={s.contentWrapper}>
           <div
+            className={s.scrollArea}
             style={{
               height: containerHeight - paddingBottom,
-              overflow: 'auto',
             }}
           >
             <TabPanel>
-              {renderTableOrPlaceholder(columns, hiddenColumns, filteredConns)}
+              {renderTableOrPlaceholder(
+                columns,
+                hiddenColumns,
+                filteredConns,
+                containerHeight - paddingBottom
+              )}
               <Fab
                 icon={isRefreshPaused ? <Play size={16} /> : <Pause size={16} />}
                 mainButtonStyles={isRefreshPaused ? { background: '#e74c3c' } : {}}
@@ -439,7 +456,12 @@ function Conn({ apiConfig }) {
               />
             </TabPanel>
             <TabPanel>
-              {renderTableOrPlaceholder(columns, hiddenColumns, filteredClosedConns)}
+              {renderTableOrPlaceholder(
+                columns,
+                hiddenColumns,
+                filteredClosedConns,
+                containerHeight - paddingBottom
+              )}
             </TabPanel>
           </div>
         </div>

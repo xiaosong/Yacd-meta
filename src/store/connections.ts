@@ -5,6 +5,7 @@ export type FormattedConn = {
   upload: number;
   download: number;
   start: number;
+  startTime?: number;
   chains: string;
   rule: string;
   destinationPort: string;

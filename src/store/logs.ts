@@ -13,13 +13,13 @@ export const getLogsForDisplay = createSelector(
   getSearchText,
   (logs, tail, searchText) => {
     const x = [];
-    for (let i = tail; i >= 0; i--) {
-      x.push(logs[i]);
-    }
     if (logs.length === LogSize) {
-      for (let i = LogSize - 1; i > tail; i--) {
+      for (let i = tail + 1; i < LogSize; i++) {
         x.push(logs[i]);
       }
+    }
+    for (let i = 0; i <= tail; i++) {
+      x.push(logs[i]);
     }
 
     if (searchText === '') return x;
@@ -31,6 +31,15 @@ export function updateSearchText(text: string) {
   return (dispatch: DispatchFn) => {
     dispatch('logsUpdateSearchText', (s) => {
       s.logs.searchText = text.toLowerCase();
+    });
+  };
+}
+
+export function clearLogs() {
+  return (dispatch: DispatchFn) => {
+    dispatch('logsClearLogs', (s) => {
+      s.logs.logs = [];
+      s.logs.tail = -1;
     });
   };
 }

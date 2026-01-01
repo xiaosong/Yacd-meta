@@ -102,6 +102,7 @@ function ProxyProviderImpl({
           alignItems: 'center',
           flexWrap: 'wrap',
           justifyContent: 'space-between',
+          userSelect: 'none',
         }}
       >
         <CollapsibleSectionHeader

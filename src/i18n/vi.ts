@@ -79,4 +79,5 @@ export const data = {
     'Thêm / vào đầu để sử dụng biểu thức chính quy, nếu không sẽ là kết quả khớp chính xác(By Ohoang7)',
   disconnect: 'Đóng kết nối',
   internel: 'Kết nối nội bộ',
+  Clear: 'Dọn dẹp',
 };

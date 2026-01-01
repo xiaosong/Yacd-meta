@@ -27,27 +27,16 @@
   min-width: 20px;
 }
 
-.header {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  padding: 20px 30px 10px;
-  gap: 20px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    padding: 15px 15px 5px;
-    gap: 12px;
-  }
-}
-
 .inputWrapper {
   width: 100%;
-  max-width: 320px;
-  justify-self: end;
+  max-width: 200px;
+  margin-left: auto;
 
   @media (max-width: 768px) {
     max-width: none;
+    grid-column: 1 / -1;
+    margin-left: 0;
+    order: 3;
   }
 }
 
@@ -90,9 +79,12 @@
   border-radius: 12px;
 
   @media (max-width: 768px) {
-    justify-content: center;
-    width: 100%;
-    padding: 8px;
+    grid-column: 2;
+    grid-row: 2;
+    justify-content: flex-end;
+    width: auto;
+    padding: 2px;
+    background: transparent;
   }
 }
 
@@ -143,14 +135,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 30px;
   gap: 16px;
+  width: 100%;
 
   @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 0 15px;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    padding: 4px 0;
   }
 }
 
@@ -160,9 +152,7 @@
   gap: 16px;
 
   @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+    display: contents;
   }
 }
 
@@ -174,12 +164,16 @@
   gap: 4px;
 
   @media (max-width: 768px) {
+    grid-column: 1 / -1;
     justify-content: space-between;
     width: 100%;
 
     :global(.react-tabs__tab) {
       flex: 1;
+      text-align: center;
       justify-content: center;
+      padding: 6px 4px !important;
+      font-size: 0.9em;
     }
   }
 }
@@ -190,6 +184,8 @@
 
   @media (max-width: 768px) {
     width: 100% !important;
+    grid-column: 1;
+    height: 36px;
   }
 }
 
@@ -199,4 +195,24 @@
   background: var(--color-text-secondary);
   opacity: 0.2;
   margin: 0 2px;
+}
+
+.contentWrapper {
+  margin: 0 45px 20px;
+  background-color: var(--bg-log-info-card);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--color-separator);
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    margin: 10px 15px 15px;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+  }
+}
+
+.scrollArea {
+  overflow: visible;
 }

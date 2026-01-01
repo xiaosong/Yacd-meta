@@ -15,7 +15,7 @@ interface Props {
   onClick: () => void;
 }
 
-export default function ConnectionCard({ conn, onDisconnect, onClick }: Props) {
+const ConnectionCard = React.memo(function ConnectionCard({ conn, onDisconnect, onClick }: Props) {
   const { i18n } = useTranslation();
 
   let locale: Locale;
@@ -81,4 +81,6 @@ export default function ConnectionCard({ conn, onDisconnect, onClick }: Props) {
       </div>
     </div>
   );
-}
+});
+
+export default ConnectionCard;

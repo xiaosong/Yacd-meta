@@ -14,6 +14,7 @@ export type StateApp = {
   hideUnavailableProxies: boolean;
   autoCloseOldConns: boolean;
   logStreamingPaused: boolean;
+  proxiesLayout: string;
 };
 
 export type ClashTunConfig = {

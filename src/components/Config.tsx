@@ -256,7 +256,7 @@ function ConfigImpl({
 
   return (
     <div>
-      <ContentHeader title={t('Config')} />
+      <ContentHeader />
       <div className={s0.root}>
         <div className={s0.card}>
           <div className={s0.sectionTitle}>

@@ -31,10 +31,12 @@
   }
 
   background-color: var(--color-bg-proxy);
+  color: var(--color-text);
 
   &.now {
-    background-color: var(--color-focus-blue);
-    color: #ddd;
+    background-color: var(--color-sb-active-row-bg);
+    color: var(--color-sb-active-row-font);
+    border-color: var(--color-focus-blue);
   }
 
   &.error {
@@ -55,13 +57,26 @@
   @media (--breakpoint-not-small) {
     font-size: 0.7em;
   }
+  color: #f596aa;
+  opacity: 0.6;
+
+  .now & {
+    color: inherit;
+    opacity: 0.8;
+  }
 }
 .udpType {
   font-family: var(--font-mono);
   font-size: 0.6em;
-  margin-right: 3px;
   @media (--breakpoint-not-small) {
     font-size: 0.7em;
+  }
+  color: #51a8dd;
+  opacity: 0.6;
+
+  .now & {
+    color: inherit;
+    opacity: 0.8;
   }
 }
 .tfoType {

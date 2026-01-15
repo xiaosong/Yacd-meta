@@ -215,6 +215,9 @@ export function initialState() {
   if (query.theme === 'dark' || query.theme === 'light') {
     s.theme = query.theme;
   }
+  if (query.title) {
+    document.title = decodeURIComponent(query.title);
+  }
   // set initial theme
   setTheme(s.theme);
   return s;

@@ -28,7 +28,7 @@ const COLUMN_WIDTHS = {
   start: 100,
   type: 120,
   host: 300,
-  rule: 180,
+  rule: 200,
   chains: 250,
   download: 100,
   upload: 100,

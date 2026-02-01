@@ -14,13 +14,14 @@ import {
 import { fetchProxies, getProxies, switchProxy } from '~/store/proxies';
 
 import Button from '../Button';
+import Collapsible from '../Collapsible';
 import CollapsibleSectionHeader from '../CollapsibleSectionHeader';
 import { connect, useStoreActions } from '../StateProvider';
 import { useFilteredAndSorted } from './hooks';
 import s0 from './ProxyGroup.module.scss';
 import { ProxyList, ProxyListSummaryView } from './ProxyList';
 
-const { createElement, useCallback, useMemo, useState, useEffect } = React;
+const { useCallback, useMemo, useState } = React;
 
 function ZapWrapper() {
   return (
@@ -84,81 +85,49 @@ function ProxyGroupImpl({
       }
     } catch (err) {}
     setIsTestingLatency(false);
-  }, [all, apiConfig, dispatch, name, version.meta]);
-
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-
-  const updateWindowWidth = () => {
-    setWindowWidth(window.innerWidth);
-  };
-
-  useEffect(() => {
-    window.addEventListener('resize', updateWindowWidth);
-    return () => window.removeEventListener('resize', updateWindowWidth);
-  }, []);
+  }, [all, apiConfig, dispatch, name, version.meta, latencyTestUrl, requestDelayForProxies]);
 
   return (
     <div className={s0.group}>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: windowWidth > 768 ? 'start' : 'space-between',
-        }}
-      >
+      <div className={s0.groupHeader}>
         <CollapsibleSectionHeader name={name} type={type} toggle={toggle} qty={all.length} />
-        <div style={{ display: 'flex' }}>
-          {windowWidth > 768 ? (
-            <>
-              <Button
-                kind="minimal"
-                onClick={toggle}
-                className={s0.btn}
-                title="Toggle collapsible section"
-              >
-                <span className={cx(s0.arrow, { [s0.isOpen]: isOpen })}>
-                  <ChevronDown size={20} />
-                </span>
-              </Button>
-              <Button
-                title="Test latency"
-                kind="minimal"
-                onClick={testLatency}
-                isLoading={isTestingLatency}
-              >
-                <ZapWrapper />
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                title="Test latency"
-                kind="minimal"
-                onClick={testLatency}
-                isLoading={isTestingLatency}
-              >
-                <ZapWrapper />
-              </Button>
-              <Button
-                kind="minimal"
-                onClick={toggle}
-                className={s0.btn}
-                title="Toggle collapsible section"
-              >
-                <span className={cx(s0.arrow, { [s0.isOpen]: isOpen })}>
-                  <ChevronDown size={20} />
-                </span>
-              </Button>
-            </>
-          )}
+        <div className={s0.btnGroup}>
+          <Button
+            kind="minimal"
+            onClick={toggle}
+            className={s0.btn}
+            title="Toggle collapsible section"
+          >
+            <span className={cx(s0.arrow, { [s0.isOpen]: isOpen })}>
+              <ChevronDown size={20} />
+            </span>
+          </Button>
+          <Button
+            title="Test latency"
+            kind="minimal"
+            onClick={testLatency}
+            isLoading={isTestingLatency}
+          >
+            <ZapWrapper />
+          </Button>
         </div>
       </div>
-      {createElement(isOpen ? ProxyList : ProxyListSummaryView, {
-        all,
-        now,
-        isSelectable,
-        itemOnTapCallback,
-      })}
+      <Collapsible isOpen={isOpen}>
+        <ProxyList
+          all={all}
+          now={now}
+          isSelectable={isSelectable}
+          itemOnTapCallback={itemOnTapCallback}
+        />
+      </Collapsible>
+      <Collapsible isOpen={!isOpen}>
+        <ProxyListSummaryView
+          all={all}
+          now={now}
+          isSelectable={isSelectable}
+          itemOnTapCallback={itemOnTapCallback}
+        />
+      </Collapsible>
     </div>
   );
 }

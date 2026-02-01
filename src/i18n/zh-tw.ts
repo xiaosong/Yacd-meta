@@ -25,6 +25,7 @@ export const data = {
   sort_in_grp: '依代理群組排序',
   hide_unavail_proxies: '隱藏不可用的代理伺服器',
   auto_close_conns: '切換代理伺服器時自動斷開舊連線',
+  double_column_layout: '雙列顯示',
   order_natural: '原 config 文件中的順序',
   order_latency_asc: '按延遲從小到大',
   order_latency_desc: '按延遲從大到小',
@@ -42,6 +43,7 @@ export const data = {
   chart_style: '流量圖樣式',
   latency_test_url: '延遲測速 URL',
   lang: '語言',
+  proxy_provider: '代理伺服器提供者',
   update_all_rule_provider: '更新所有規則提供者',
   update_all_proxy_provider: '更新所有代理伺服器提供者',
   reload_config_file: '重新載入設定檔',
@@ -78,4 +80,5 @@ export const data = {
   sourceip_tip: '/開頭為正規表達式，否則為全面配對',
   disconnect: '斷開連線',
   internel: '內部連線',
+  Clear: '清空',
 };

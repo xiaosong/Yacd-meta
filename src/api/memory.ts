@@ -8,9 +8,11 @@ const textDecoder = new TextDecoder('utf-8');
 const Size = 150;
 
 const memory = {
-  labels: Array(Size).fill(0),
-  inuse: Array(Size),
-  oslimit: Array(Size),
+  labels: Array(Size)
+    .fill(0)
+    .map((_, i) => Date.now() - (Size - i) * 1000),
+  inuse: Array(Size).fill(null),
+  oslimit: Array(Size).fill(null),
 
   size: Size,
   subscribers: [],

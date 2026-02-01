@@ -3,10 +3,11 @@ import cx from 'clsx';
 import * as React from 'react';
 
 import { keyCodes } from '~/misc/keycode';
-import { getLatencyTestUrl } from '~/store/app';
-import { ProxyItem } from '~/store/types';
+import { getClashAPIConfig, getLatencyTestUrl } from '~/store/app';
+import { DelayMapping, DispatchFn, ProxiesMapping, ProxyItem } from '~/store/types';
+import { ClashAPIConfig } from '~/types';
 
-import { getDelay, getProxies } from '../../store/proxies';
+import { getDelay, getProxies, healthcheckProxy } from '../../store/proxies';
 import { connect } from '../StateProvider';
 import s0 from './Proxy.module.scss';
 import { ProxyLatency } from './ProxyLatency';
@@ -65,12 +66,12 @@ type ProxyProps = {
   name: string;
   now?: boolean;
   proxy: ProxyItem;
-  latency: any;
+  latency: { number?: number; error?: string; testing?: boolean };
   httpsLatencyTest: boolean;
   isSelectable?: boolean;
-  udp: boolean;
-  tfo: boolean;
   onClick?: (proxyName: string) => unknown;
+  apiConfig: ClashAPIConfig;
+  dispatch: DispatchFn;
 };
 
 function ProxySmallImpl({
@@ -86,7 +87,7 @@ function ProxySmallImpl({
   const latencyNumber = latency?.number ?? delay;
   const color = useMemo(
     () => getProxyDotBackgroundColor({ number: latencyNumber }, httpsLatencyTest),
-    [latencyNumber]
+    [latencyNumber, httpsLatencyTest]
   );
 
   const title = useMemo(() => {
@@ -161,13 +162,22 @@ function ProxyImpl({
   httpsLatencyTest,
   isSelectable,
   onClick,
+  apiConfig,
+  dispatch,
 }: ProxyProps) {
   const delay = proxy.history[proxy.history.length - 1]?.delay;
-  const latencyNumber = latency?.number ?? delay;
+  const latencyNumber =
+    typeof latency?.number === 'number'
+      ? latency.number
+      : typeof delay === 'number'
+      ? delay
+      : undefined;
+  const hasLatencyNumber = typeof latencyNumber === 'number' && latencyNumber > 0;
   const color = useMemo(
-    () => getLabelColor({ number: latencyNumber }, httpsLatencyTest),
-    [latencyNumber]
+    () => getLabelColor({ number: hasLatencyNumber ? latencyNumber : undefined }, httpsLatencyTest),
+    [hasLatencyNumber, latencyNumber, httpsLatencyTest]
   );
+  const isTestingLatency = Boolean(latency?.testing);
 
   const doSelect = React.useCallback(() => {
     isSelectable && onClick && onClick(name);
@@ -210,7 +220,10 @@ function ProxyImpl({
     });
   }, [isSelectable, now, latency]);
 
-  // const latencyNumber = latency?.number ?? proxy.history[proxy.history.length - 1]?.delay;
+  const runLatencyTest = React.useCallback(() => {
+    if (isTestingLatency) return;
+    dispatch(healthcheckProxy(apiConfig, name));
+  }, [apiConfig, dispatch, isTestingLatency, name]);
 
   return (
     <div
@@ -224,27 +237,57 @@ function ProxyImpl({
         <ProxyNameTooltip label={name} aria-label={`proxy name: ${name}`}>
           <span>{name}</span>
         </ProxyNameTooltip>
-        <span className={s0.proxyType} style={{ paddingLeft: 4, opacity: 0.6, color: '#51A8DD' }}>
+        <span className={s0.udpType} style={{ paddingLeft: 4 }}>
           {formatUdpType(proxy.udp, proxy.xudp)}
         </span>
       </div>
 
       <div className={s0.row}>
         <div className={s0.row}>
-          <span
-            className={s0.proxyType}
-            style={{ paddingRight: 4, opacity: 0.6, color: '#F596AA' }}
-          >
+          <span className={s0.proxyType} style={{ paddingRight: 4 }}>
             {formatProxyType(proxy.type)}
           </span>
 
           {formatTfo(proxy.tfo)}
         </div>
 
-        {latencyNumber ? <ProxyLatency number={latencyNumber} color={color} /> : null}
+        <ProxyLatency
+          number={hasLatencyNumber ? latencyNumber : undefined}
+          color={color}
+          isTesting={isTestingLatency}
+          error={latency?.error}
+          onClick={runLatencyTest}
+        />
       </div>
     </div>
   );
+}
+
+function getLatency(
+  proxies: ProxiesMapping,
+  delay: DelayMapping,
+  name: string,
+  visited = new Set<string>()
+) {
+  if (visited.has(name)) return undefined;
+  visited.add(name);
+
+  const latency = delay[name];
+  if (latency && (latency.testing || typeof latency.number === 'number' || latency.error)) {
+    return latency;
+  }
+
+  const proxy = proxies[name];
+  if (proxy && proxy.now && proxies[proxy.now]) {
+    return getLatency(proxies, delay, proxy.now, visited);
+  }
+
+  const delayFromHistory = proxy?.history?.[proxy.history.length - 1]?.delay;
+  if (typeof delayFromHistory === 'number' && delayFromHistory > 0) {
+    return { number: delayFromHistory };
+  }
+
+  return latency;
 }
 
 const mapState = (s: any, { name }) => {
@@ -254,8 +297,9 @@ const mapState = (s: any, { name }) => {
   const proxy = proxies[name] || { name, history: [] };
   return {
     proxy: proxy,
-    latency: delay[name],
+    latency: getLatency(proxies, delay, name),
     httpsLatencyTest: latencyTestUrl.startsWith('https://'),
+    apiConfig: getClashAPIConfig(s),
   };
 };
 

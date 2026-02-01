@@ -3,7 +3,12 @@ import { useTranslation } from 'react-i18next';
 
 import Select from '~/components/shared/Select';
 
-import { getAutoCloseOldConns, getHideUnavailableProxies, getProxySortBy } from '../../store/app';
+import {
+  getAutoCloseOldConns,
+  getHideUnavailableProxies,
+  getProxiesLayout,
+  getProxySortBy,
+} from '../../store/app';
 import { connect, useStoreActions } from '../StateProvider';
 import Switch from '../SwitchThemed';
 import s from './Settings.module.scss';
@@ -72,6 +77,16 @@ function Settings({ appConfig }) {
           />
         </div>
       </div>
+      <div className={s.labeledInput}>
+        <span>{t('double_column_layout')}</span>
+        <div>
+          <Switch
+            name="proxiesLayout"
+            checked={appConfig.proxiesLayout === 'double'}
+            onChange={(v) => updateAppConfig('proxiesLayout', v ? 'double' : 'single')}
+          />
+        </div>
+      </div>
     </>
   );
 }
@@ -80,12 +95,14 @@ const mapState = (s) => {
   const proxySortBy = getProxySortBy(s);
   const hideUnavailableProxies = getHideUnavailableProxies(s);
   const autoCloseOldConns = getAutoCloseOldConns(s);
+  const proxiesLayout = getProxiesLayout(s);
 
   return {
     appConfig: {
       proxySortBy,
       hideUnavailableProxies,
       autoCloseOldConns,
+      proxiesLayout,
     },
   };
 };

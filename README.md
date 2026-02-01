@@ -1,9 +1,5 @@
 [中文](./README_CN.md)
 
-<h1 align="center">
-  <img src="https://user-images.githubusercontent.com/78135608/232244383-5e1389db-ce56-4c83-9627-4f3d1a489c6e.png" alt="yacd">
-</h1>
-
 > Yet Another [Clash](https://github.com/yaling888/clash) [Dashboard](https://github.com/yaling888/clash-dashboard)
 
 ## Usage
@@ -20,6 +16,7 @@ The site http://yacd.metacubex.one is served with HTTP not HTTPS is because many
 | port     | Port of the clash backend API (usually the port part of `external-controller`)     |
 | secret   | Clash API secret (`secret` in your config.yaml)                                    |
 | theme    | UI color scheme (dark, light, auto)                                                |
+| title    | Custom title for the webpage (displayed in browser tab)                            |
 
 ## Development
 

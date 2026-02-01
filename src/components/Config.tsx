@@ -1,5 +1,14 @@
 import * as React from 'react';
-import { DownloadCloud, LogOut, RotateCw, Trash2 } from 'react-feather';
+import {
+  Cpu,
+  DownloadCloud,
+  LogOut,
+  Monitor,
+  RotateCw,
+  Settings,
+  Tool,
+  Trash2,
+} from 'react-feather';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from 'react-query';
 
@@ -17,8 +26,9 @@ import {
   reloadConfigFile,
   restartCore,
   updateConfigs,
-  updateGeoDatabasesFile,
   upgradeCore,
+  upgradeGeo,
+  upgradeUI,
 } from '../store/configs';
 import { openModal } from '../store/modals';
 import Button from './Button';
@@ -228,8 +238,12 @@ function ConfigImpl({
     dispatch(upgradeCore(apiConfig));
   }, [apiConfig, dispatch]);
 
-  const handleUpdateGeoDatabasesFile = useCallback(() => {
-    dispatch(updateGeoDatabasesFile(apiConfig));
+  const handleUpgradeGeo = useCallback(() => {
+    dispatch(upgradeGeo(apiConfig));
+  }, [apiConfig, dispatch]);
+
+  const handleUpgradeUI = useCallback(() => {
+    dispatch(upgradeUI(apiConfig));
   }, [apiConfig, dispatch]);
 
   const handleFlushFakeIPPool = useCallback(() => {
@@ -242,216 +256,254 @@ function ConfigImpl({
 
   return (
     <div>
-      <ContentHeader title={t('Config')} />
+      <ContentHeader />
       <div className={s0.root}>
-        {(version.meta && version.premium) ||
-          portFields.map((f) =>
-            configState[f.key] !== undefined ? (
-              <div key={f.key}>
-                <div className={s0.label}>{f.label}</div>
-                <Input
-                  name={f.key}
-                  value={configState[f.key]}
-                  onChange={({ target: { name, value } }) => handleInputOnChange({ name, value })}
-                  onBlur={handleInputOnBlur}
-                />
-              </div>
-            ) : null
-          )}
-
-        <div>
-          <div className={s0.label}>Mode</div>
-          <Select
-            options={configState['mode-list'] ? configState['mode-list'].map(value => [value, value]) : modeOptions}
-            selected={configState['mode-list'] ? configState.mode : configState.mode.toLowerCase()}
-            onChange={(e) => handleInputOnChange({ name: 'mode', value: e.target.value })}
-          />
-        </div>
-
-        <div>
-          <div className={s0.label}>Log Level</div>
-          <Select
-            options={logLeveOptions}
-            selected={configState['log-level'].toLowerCase()}
-            onChange={(e) => handleInputOnChange({ name: 'log-level', value: e.target.value })}
-          />
-        </div>
-
-        {(version.meta && version.premium) || (
-          <div>
-            <div className={s0.label}>{t('allow_lan')}</div>
-            <div className={s0.wrapSwitch}>
-              <Switch
-                name="allow-lan"
-                checked={configState['allow-lan']}
-                onChange={(value: boolean) =>
-                  handleInputOnChange({ name: 'allow-lan', value: value })
-                }
-              />
-            </div>
+        <div className={s0.card}>
+          <div className={s0.sectionTitle}>
+            <Settings size={20} />
+            {t('general')}
           </div>
-        )}
+          <div className={s0.section}>
+            {(version.meta && version.premium) ||
+              portFields.map((f) =>
+                configState[f.key] !== undefined ? (
+                  <div key={f.key}>
+                    <div className={s0.label}>{f.label}</div>
+                    <Input
+                      name={f.key}
+                      value={configState[f.key]}
+                      onChange={({ target: { name, value } }) =>
+                        handleInputOnChange({ name, value })
+                      }
+                      onBlur={handleInputOnBlur}
+                    />
+                  </div>
+                ) : null
+              )}
 
-        {version.meta && !version.premium && (
-          <div>
-            <div className={s0.label}>{t('tls_sniffing')}</div>
-            <div className={s0.wrapSwitch}>
-              <Switch
-                name="sniffing"
-                checked={configState['sniffing']}
-                onChange={(value: boolean) =>
-                  handleInputOnChange({ name: 'sniffing', value: value })
-                }
-              />
-            </div>
-          </div>
-        )}
-      </div>
-      <div className={s0.sep}>
-        <div />
-      </div>
-      {version.meta && (
-        <>
-          {version.premium || (
             <div>
-              <div className={s0.section}>
-                <div>
-                  <div className={s0.label}>{t('enable_tun_device')}</div>
-                  <div className={s0.wrapSwitch}>
-                    <Switch
-                      checked={configState['tun']?.enable}
-                      onChange={(value: boolean) =>
-                        handleInputOnChange({ name: 'enable', value: value })
+              <div className={s0.label}>Mode</div>
+              <Select
+                options={
+                  configState['mode-list']
+                    ? configState['mode-list'].map((value) => [value, value])
+                    : modeOptions
+                }
+                selected={
+                  configState['mode-list'] ? configState.mode : configState.mode.toLowerCase()
+                }
+                onChange={(e) => handleInputOnChange({ name: 'mode', value: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <div className={s0.label}>Log Level</div>
+              <Select
+                options={logLeveOptions}
+                selected={configState['log-level'].toLowerCase()}
+                onChange={(e) => handleInputOnChange({ name: 'log-level', value: e.target.value })}
+              />
+            </div>
+
+            {(version.meta && version.premium) || (
+              <div>
+                <div className={s0.label}>{t('allow_lan')}</div>
+                <div className={s0.wrapSwitch}>
+                  <Switch
+                    name="allow-lan"
+                    checked={configState['allow-lan']}
+                    onChange={(value: boolean) =>
+                      handleInputOnChange({ name: 'allow-lan', value: value })
+                    }
+                  />
+                </div>
+              </div>
+            )}
+
+            {version.meta && !version.premium && (
+              <div>
+                <div className={s0.label}>{t('tls_sniffing')}</div>
+                <div className={s0.wrapSwitch}>
+                  <Switch
+                    name="sniffing"
+                    checked={configState['sniffing']}
+                    onChange={(value: boolean) =>
+                      handleInputOnChange({ name: 'sniffing', value: value })
+                    }
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {version.meta && (
+          <>
+            {version.premium || (
+              <div className={s0.card}>
+                <div className={s0.sectionTitle}>
+                  <Cpu size={20} />
+                  TUN
+                </div>
+                <div className={s0.section}>
+                  <div>
+                    <div className={s0.label}>{t('enable_tun_device')}</div>
+                    <div className={s0.wrapSwitch}>
+                      <Switch
+                        checked={configState['tun']?.enable}
+                        onChange={(value: boolean) =>
+                          handleInputOnChange({ name: 'enable', value: value })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className={s0.label}>TUN IP Stack</div>
+                    <Select
+                      options={tunStackOptions}
+                      selected={configState.tun?.stack?.toLowerCase()}
+                      onChange={(e) =>
+                        handleInputOnChange({ name: 'stack', value: e.target.value })
                       }
                     />
                   </div>
-                </div>
-                <div>
-                  <div className={s0.label}>TUN IP Stack</div>
-                  <Select
-                    options={tunStackOptions}
-                    selected={configState.tun?.stack?.toLowerCase()}
-                    onChange={(e) => handleInputOnChange({ name: 'stack', value: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <div className={s0.label}>Device Name</div>
-                  <Input
-                    name="device name"
-                    value={configState.tun?.device}
-                    onChange={handleInputOnBlur}
-                  />
-                </div>
-                <div>
-                  <div className={s0.label}>Interface Name</div>
-                  <Input
-                    name="interface name"
-                    value={configState['interface-name'] || ''}
-                    onChange={handleInputOnBlur}
-                  />
+                  <div>
+                    <div className={s0.label}>Device Name</div>
+                    <Input
+                      name="device name"
+                      value={configState.tun?.device}
+                      onChange={handleInputOnBlur}
+                    />
+                  </div>
+                  <div>
+                    <div className={s0.label}>Interface Name</div>
+                    <Input
+                      name="interface name"
+                      value={configState['interface-name'] || ''}
+                      onChange={handleInputOnBlur}
+                    />
+                  </div>
                 </div>
               </div>
-              <div className={s0.sep}>
-                <div />
+            )}
+
+            <div className={s0.card}>
+              <div className={s0.sectionTitle}>
+                <Tool size={20} />
+                {t('management')}
+              </div>
+              <div className={s0.section}>
+                <div>
+                  <div className={s0.label}>Reload</div>
+                  <Button
+                    start={<RotateCw size={16} />}
+                    label={t('reload_config_file')}
+                    onClick={handleReloadConfigFile}
+                  />
+                </div>
+                {version.meta && !version.premium && (
+                  <div>
+                    <div className={s0.label}>GEO Databases</div>
+                    <Button
+                      start={<DownloadCloud size={16} />}
+                      label={t('upgrade_geo')}
+                      onClick={handleUpgradeGeo}
+                    />
+                  </div>
+                )}
+                {version.meta && !version.premium && (
+                  <div>
+                    <div className={s0.label}>Dashboard UI</div>
+                    <Button
+                      start={<DownloadCloud size={16} />}
+                      label={t('upgrade_ui')}
+                      onClick={handleUpgradeUI}
+                    />
+                  </div>
+                )}
+                <div>
+                  <div className={s0.label}>FakeIP</div>
+                  <Button
+                    start={<Trash2 size={16} />}
+                    label={t('flush_fake_ip_pool')}
+                    onClick={handleFlushFakeIPPool}
+                  />
+                </div>
+                {version.meta && !version.premium && (
+                  <div>
+                    <div className={s0.label}>Restart</div>
+                    <Button
+                      start={<RotateCw size={16} />}
+                      label={t('restart_core')}
+                      onClick={handleRestartCore}
+                    />
+                  </div>
+                )}
+                {version.meta && !version.premium && (
+                  <div>
+                    <div className={s0.label}>⚠️ Upgrade ⚠️</div>
+                    <Button
+                      start={<RotateCw size={16} />}
+                      label={t('upgrade_core')}
+                      onClick={handleUpgradeCore}
+                    />
+                  </div>
+                )}
               </div>
             </div>
-          )}
+          </>
+        )}
+
+        <div className={s0.card}>
+          <div className={s0.sectionTitle}>
+            <Monitor size={20} />
+            {t('dashboard')}
+          </div>
           <div className={s0.section}>
             <div>
-              <div className={s0.label}>Reload</div>
-              <Button
-                start={<RotateCw size={16} />}
-                label={t('reload_config_file')}
-                onClick={handleReloadConfigFile}
+              <div className={s0.label}>{t('latency_test_url')}</div>
+              <SelfControlledInput
+                name="latencyTestUrl"
+                type="text"
+                value={latencyTestUrl}
+                onBlur={handleInputOnBlur}
+                className=""
               />
             </div>
-            {version.meta && !version.premium && (
-              <div>
-                <div className={s0.label}>GEO Databases</div>
-                <Button
-                  start={<DownloadCloud size={16} />}
-                  label={t('update_geo_databases_file')}
-                  onClick={handleUpdateGeoDatabasesFile}
-                />
-              </div>
-            )}
             <div>
-              <div className={s0.label}>FakeIP</div>
-              <Button
-                start={<Trash2 size={16} />}
-                label={t('flush_fake_ip_pool')}
-                onClick={handleFlushFakeIPPool}
+              <div className={s0.label}>{t('lang')}</div>
+              <div>
+                <Select
+                  options={langOptions}
+                  selected={i18n.language}
+                  onChange={(e) => i18n.changeLanguage(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className={s0.label}>{t('chart_style')}</div>
+              <Selection2
+                OptionComponent={TrafficChartSample}
+                optionPropsList={propsList}
+                selectedIndex={selectedChartStyleIndex}
+                onChange={selectChartStyleIndex}
               />
             </div>
-            {version.meta && !version.premium && (
-              <div>
-                <div className={s0.label}>Restart</div>
-                <Button
-                  start={<RotateCw size={16} />}
-                  label={t('restart_core')}
-                  onClick={handleRestartCore}
-                />
+
+            <div>
+              <div className={s0.label}>
+                {t('current_backend')}
+                <p>{getBackendContent(version) + apiConfig?.baseURL}</p>
               </div>
-            )}
-            {version.meta && !version.premium && (
-              <div>
-                <div className={s0.label}>⚠️ Upgrade ⚠️</div>
-                <Button
-                  start={<RotateCw size={16} />}
-                  label={t('upgrade_core')}
-                  onClick={handleUpgradeCore}
-                />
-              </div>
-            )}
+              <div className={s0.label}>Action</div>
+              <Button
+                start={<LogOut size={16} />}
+                label={t('switch_backend')}
+                onClick={openAPIConfigModal}
+              />
+            </div>
           </div>
-          <div className={s0.sep}>
-            <div />
-          </div>
-        </>
-      )}
-
-      <div className={s0.section}>
-        <div>
-          <div className={s0.label}>{t('latency_test_url')}</div>
-          <SelfControlledInput
-            name="latencyTestUrl"
-            type="text"
-            value={latencyTestUrl}
-            onBlur={handleInputOnBlur}
-          />
-        </div>
-        <div>
-          <div className={s0.label}>{t('lang')}</div>
-          <div>
-            <Select
-              options={langOptions}
-              selected={i18n.language}
-              onChange={(e) => i18n.changeLanguage(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div>
-          <div className={s0.label}>{t('chart_style')}</div>
-          <Selection2
-            OptionComponent={TrafficChartSample}
-            optionPropsList={propsList}
-            selectedIndex={selectedChartStyleIndex}
-            onChange={selectChartStyleIndex}
-          />
-        </div>
-
-        <div>
-          <div className={s0.label}>
-            {t('current_backend')}
-            <p>{getBackendContent(version) + apiConfig?.baseURL}</p>
-          </div>
-          <div className={s0.label}>Action</div>
-          <Button
-            start={<LogOut size={16} />}
-            label={t('switch_backend')}
-            onClick={openAPIConfigModal}
-          />
         </div>
       </div>
     </div>

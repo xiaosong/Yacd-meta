@@ -46,9 +46,9 @@ function APIConfig({ dispatch }) {
   }, []);
 
   const onConfirm = useCallback(() => {
-    let unconfirmedBaseURL = baseURL;
+    let unconfirmedBaseURL = baseURL || 'http://127.0.0.1:9090';
     if (unconfirmedBaseURL) {
-      const prefix = baseURL.substring(0, 7);
+      const prefix = unconfirmedBaseURL.substring(0, 7);
       if (prefix.includes(':/')) {
         // same logic in verify function
         if (prefix !== 'http://' && prefix !== 'https:/') {
@@ -86,11 +86,13 @@ function APIConfig({ dispatch }) {
   const detectApiServer = async () => {
     // if there is already a clash API server at `/`, just use it as default value
     const res = await fetch('/');
-    res.json().then((data) => {
-      if (data['hello'] === 'clash') {
-        setBaseURL(window.location.origin);
-      }
-    });
+    if (res.headers.get('content-type')?.includes('application/json')) {
+      res.json().then((data) => {
+        if (data['hello'] === 'clash') {
+          setBaseURL(window.location.origin);
+        }
+      });
+    }
   };
   useEffect(() => {
     detectApiServer();

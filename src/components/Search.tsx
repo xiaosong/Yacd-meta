@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import s0 from './Search.module.scss';
 
-function RuleSearch({ dispatch, searchText, updateSearchText }) {
+function RuleSearch({ dispatch, searchText, updateSearchText, className }) {
   const { t } = useTranslation();
   const [text, setText] = useState(searchText);
   const updateSearchTextInternal = useCallback(
@@ -24,7 +24,7 @@ function RuleSearch({ dispatch, searchText, updateSearchText }) {
   };
 
   return (
-    <div className={s0.RuleSearch}>
+    <div className={className || s0.RuleSearch}>
       <div className={s0.RuleSearchContainer}>
         <div className={s0.inputWrapper}>
           <input

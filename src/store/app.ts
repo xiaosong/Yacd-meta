@@ -19,6 +19,7 @@ export const getProxySortBy = (s: State) => s.app.proxySortBy;
 export const getHideUnavailableProxies = (s: State) => s.app.hideUnavailableProxies;
 export const getAutoCloseOldConns = (s: State) => s.app.autoCloseOldConns;
 export const getLogStreamingPaused = (s: State) => s.app.logStreamingPaused;
+export const getProxiesLayout = (s: State) => s.app.proxiesLayout;
 
 const saveStateDebounced = debounce(saveState, 600);
 
@@ -161,15 +162,16 @@ const defaultState: StateApp = {
 
   latencyTestUrl: 'https://www.gstatic.com/generate_204',
   selectedChartStyleIndex: 0,
-  theme: 'dark',
+  theme: 'auto',
 
   // type { [string]: boolean }
   collapsibleIsOpen: {},
   // how proxies are sorted in a group or provider
   proxySortBy: 'Natural',
   hideUnavailableProxies: false,
-  autoCloseOldConns: false,
+  autoCloseOldConns: true,
   logStreamingPaused: false,
+  proxiesLayout: 'single',
 };
 
 function parseConfigQueryString() {
@@ -179,7 +181,7 @@ function parseConfigQueryString() {
   const qs = search.replace(/^\?/, '').split('&');
   for (let i = 0; i < qs.length; i++) {
     const [k, v] = qs[i].split('=');
-    collector[k] = encodeURIComponent(v);
+    collector[k] = decodeURIComponent(v);
   }
   return collector;
 }
@@ -212,6 +214,9 @@ export function initialState() {
 
   if (query.theme === 'dark' || query.theme === 'light') {
     s.theme = query.theme;
+  }
+  if (query.title) {
+    document.title = decodeURIComponent(query.title);
   }
   // set initial theme
   setTheme(s.theme);

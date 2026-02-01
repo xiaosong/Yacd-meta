@@ -1,7 +1,9 @@
+import cx from 'clsx';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { areEqual, VariableSizeList } from 'react-window';
 
+import ContentHeader from '~/components/ContentHeader';
 import { RuleProviderItem } from '~/components/rules/RuleProviderItem';
 import { useRuleAndProvider } from '~/components/rules/rules.hooks';
 import { RulesPageFab } from '~/components/rules/RulesPageFab';
@@ -12,14 +14,11 @@ import { ClashAPIConfig } from '~/types';
 
 import useRemainingViewPortHeight from '../hooks/useRemainingViewPortHeight';
 import { getClashAPIConfig } from '../store/app';
-import ContentHeader from './ContentHeader';
 import Rule from './Rule';
 import s from './Rules.module.scss';
 import { connect } from './StateProvider';
 
-const { memo } = React;
-
-const paddingBottom = 30;
+const { memo, useState, useCallback } = React;
 
 type ItemData = {
   rules: any[];
@@ -28,33 +27,28 @@ type ItemData = {
 };
 
 function itemKey(index: number, { rules, provider }: ItemData) {
-  const providerQty = provider.names.length;
-
-  if (index < providerQty) {
+  if (!rules) {
     return provider.names[index];
   }
-  const item = rules[index - providerQty];
-  return item.id;
+  return rules[index].id;
 }
 
-function getItemSizeFactory({ provider }) {
-  return function getItemSize(idx: number) {
-    const providerQty = provider.names.length;
-    if (idx < providerQty) {
+function getItemSizeFactory({ isRulesTab }) {
+  return function getItemSize() {
+    if (!isRulesTab) {
       // provider
-      return 90;
+      return 100;
     }
     // rule
-    return 60;
+    return 70;
   };
 }
 
 // @ts-expect-error ts-migrate(2339) FIXME: Property 'index' does not exist on type '{ childre... Remove this comment to see the full error message
 const Row = memo(({ index, style, data }) => {
   const { rules, provider, apiConfig } = data;
-  const providerQty = provider.names.length;
 
-  if (index < providerQty) {
+  if (!rules) {
     const name = provider.names[index];
     const item = provider.byName[name];
     return (
@@ -64,7 +58,7 @@ const Row = memo(({ index, style, data }) => {
     );
   }
 
-  const r = rules[index - providerQty];
+  const r = rules[index];
   return (
     <div style={style}>
       <Rule {...r} />
@@ -85,23 +79,63 @@ type RulesProps = {
 function Rules({ apiConfig }: RulesProps) {
   const [refRulesContainer, containerHeight] = useRemainingViewPortHeight();
   const { rules, provider } = useRuleAndProvider(apiConfig);
-  const getItemSize = getItemSizeFactory({ provider });
+  const [activeTab, setActiveTab] = useState('rules');
+
+  const formatQty = (qty: number) => (qty < 100 ? '' + qty : '99+');
+
+  const handleTabKeyDown = useCallback(
+    (tab: string) => (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        setActiveTab(tab);
+      }
+    },
+    []
+  );
+
+  const isRulesTab = activeTab === 'rules';
+  const getItemSize = getItemSizeFactory({ isRulesTab });
 
   const { t } = useTranslation();
 
   return (
-    <div>
-      <div className={s.header}>
-        <ContentHeader title={t('Rules')} />
-        <TextFilter textAtom={ruleFilterText} placeholder={t('Search')} />
-      </div>
-      <div ref={refRulesContainer} style={{ paddingBottom }}>
+    <div className={s.container}>
+      <ContentHeader>
+        <div className={s.tabsContainer}>
+          <div
+            className={cx(s.tab, { [s.active]: activeTab === 'rules' })}
+            onClick={() => setActiveTab('rules')}
+            onKeyDown={handleTabKeyDown('rules')}
+            role="button"
+            tabIndex={0}
+          >
+            {t('Rules')}
+            <span className={s.tabCount}>{formatQty(rules.length)}</span>
+          </div>
+          {provider.names.length > 0 && (
+            <div
+              className={cx(s.tab, { [s.active]: activeTab === 'providers' })}
+              onClick={() => setActiveTab('providers')}
+              onKeyDown={handleTabKeyDown('providers')}
+              role="button"
+              tabIndex={0}
+            >
+              {t('rule_provider')}
+              <span className={s.tabCount}>{formatQty(provider.names.length)}</span>
+            </div>
+          )}
+        </div>
+        <div style={{ flex: 1 }} />
+        <div className={s.filterWrapper}>
+          <TextFilter textAtom={ruleFilterText} placeholder={t('Search')} />
+        </div>
+      </ContentHeader>
+      <div ref={refRulesContainer} className={s.listWrapper}>
         <VariableSizeList
-          height={containerHeight - paddingBottom}
+          height={containerHeight}
           width="100%"
-          itemCount={rules.length + provider.names.length}
+          itemCount={isRulesTab ? rules.length : provider.names.length}
           itemSize={getItemSize}
-          itemData={{ rules, provider, apiConfig }}
+          itemData={{ rules: isRulesTab ? rules : null, provider, apiConfig }}
           itemKey={itemKey}
         >
           {Row}

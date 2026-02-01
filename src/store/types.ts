@@ -14,6 +14,7 @@ export type StateApp = {
   hideUnavailableProxies: boolean;
   autoCloseOldConns: boolean;
   logStreamingPaused: boolean;
+  proxiesLayout: string;
 };
 
 export type ClashTunConfig = {
@@ -62,11 +63,15 @@ export type ProxyItem = {
   xudp?: boolean;
   tfo: boolean;
   history: LatencyHistory;
+  providerName?: string;
   all?: string[];
   now?: string;
 };
 export type ProxiesMapping = Record<string, ProxyItem>;
-export type DelayMapping = Record<string, { number?: number }>;
+export type DelayMapping = Record<
+  string,
+  { number?: number; error?: string; testing?: boolean; updatedAt?: number }
+>;
 
 export type ProxyProvider = {
   name: string;

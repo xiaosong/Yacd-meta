@@ -65,6 +65,7 @@ const langOptions = [
   ['zh-tw', '繁體中文'],
   ['en', 'English'],
   ['vi', 'Vietnamese'],
+  ['ru', 'Русский'],
 ];
 
 const modeOptions = [

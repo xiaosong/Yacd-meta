@@ -16,5 +16,7 @@
 
 .content {
   flex-grow: 1;
+  min-width: 0;
   overflow-y: auto;
+  overflow-x: auto;
 }

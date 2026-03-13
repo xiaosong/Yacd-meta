@@ -89,41 +89,37 @@ function Logs({ dispatch, logLevel, apiConfig, logs, logStreamingPaused }) {
         </div>
       </ContentHeader>
       <div ref={refLogsContainer} style={{ position: 'relative' }}>
-        {logs.length === 0 ? (
-          <div className={s.logPlaceholder} style={{ height: containerHeight * 0.9 }}>
-            <div className={s.logPlaceholderIcon}>
-              <SvgYacd width={200} height={200} />
+        <div
+          className={s.logsWrapper}
+          style={{ height: containerHeight * 0.8 }}
+          ref={scrollRef}
+          onScroll={onScroll}
+        >
+          {logs.length === 0 ? (
+            <div className={s.logPlaceholder} style={{ height: '100%' }}>
+              <div className={s.logPlaceholderIcon}>
+                <SvgYacd width={200} height={200} />
+              </div>
+              <div>{t('no_logs')}</div>
             </div>
-            <div>{t('no_logs')}</div>
-          </div>
-        ) : (
-          <>
-            <div
-              className={s.logsWrapper}
-              style={{ height: containerHeight * 0.8 }}
-              ref={scrollRef}
-              onScroll={onScroll}
-            >
-              {logs.map((log, index) => (
-                <LogLine {...log} key={log.id || index} />
-              ))}
-            </div>
+          ) : (
+            logs.map((log, index) => <LogLine {...log} key={log.id || index} />)
+          )}
+        </div>
 
-            {!isAtBottom && (
-              <button className={s.scrollToBottomBtn} onClick={scrollToBottom}>
-                <ArrowDown size={16} />
-              </button>
-            )}
-
-            <Fab
-              icon={logStreamingPaused ? <Play size={16} /> : <Pause size={16} />}
-              mainButtonStyles={logStreamingPaused ? { background: '#e74c3c' } : {}}
-              style={fabPosition}
-              text={logStreamingPaused ? t('Resume Refresh') : t('Pause Refresh')}
-              onClick={toggleIsRefreshPaused}
-            ></Fab>
-          </>
+        {logs.length > 0 && !isAtBottom && (
+          <button className={s.scrollToBottomBtn} onClick={scrollToBottom}>
+            <ArrowDown size={16} />
+          </button>
         )}
+
+        <Fab
+          icon={logStreamingPaused ? <Play size={16} /> : <Pause size={16} />}
+          mainButtonStyles={logStreamingPaused ? { background: '#e74c3c' } : {}}
+          style={fabPosition}
+          text={logStreamingPaused ? t('Resume Refresh') : t('Pause Refresh')}
+          onClick={toggleIsRefreshPaused}
+        ></Fab>
       </div>
     </div>
   );

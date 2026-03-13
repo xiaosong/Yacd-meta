@@ -13,8 +13,7 @@
     "dev": "vite",
     "start": "vite",
     "build": "vite build",
-    "serve": "vite preview",
-    "prepare": "husky install"
+    "serve": "vite preview"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
@@ -54,6 +53,7 @@
     "@typescript-eslint/parser": "5.49.0",
     "@vitejs/plugin-react": "3.0.1",
     "autoprefixer": "10.4.13",
+    "baseline-browser-mapping": "^2.10.7",
     "chart.js": "4.2.0",
     "core-js": "3.27.2",
     "cssnano": "5.1.14",
@@ -70,12 +70,10 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-simple-import-sort": "9.0.0",
     "framer-motion": "8.5.3",
-    "husky": "^8.0.3",
     "i18next": "22.4.9",
     "i18next-browser-languagedetector": "7.0.1",
     "i18next-http-backend": "2.1.1",
     "immer": "9.0.18",
-    "lint-staged": "^13.1.0",
     "postcss": "8.4.21",
     "postcss-preset-env": "^8.0.0",
     "prettier": "2.8.3",

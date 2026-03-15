@@ -1,11 +1,9 @@
 import * as React from 'react';
 import { GitHub } from 'react-feather';
-import { useQuery } from 'react-query';
 
-import { fetchVersion } from '~/api/version';
 import ContentHeader from '~/components/ContentHeader';
-import { connect } from '~/components/StateProvider';
-import { getClashAPIConfig } from '~/store/app';
+import { useAboutVersionQuery } from '~/modules/about/hooks';
+import { getCoreVersionMeta } from '~/modules/about/utils';
 import { ClashAPIConfig } from '~/types';
 
 import s from './About.module.scss';
@@ -30,31 +28,21 @@ function Version({ name, link, version }: { name: string; link: string; version:
   );
 }
 
-function AboutImpl(props: Props) {
-  const { data: version } = useQuery(['/version', props.apiConfig], () =>
-    fetchVersion('/version', props.apiConfig)
-  );
+export function About({ apiConfig }: Props) {
+  const { data: version } = useAboutVersionQuery(apiConfig);
+  const coreVersionMeta = getCoreVersionMeta(version);
+
   return (
     <>
       <ContentHeader title="About" />
-      {version && version.version ? (
+      {coreVersionMeta && version?.version ? (
         <Version
-          name={
-            version.meta && version.premium ? 'sing-box' : version.meta ? 'Clash.Meta' : 'Clash'
-          }
+          name={coreVersionMeta.name}
           version={version.version}
-          link={
-            version.meta && version.premium ? 'https://github.com/SagerNet/sing-box' : version.meta ? 'https://github.com/MetaCubeX/Clash.Meta' : 'https://github.com/Dreamacro/clash'
-          }
+          link={coreVersionMeta.link}
         />
       ) : null}
       <Version name="Yacd" version={__VERSION__} link="https://github.com/metacubex/yacd" />
     </>
   );
 }
-
-const mapState = (s) => ({
-  apiConfig: getClashAPIConfig(s),
-});
-
-export const About = connect(mapState)(AboutImpl);

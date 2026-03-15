@@ -2,28 +2,27 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Select from '~/components/shared/Select';
+import { PROXY_SORT_OPTIONS } from '~/modules/proxies/utils';
 
-import {
-  getAutoCloseOldConns,
-  getHideUnavailableProxies,
-  getProxiesLayout,
-  getProxySortBy,
-} from '../../store/app';
-import { connect, useStoreActions } from '../StateProvider';
+import { useStoreActions } from '../StateProvider';
 import Switch from '../SwitchThemed';
-import s from './Settings.module.scss';
 
-const options = [
-  ['Natural', 'order_natural'],
-  ['LatencyAsc', 'order_latency_asc'],
-  ['LatencyDesc', 'order_latency_desc'],
-  ['NameAsc', 'order_name_asc'],
-  ['NameDesc', 'order_name_desc'],
-];
+import s from './Settings.module.scss';
 
 const { useCallback } = React;
 
-function Settings({ appConfig }) {
+type AppConfig = {
+  proxySortBy: string;
+  hideUnavailableProxies: boolean;
+  autoCloseOldConns: boolean;
+  proxiesLayout: string;
+};
+
+type Props = {
+  appConfig: AppConfig;
+};
+
+export default function Settings({ appConfig }: Props) {
   const {
     app: { updateAppConfig },
   } = useStoreActions();
@@ -48,7 +47,7 @@ function Settings({ appConfig }) {
         <span>{t('sort_in_grp')}</span>
         <div>
           <Select
-            options={options.map((o) => {
+            options={PROXY_SORT_OPTIONS.map((o) => {
               return [o[0], t(o[1])];
             })}
             selected={appConfig.proxySortBy}
@@ -90,20 +89,3 @@ function Settings({ appConfig }) {
     </>
   );
 }
-
-const mapState = (s) => {
-  const proxySortBy = getProxySortBy(s);
-  const hideUnavailableProxies = getHideUnavailableProxies(s);
-  const autoCloseOldConns = getAutoCloseOldConns(s);
-  const proxiesLayout = getProxiesLayout(s);
-
-  return {
-    appConfig: {
-      proxySortBy,
-      hideUnavailableProxies,
-      autoCloseOldConns,
-      proxiesLayout,
-    },
-  };
-};
-export default connect(mapState)(Settings);

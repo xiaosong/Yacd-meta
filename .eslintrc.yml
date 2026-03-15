@@ -1,7 +1,6 @@
 parser: '@typescript-eslint/parser'
 
 plugins:
-  - simple-import-sort
   - jsx-a11y
 
 extends:
@@ -39,7 +38,27 @@ rules:
   react-hooks/exhaustive-deps:
     - 'warn'
     - additionalHooks: 'useRecoilCallback'
-  simple-import-sort/imports: 'error'
+  import/order:
+    - 'error'
+    - groups:
+        - builtin
+        - external
+        - internal
+        - parent
+        - sibling
+        - index
+        - object
+        - type
+      pathGroups:
+        - pattern: '~/**'
+          group: internal
+          position: after
+      pathGroupsExcludedImportTypes:
+        - builtin
+      alphabetize:
+        order: asc
+        caseInsensitive: true
+      'newlines-between': 'always'
 #   quotes: ['error', 'single']
 #   strict: ['error', 'never']
 #   no-console: 'warn'

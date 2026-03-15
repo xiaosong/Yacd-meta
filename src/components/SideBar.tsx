@@ -71,14 +71,14 @@ const pages = [
     labelText: 'Conns',
   },
   {
-    to: '/configs',
-    iconId: 'settings',
-    labelText: 'Config',
-  },
-  {
     to: '/logs',
     iconId: 'file',
     labelText: 'Logs',
+  },
+  {
+    to: '/configs',
+    iconId: 'settings',
+    labelText: 'Config',
   },
 ];
 

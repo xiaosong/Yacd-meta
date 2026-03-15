@@ -159,9 +159,6 @@ importers:
       eslint-plugin-react-hooks:
         specifier: 4.6.0
         version: 4.6.0(eslint@8.57.1)
-      eslint-plugin-simple-import-sort:
-        specifier: 9.0.0
-        version: 9.0.0(eslint@8.57.1)
       framer-motion:
         specifier: 8.5.3
         version: 8.5.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -2260,11 +2257,6 @@ packages:
     engines: {node: '>=4'}
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8
-
-  eslint-plugin-simple-import-sort@9.0.0:
-    resolution: {integrity: sha512-PtrLjyXP8kjRneWT1n0b99y/2Fyup37we7FVoWsI61/O7x4ztLohzhep/pxI/cYlECr/cQ2j6utckdvWpVwXNA==}
-    peerDependencies:
-      eslint: '>=5.0.0'
 
   eslint-plugin-testing-library@5.11.1:
     resolution: {integrity: sha512-5eX9e1Kc2PqVRed3taaLnAAqPZGEX75C+M/rXzUAI3wIg/ZxzUm1OVAwfe/O+vE+6YXOLetSe9g5GKD2ecXipw==}
@@ -6463,10 +6455,6 @@ snapshots:
       resolve: 2.0.0-next.5
       semver: 6.3.1
       string.prototype.matchall: 4.0.12
-
-  eslint-plugin-simple-import-sort@9.0.0(eslint@8.57.1):
-    dependencies:
-      eslint: 8.57.1
 
   eslint-plugin-testing-library@5.11.1(eslint@8.57.1)(typescript@4.9.4):
     dependencies:

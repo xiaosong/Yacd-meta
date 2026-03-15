@@ -3,7 +3,7 @@ import * as React from 'react';
 import { Activity, Database, RefreshCw } from 'react-feather';
 
 import Button from '~/components/Button';
-import { useUpdateRuleProviderItem } from '~/components/rules/rules.hooks';
+import { useUpdateRuleProviderItem } from '~/modules/rules/hooks';
 
 import s from './RuleProviderItem.module.scss';
 

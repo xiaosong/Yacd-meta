@@ -4,21 +4,21 @@ import React from 'react';
 import { Pause, Play, RefreshCcw, Settings, Tag, X as IconClose } from 'react-feather';
 import { useTranslation } from 'react-i18next';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
-import { useRecoilState } from 'recoil';
 
-import { ConnectionItem } from '~/api/connections';
 import Select from '~/components/shared/Select';
 import {
-  closedConnectionsState,
-  connectionsState,
-  FormattedConn,
-  isRefreshPausedState,
-} from '~/store/connections';
-import { State } from '~/store/types';
+  useConnectionColumns,
+  useConnectionFilters,
+  useConnectionsStream,
+  useSourceMapState,
+} from '~/modules/connections/hooks';
+import { CONNECTIONS_PADDING_BOTTOM } from '~/modules/connections/utils';
+import { FormattedConn } from '~/store/connections';
+import { ClashAPIConfig } from '~/types';
 
 import * as connAPI from '../api/connections';
 import useRemainingViewPortHeight from '../hooks/useRemainingViewPortHeight';
-import { getClashAPIConfig } from '../store/app';
+
 import s from './Connections.module.scss';
 import ConnectionTable from './ConnectionTable';
 import ContentHeader from './ContentHeader';
@@ -27,158 +27,25 @@ import ModalCloseAllConnections from './ModalCloseAllConnections';
 import ModalManageConnectionColumns from './ModalManageConnectionColumns';
 import ModalSourceIP from './ModalSourceIP';
 import { Fab, position as fabPosition } from './shared/Fab';
-import { connect } from './StateProvider';
 import SvgYacd from './SvgYacd';
 
-const { useEffect, useState, useRef, useCallback, useMemo } = React;
-const ALL_SOURCE_IP = 'ALL_SOURCE_IP';
+const { useState, useCallback } = React;
 
-const sourceMapInit = localStorage.getItem('sourceMap')
-  ? JSON.parse(localStorage.getItem('sourceMap'))
-  : [];
-
-const paddingBottom = 30;
-
-function arrayToIdKv<T extends { id: string }>(items: T[]) {
-  const o = {};
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    o[item.id] = item;
-  }
-  return o;
-}
-
-function hasSubstring(s: string, pat: string) {
-  return s.toLowerCase().includes(pat.toLowerCase());
-}
-
-function filterConnIps(conns: FormattedConn[], ipStr: string) {
-  return conns.filter((each) => each.sourceIP === ipStr);
-}
-
-function filterConns(conns: FormattedConn[], keyword: string, sourceIp: string) {
-  let result = conns;
-  if (keyword !== '') {
-    result = conns.filter((conn) =>
-      [
-        conn.host,
-        conn.sourceIP,
-        conn.sourcePort,
-        conn.destinationIP,
-        conn.chains,
-        conn.rule,
-        conn.type,
-        conn.network,
-        conn.process,
-      ].some((field) => {
-        return hasSubstring(field, keyword);
-      })
-    );
-  }
-  if (sourceIp !== ALL_SOURCE_IP) {
-    result = filterConnIps(result, sourceIp);
-  }
-
-  return result;
-}
-
-function getNameFromSource(
-  source: string,
-  sourceMap: { reg: string; name: string }[],
-  defaultVal?: string
-): string {
-  let sourceName = defaultVal ?? source;
-
-  sourceMap.forEach(({ reg, name }) => {
-    if (!reg) return;
-
-    if (reg.startsWith('/')) {
-      const regExp = new RegExp(reg.replace('/', ''), 'g');
-
-      if (regExp.test(source) && name) {
-        sourceName = `${name}(${source})`;
-      }
-    } else {
-      if (source === reg && name) {
-        sourceName = `${name}(${source})`;
-      }
-    }
-  });
-
-  return sourceName;
-}
-
-function formatConnectionDataItem(
-  i: ConnectionItem,
-  prevKv: Record<string, FormattedConn>,
-  now: number,
-  sourceMap: { reg: string; name: string }[]
-): FormattedConn {
-  const { id, upload, download, start, chains, rule, rulePayload, metadata } = i;
-  const prev = prevKv[id];
-
-  if (prev) {
-    return {
-      ...prev,
-      upload,
-      download,
-      start: now - prev.startTime,
-      downloadSpeedCurr: download - prev.download,
-      uploadSpeedCurr: upload - prev.upload,
-    };
-  }
-
-  const {
-    host,
-    destinationPort,
-    destinationIP,
-    remoteDestination,
-    network,
-    type,
-    sourceIP,
-    sourcePort,
-    process,
-    sniffHost,
-  } = metadata;
-  // host could be an empty string if it's direct IP connection
-  const host2 = host || destinationIP;
-  const source = `${sourceIP}:${sourcePort}`;
-  const startTime = new Date(start).valueOf();
-
-  return {
-    id,
-    upload,
-    download,
-    start: now - startTime,
-    startTime,
-    chains: modifyChains(chains),
-    rule: !rulePayload ? rule : `${rule} :: ${rulePayload}`,
-    ...metadata,
-    host: `${host2}:${destinationPort}`,
-    sniffHost: sniffHost || '-',
-    type: `${type}(${network})`,
-    source: getNameFromSource(sourceIP, sourceMap, source),
-    downloadSpeedCurr: 0,
-    uploadSpeedCurr: 0,
-    process: process || '-',
-    destinationIP: remoteDestination || destinationIP || host,
-  };
-}
-function modifyChains(chains: string[]): string {
-  if (!Array.isArray(chains) || chains.length === 0) {
-    return '';
-  }
-
-  if (chains.length === 1) {
-    return chains[0];
-  }
-
-  return `${chains[chains.length - 1]} -> ${chains[0]}`;
-}
-
-function renderTableOrPlaceholder(columns, hiddenColumns, conns: FormattedConn[], height: number) {
+function renderTableOrPlaceholder(
+  columns,
+  hiddenColumns,
+  conns: FormattedConn[],
+  height: number,
+  apiConfig: ClashAPIConfig
+) {
   return conns.length > 0 ? (
-    <ConnectionTable data={conns} columns={columns} hiddenColumns={hiddenColumns} height={height} />
+    <ConnectionTable
+      data={conns}
+      columns={columns}
+      hiddenColumns={hiddenColumns}
+      height={height}
+      apiConfig={apiConfig}
+    />
   ) : (
     <div className={s.placeHolder}>
       <SvgYacd width={200} height={200} c1="var(--color-text)" />
@@ -190,95 +57,34 @@ function ConnQty({ qty }) {
   return qty < 100 ? '' + qty : '99+';
 }
 
-const sortDescFirst = true;
-const hiddenColumnsOrigin = ['id'];
-const columnsOrigin = [
-  { accessor: 'id', show: false },
-  { Header: 'c_type', accessor: 'type' },
-  { Header: 'c_process', accessor: 'process' },
-  { Header: 'c_host', accessor: 'host' },
-  { Header: 'c_rule', accessor: 'rule' },
-  { Header: 'c_chains', accessor: 'chains' },
-  { Header: 'c_time', accessor: 'start' },
-  { Header: 'c_dl_speed', accessor: 'downloadSpeedCurr', sortDescFirst },
-  { Header: 'c_ul_speed', accessor: 'uploadSpeedCurr', sortDescFirst },
-  { Header: 'c_dl', accessor: 'download', sortDescFirst },
-  { Header: 'c_ul', accessor: 'upload', sortDescFirst },
-  { Header: 'c_source', accessor: 'source' },
-  { Header: 'c_destination_ip', accessor: 'destinationIP' },
-  { Header: 'c_sni', accessor: 'sniffHost' },
-  { Header: 'c_ctrl', accessor: 'ctrl' },
-];
+type Props = {
+  apiConfig: ClashAPIConfig;
+};
 
-function Conn({ apiConfig }) {
+export default function Connections({ apiConfig }: Props) {
   const { t } = useTranslation();
   const [showModalColumn, setModalColumn] = useState(false);
-  const [hiddenColumns, setHiddenColumns] = useState(() => {
-    const savedHiddenColumns = localStorage.getItem('hiddenColumns');
-    return savedHiddenColumns ? JSON.parse(savedHiddenColumns) : [...hiddenColumnsOrigin];
-  });
-  const [columns, setColumns] = useState(() => {
-    const savedColumns = localStorage.getItem('columns');
-    const columnOrder = savedColumns ? JSON.parse(savedColumns) : null;
-    return columnOrder
-      ? [...columnsOrigin].sort((pre, next) => {
-          const preIdx = columnOrder.findIndex((column) => column.accessor === pre.accessor);
-          const nextIdx = columnOrder.findIndex((column) => column.accessor === next.accessor);
-
-          if (preIdx === -1) {
-            return 1;
-          }
-
-          if (nextIdx === -1) {
-            return -1;
-          }
-          return preIdx - nextIdx;
-        })
-      : [...columnsOrigin];
-  });
+  const { hiddenColumns, setHiddenColumns, columns, setColumns, resetColumns } =
+    useConnectionColumns();
 
   const closeModalColumn = () => {
     setModalColumn(false);
   };
 
-  const resetColumns = () => {
-    setHiddenColumns([...hiddenColumnsOrigin]);
-    setColumns([...columnsOrigin]);
-    localStorage.removeItem('hiddenColumns');
-    localStorage.removeItem('columns');
-  };
-
-  const [sourceMapModal, setSourceMapModal] = useState(false);
-  const [sourceMap, setSourceMap] = useState(sourceMapInit);
+  const { sourceMapModal, sourceMap, setSourceMap, openModalSource, closeModalSource } =
+    useSourceMapState();
   const [refContainer, containerHeight] = useRemainingViewPortHeight();
-
-  // 使用 Recoil 全局状态，切换页面时保持数据
-  const [conns, setConns] = useRecoilState(connectionsState);
-  const [closedConns, setClosedConns] = useRecoilState(closedConnectionsState);
-
-  const [filterKeyword, setFilterKeyword] = useState('');
-  const [filterSourceIpStr, setFilterSourceIpStr] = useState(ALL_SOURCE_IP);
-
-  const filteredConns = useMemo(
-    () => filterConns(conns, filterKeyword, filterSourceIpStr),
-    [conns, filterKeyword, filterSourceIpStr]
-  );
-  const filteredClosedConns = useMemo(
-    () => filterConns(closedConns, filterKeyword, filterSourceIpStr),
-    [closedConns, filterKeyword, filterSourceIpStr]
-  );
-
-  const connIpSet = useMemo(() => {
-    return [
-      [ALL_SOURCE_IP, t('All')],
-      ...Array.from(new Set(conns.map((x) => x.sourceIP)))
-        .sort()
-        .map((value) => {
-          return [value, getNameFromSource(value, sourceMap).trim() || t('internel')];
-        }),
-    ];
-  }, [conns, t, sourceMap]);
-  // const ClosedConnIpSet = getConnIpList(closedConns);
+  const { conns, closedConns, isRefreshPaused, toggleIsRefreshPaused, closeAllConnections } =
+    useConnectionsStream(apiConfig, sourceMap);
+  const {
+    filterKeyword,
+    setFilterKeyword,
+    filterSourceIpStr,
+    setFilterSourceIpStr,
+    filteredConns,
+    filteredClosedConns,
+    connIpSet,
+  } = useConnectionFilters({ conns, closedConns, sourceMap, t });
 
   const [isCloseFilterModalOpen, setIsCloseFilterModalOpen] = useState(false);
   const openCloseFilterModal = useCallback(() => setIsCloseFilterModalOpen(true), []);
@@ -293,72 +99,10 @@ function Conn({ apiConfig }) {
   const [isCloseAllModalOpen, setIsCloseAllModalOpen] = useState(false);
   const openCloseAllModal = useCallback(() => setIsCloseAllModalOpen(true), []);
   const closeCloseAllModal = useCallback(() => setIsCloseAllModalOpen(false), []);
-  // 使用 Recoil 全局状态
-  const [isRefreshPaused, setIsRefreshPaused] = useRecoilState(isRefreshPausedState);
-  const toggleIsRefreshPaused = useCallback(() => {
-    setIsRefreshPaused((x) => !x);
-  }, [setIsRefreshPaused]);
-  const closeAllConnections = useCallback(() => {
-    connAPI.closeAllConnections(apiConfig);
+  const handleCloseAllConnections = useCallback(() => {
+    closeAllConnections();
     closeCloseAllModal();
-  }, [apiConfig, closeCloseAllModal]);
-  // 使用 ref 保存上一次的连接数据，用于计算速度和检测关闭的连接
-  // 初始化为当前 Recoil 状态中的值，确保页面切换回来时数据正确
-  const prevConnsRef = useRef<FormattedConn[]>(conns);
-  const read = useCallback(
-    ({ connections }) => {
-      const prevConnsKv = arrayToIdKv(prevConnsRef.current);
-      const now = Date.now();
-      const x =
-        connections?.map((c: ConnectionItem) =>
-          formatConnectionDataItem(c, prevConnsKv, now, sourceMap)
-        ) ?? [];
-      const closed = [];
-      for (const c of prevConnsRef.current) {
-        const idx = x.findIndex((conn: ConnectionItem) => conn.id === c.id);
-        if (idx < 0) closed.push(c);
-      }
-      if (closed.length > 0) {
-        setClosedConns((prev) => {
-          // keep max 100 entries
-          return [...closed, ...prev].slice(0, 101);
-        });
-      }
-      // if previous connections and current connections are both empty
-      // arrays, we wont update state to avaoid rerender
-      if (x && (x.length !== 0 || prevConnsRef.current.length !== 0) && !isRefreshPaused) {
-        prevConnsRef.current = x;
-        setConns(x);
-      } else {
-        prevConnsRef.current = x;
-      }
-    },
-    [setConns, setClosedConns, sourceMap, isRefreshPaused]
-  );
-  const [reConnectCount, setReConnectCount] = useState(0);
-
-  useEffect(() => {
-    return connAPI.fetchData(apiConfig, read, () => {
-      setTimeout(() => {
-        setReConnectCount((prev) => prev + 1);
-      }, 1000);
-    });
-  }, [apiConfig, read, reConnectCount, setReConnectCount]);
-
-  const openModalSource = () => {
-    if (sourceMap.length === 0) {
-      sourceMap.push({
-        reg: '',
-        name: '',
-      });
-    }
-    setSourceMapModal(true);
-  };
-  const closeModalSource = () => {
-    setSourceMap(sourceMap.filter((i) => i.reg || i.name));
-    localStorage.setItem('sourceMap', JSON.stringify(sourceMap));
-    setSourceMapModal(false);
-  };
+  }, [closeAllConnections, closeCloseAllModal]);
 
   return (
     <div>
@@ -396,6 +140,7 @@ function Conn({ apiConfig }) {
                 name="filter"
                 autoComplete="off"
                 className={s.input}
+                value={filterKeyword}
                 placeholder={t('Search')}
                 onChange={(e) => setFilterKeyword(e.target.value)}
               />
@@ -437,7 +182,7 @@ function Conn({ apiConfig }) {
           <div
             className={s.scrollArea}
             style={{
-              height: containerHeight - paddingBottom,
+              height: containerHeight - CONNECTIONS_PADDING_BOTTOM,
             }}
           >
             <TabPanel>
@@ -445,7 +190,8 @@ function Conn({ apiConfig }) {
                 columns,
                 hiddenColumns,
                 filteredConns,
-                containerHeight - paddingBottom
+                containerHeight - CONNECTIONS_PADDING_BOTTOM,
+                apiConfig
               )}
               <Fab
                 icon={isRefreshPaused ? <Play size={16} /> : <Pause size={16} />}
@@ -460,14 +206,15 @@ function Conn({ apiConfig }) {
                 columns,
                 hiddenColumns,
                 filteredClosedConns,
-                containerHeight - paddingBottom
+                containerHeight - CONNECTIONS_PADDING_BOTTOM,
+                apiConfig
               )}
             </TabPanel>
           </div>
         </div>
         <ModalCloseAllConnections
           isOpen={isCloseAllModalOpen}
-          primaryButtonOnTap={closeAllConnections}
+          primaryButtonOnTap={handleCloseAllConnections}
           onRequestClose={closeCloseAllModal}
         />
         <ModalCloseAllConnections
@@ -494,9 +241,3 @@ function Conn({ apiConfig }) {
     </div>
   );
 }
-
-const mapState = (s: State) => ({
-  apiConfig: getClashAPIConfig(s),
-});
-
-export default connect(mapState)(Conn);

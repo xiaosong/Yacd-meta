@@ -16,6 +16,7 @@ import { ClashAPIConfig } from '~/types';
 
 import * as connAPI from '../api/connections';
 import * as proxiesAPI from '../api/proxies';
+
 import { getAutoCloseOldConns, getLatencyTestUrl } from './app';
 
 export const initialState: StateProxies = {

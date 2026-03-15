@@ -2,28 +2,19 @@ import * as React from 'react';
 import { ArrowDown, Pause, Play, Trash2 } from 'react-feather';
 import { useTranslation } from 'react-i18next';
 
-import { fetchLogs, reconnect as reconnectLogs, stop as stopLogs } from '~/api/logs';
 import ContentHeader from '~/components/ContentHeader';
 import LogSearch from '~/components/LogSearch';
-import { connect, useStoreActions } from '~/components/StateProvider';
+import { useStoreActions } from '~/components/StateProvider';
 import SvgYacd from '~/components/SvgYacd';
 import useRemainingViewPortHeight from '~/hooks/useRemainingViewPortHeight';
-import { getClashAPIConfig, getLogStreamingPaused } from '~/store/app';
-import { getLogLevel } from '~/store/configs';
-import { appendLog, clearLogs, getLogsForDisplay } from '~/store/logs';
-import { Log, State } from '~/store/types';
+import { useLogsPage } from '~/modules/logs/hooks';
+import { LOG_TYPES, LOGS_HEIGHT_RATIO } from '~/modules/logs/utils';
+import { clearLogs } from '~/store/logs';
+import { DispatchFn, Log } from '~/store/types';
+import { ClashAPIConfig } from '~/types';
 
 import s from './Logs.module.scss';
 import { Fab, position as fabPosition } from './shared/Fab';
-
-const { useCallback, useEffect, useRef, useState } = React;
-
-const logTypes = {
-  debug: 'debug',
-  info: 'info',
-  warning: 'warn',
-  error: 'error',
-};
 
 type LogLineProps = Partial<Log>;
 
@@ -33,7 +24,7 @@ function LogLine({ time, payload, type }: LogLineProps) {
       <div className={s.logMeta}>
         <span className={s.logTime}>{time}</span>
         <span className={s.logType} data-type={type}>
-          {logTypes[type]}
+          {LOG_TYPES[type]}
         </span>
       </div>
       <div className={s.logText}>{payload}</div>
@@ -41,46 +32,30 @@ function LogLine({ time, payload, type }: LogLineProps) {
   );
 }
 
-function Logs({ dispatch, logLevel, apiConfig, logs, logStreamingPaused }) {
+type Props = {
+  dispatch: DispatchFn;
+  logLevel: string;
+  apiConfig: ClashAPIConfig;
+  logs: Log[];
+  logStreamingPaused: boolean;
+};
+
+export default function Logs({ dispatch, logLevel, apiConfig, logs, logStreamingPaused }: Props) {
   const actions = useStoreActions();
-  const toggleIsRefreshPaused = useCallback(() => {
-    logStreamingPaused ? reconnectLogs({ ...apiConfig, logLevel }) : stopLogs();
-    // being lazy here
-    // ideally we should check the result of previous operation before updating this
-    actions.app.updateAppConfig('logStreamingPaused', !logStreamingPaused);
-  }, [apiConfig, logLevel, logStreamingPaused, actions.app]);
-  const appendLogInternal = useCallback((log) => dispatch(appendLog(log)), [dispatch]);
-  useEffect(() => {
-    fetchLogs({ ...apiConfig, logLevel }, appendLogInternal);
-  }, [apiConfig, logLevel, appendLogInternal]);
+  const { toggleIsRefreshPaused, scrollRef, isAtBottom, scrollToBottom, onScroll } = useLogsPage({
+    dispatch,
+    logLevel,
+    apiConfig,
+    logs,
+    logStreamingPaused,
+    updateAppConfig: actions.app.updateAppConfig,
+  });
   const [refLogsContainer, containerHeight] = useRemainingViewPortHeight();
   const { t } = useTranslation();
-
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [isAtBottom, setIsAtBottom] = useState(true);
-
-  const scrollToBottom = useCallback(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isAtBottom) {
-      scrollToBottom();
-    }
-  }, [logs, isAtBottom, scrollToBottom]);
-
-  const onScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    const atBottom = scrollHeight - scrollTop - clientHeight < 50;
-    setIsAtBottom(atBottom);
-  }, []);
 
   return (
     <div>
       <ContentHeader>
-        <div style={{ flex: 1 }} />
         <div className={s.headerControls}>
           <LogSearch className={s.searchWrapper} />
           <button className={s.clearBtn} onClick={() => dispatch(clearLogs())} title={t('Clear')}>
@@ -91,7 +66,7 @@ function Logs({ dispatch, logLevel, apiConfig, logs, logStreamingPaused }) {
       <div ref={refLogsContainer} style={{ position: 'relative' }}>
         <div
           className={s.logsWrapper}
-          style={{ height: containerHeight * 0.8 }}
+          style={{ height: containerHeight * LOGS_HEIGHT_RATIO }}
           ref={scrollRef}
           onScroll={onScroll}
         >
@@ -124,12 +99,3 @@ function Logs({ dispatch, logLevel, apiConfig, logs, logStreamingPaused }) {
     </div>
   );
 }
-
-const mapState = (s: State) => ({
-  logs: getLogsForDisplay(s),
-  logLevel: getLogLevel(s),
-  apiConfig: getClashAPIConfig(s),
-  logStreamingPaused: getLogStreamingPaused(s),
-});
-
-export default connect(mapState)(Logs);

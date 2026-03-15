@@ -10,6 +10,13 @@
   @media (max-width: 768px) {
     width: 100%;
     min-width: 0;
+    background: var(--color-background);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: max(8px, env(safe-area-inset-top)) 16px 8px;
   }
 }
 
@@ -40,8 +47,14 @@
 .rows {
   @media (max-width: 768px) {
     display: flex;
-    justify-content: space-between;
-    overflow: auto;
+    justify-content: space-around;
+    align-items: center;
+    overflow: visible;
+    background: var(--color-bg-sidebar);
+    border-radius: 20px;
+    padding: 6px 8px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--color-separator);
   }
 }
 
@@ -55,10 +68,13 @@
   padding: 6px 10px;
   margin: 4px 8px;
   border-radius: 8px;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
 
   &:hover {
-    background-color: var(--color-background2);
+    background-color: rgba(176, 206, 255, 0.221);
+    color: var(--color-focus-blue);
+    transform: translateX(2px);
   }
 
   @media (--breakpoint-not-small) {
@@ -66,9 +82,18 @@
   }
 
   @media (max-width: 768px) {
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: center;
     margin: 0;
-    border-radius: 0;
+    border-radius: 14px;
+    padding: 8px 14px;
+    flex: 1;
+
+    &:hover {
+      transform: none;
+      background-color: rgba(176, 206, 255, 0.221);
+      box-shadow: none;
+    }
   }
 
   svg {
@@ -76,6 +101,7 @@
     width: 22px;
     height: 22px;
     flex-shrink: 0;
+    transition: transform 0.18s ease;
 
     @media (--breakpoint-not-small) {
       width: 24px;
@@ -84,15 +110,37 @@
   }
 }
 
+.row:hover svg {
+  transform: scale(1.06);
+}
+
 .rowActive {
-  background: var(--color-sb-active-row-bg);
-  color: var(--color-sb-active-row-font);
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  background: linear-gradient(135deg, #60a5fa 0%, var(--color-focus-blue) 100%);
+  color: #fff;
+
+  &:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #60a5fa 0%, var(--color-focus-blue) 100%);
+  }
+
+  svg {
+    color: #fff;
+  }
+
+  .label {
+    font-weight: 600;
+  }
 
   @media (max-width: 768px) {
-    background: none;
-    border-bottom: 2px solid var(--color-focus-blue);
+    background: rgba(99, 160, 255, 0.18);
+    color: var(--color-focus-blue);
+    border-bottom: none;
     box-shadow: none;
+
+    svg {
+      color: var(--color-focus-blue);
+      transform: scale(1.15);
+    }
   }
 }
 
@@ -100,8 +148,7 @@
   padding-left: 14px;
   font-size: 0.75em;
   @media (max-width: 768px) {
-    padding-left: 0;
-    padding-top: 5px;
+    display: none;
   }
 
   @media (--breakpoint-not-small) {

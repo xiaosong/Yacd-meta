@@ -1,9 +1,11 @@
 import * as React from 'react';
-import type { RecoilState } from 'recoil';
+
 
 import { useTextInut } from '~/hooks/useTextInput';
 
 import s from './TextFitler.module.scss';
+
+import type { RecoilState } from 'recoil';
 
 export function TextFilter(props: { textAtom: RecoilState<string>; placeholder?: string }) {
   const [onChange, text] = useTextInut(props.textAtom);

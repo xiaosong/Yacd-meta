@@ -8,6 +8,7 @@ import Modal from 'react-modal';
 import { FormattedConn } from '~/store/connections';
 
 import prettyBytes from '../misc/pretty-bytes';
+
 import modalStyle from './Modal.module.scss';
 import s from './ModalConnectionDetails.module.scss';
 

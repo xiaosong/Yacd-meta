@@ -1,25 +1,57 @@
 import cx from 'clsx';
 import * as React from 'react';
 
+import { getProxyLatency } from '~/modules/proxies/utils';
+import { DelayMapping, DispatchFn, ProxiesMapping } from '~/store/types';
+import { ClashAPIConfig } from '~/types';
+
 import { Proxy, ProxySmall } from './Proxy';
 import s from './ProxyList.module.scss';
 
 type ProxyListProps = {
   all: string[];
+  proxies: ProxiesMapping;
+  delay: DelayMapping;
+  latencyTestUrl: string;
+  apiConfig: ClashAPIConfig;
+  dispatch: DispatchFn;
   now?: string;
   isSelectable?: boolean;
   itemOnTapCallback?: (x: string) => void;
   show?: boolean;
 };
 
-export function ProxyList({ all, now, isSelectable, itemOnTapCallback }: ProxyListProps) {
-  const proxies = all;
+export function ProxyList({
+  all,
+  proxies,
+  delay,
+  latencyTestUrl,
+  apiConfig,
+  dispatch,
+  now,
+  isSelectable,
+  itemOnTapCallback,
+}: ProxyListProps) {
+  const proxyNames = all;
+  const httpsLatencyTest = latencyTestUrl.startsWith('https://');
 
   return (
     <div className={cx(s.list, s.detail)}>
-      {proxies.map((proxyName) => {
+      {proxyNames.map((proxyName) => {
+        const proxy = proxies[proxyName] || {
+          name: proxyName,
+          type: 'Http' as const,
+          udp: false,
+          tfo: false,
+          history: [],
+        };
         return (
           <Proxy
+            apiConfig={apiConfig}
+            dispatch={dispatch}
+            proxy={proxy}
+            latency={getProxyLatency(proxies, delay, proxyName)}
+            httpsLatencyTest={httpsLatencyTest}
             key={proxyName}
             onClick={itemOnTapCallback}
             isSelectable={isSelectable}
@@ -34,15 +66,34 @@ export function ProxyList({ all, now, isSelectable, itemOnTapCallback }: ProxyLi
 
 export function ProxyListSummaryView({
   all,
+  proxies,
+  delay,
+  latencyTestUrl,
+  apiConfig,
+  dispatch,
   now,
   isSelectable,
   itemOnTapCallback,
 }: ProxyListProps) {
+  const httpsLatencyTest = latencyTestUrl.startsWith('https://');
+
   return (
     <div className={cx(s.list, s.summary)}>
       {all.map((proxyName) => {
+        const proxy = proxies[proxyName] || {
+          name: proxyName,
+          type: 'Http' as const,
+          udp: false,
+          tfo: false,
+          history: [],
+        };
         return (
           <ProxySmall
+            apiConfig={apiConfig}
+            dispatch={dispatch}
+            proxy={proxy}
+            latency={getProxyLatency(proxies, delay, proxyName)}
+            httpsLatencyTest={httpsLatencyTest}
             key={proxyName}
             onClick={itemOnTapCallback}
             isSelectable={isSelectable}

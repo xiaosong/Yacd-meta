@@ -1,4 +1,5 @@
 import { getSearchText, updateSearchText } from '../store/logs';
+
 import Search from './Search';
 import { connect } from './StateProvider';
 

@@ -3,6 +3,7 @@ import * as React from 'react';
 import Modal from 'react-modal';
 
 import modalStyle from '../Modal.module.scss';
+
 import s from './BaseModal.module.scss';
 
 const { useMemo } = React;

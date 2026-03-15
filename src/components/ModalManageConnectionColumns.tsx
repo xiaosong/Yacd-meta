@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp, Menu } from 'react-feather';
 import { useTranslation } from 'react-i18next';
 
 import BaseModal from '~/components/shared/BaseModal';
+import { ConnectionColumn } from '~/modules/connections/utils';
 
 import s from './ModalManageConnectionColumns.module.scss';
 import Switch from './SwitchThemed';
@@ -36,23 +37,18 @@ export default function ModalManageConnectionColumns({
     const [removed] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, removed);
     setColumns(items);
-    localStorage.setItem('columns', JSON.stringify(items));
   };
 
   const onShowChange = (column, val) => {
-    if (!val) {
-      hiddenColumns.push(column.accessor);
-    } else {
-      const idx = hiddenColumns.indexOf(column.accessor);
+    const nextHiddenColumns = !val
+      ? [...hiddenColumns, column.accessor]
+      : hiddenColumns.filter((accessor) => accessor !== column.accessor);
 
-      hiddenColumns.splice(idx, 1);
-    }
-    setHiddenColumns(Array.from(hiddenColumns));
-    localStorage.setItem('hiddenColumns', JSON.stringify(hiddenColumns));
+    setHiddenColumns(nextHiddenColumns);
   };
 
   const moveColumn = (columnAccessor: string, direction: 'up' | 'down') => {
-    const items = Array.from(columns);
+    const items: ConnectionColumn[] = Array.from(columns);
     const currentIndex = items.findIndex((c) => c.accessor === columnAccessor);
     if (currentIndex === -1) return;
 
@@ -80,7 +76,6 @@ export default function ModalManageConnectionColumns({
     const [removed] = items.splice(currentIndex, 1);
     items.splice(targetIndex, 0, removed);
     setColumns(items);
-    localStorage.setItem('columns', JSON.stringify(items));
   };
 
   // 获取非 id 列的显示列表

@@ -6,7 +6,7 @@ import { SectionNameType } from './shared/Basic';
 type Props = {
   name: string;
   type: string;
-  qty?: number;
+  qty?: number | string;
   toggle?: () => void;
   isOpen?: boolean;
 };

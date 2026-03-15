@@ -10,99 +10,31 @@ import {
   Trash2,
 } from 'react-feather';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from 'react-query';
 
-import * as logsApi from '~/api/logs';
-import { fetchVersion } from '~/api/version';
 import Select from '~/components/shared/Select';
-import { ClashGeneralConfig, DispatchFn, State } from '~/store/types';
+import { useConfigPage } from '~/modules/config/hooks';
+import {
+  CONFIG_CHART_STYLE_PROPS,
+  getBackendContent,
+  LANGUAGE_OPTIONS,
+  LOG_LEVEL_OPTIONS,
+  MODE_OPTIONS,
+  PORT_FIELDS,
+  TUN_STACK_OPTIONS,
+} from '~/modules/config/utils';
+import { ClashGeneralConfig, DispatchFn } from '~/store/types';
 import { ClashAPIConfig } from '~/types';
 
-import { getClashAPIConfig, getLatencyTestUrl, getSelectedChartStyleIndex } from '../store/app';
-import {
-  fetchConfigs,
-  flushFakeIPPool,
-  getConfigs,
-  reloadConfigFile,
-  restartCore,
-  updateConfigs,
-  upgradeCore,
-  upgradeGeo,
-  upgradeUI,
-} from '../store/configs';
-import { openModal } from '../store/modals';
 import Button from './Button';
 import s0 from './Config.module.scss';
 import ContentHeader from './ContentHeader';
 import Input, { SelfControlledInput } from './Input';
 import { Selection2 } from './Selection';
-import { connect, useStoreActions } from './StateProvider';
+import { useStoreActions } from './StateProvider';
 import Switch from './SwitchThemed';
 import TrafficChartSample from './TrafficChartSample';
 
-const { useEffect, useState, useCallback, useRef } = React;
-
-const propsList = [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }];
-
-const logLeveOptions = [
-  ['debug', 'Debug'],
-  ['info', 'Info'],
-  ['warning', 'Warning'],
-  ['error', 'Error'],
-  ['silent', 'Silent'],
-];
-
-const portFields = [
-  { key: 'port', label: 'Http Port' },
-  { key: 'socks-port', label: 'Socks5 Port' },
-  { key: 'mixed-port', label: 'Mixed Port' },
-  { key: 'redir-port', label: 'Redir Port' },
-  { key: 'mitm-port', label: 'MITM Port' },
-];
-
-const langOptions = [
-  ['zh-cn', '简体中文'],
-  ['zh-tw', '繁體中文'],
-  ['en', 'English'],
-  ['vi', 'Vietnamese'],
-  ['ru', 'Русский'],
-];
-
-const modeOptions = [
-  ['direct', 'Direct'],
-  ['rule', 'Rule'],
-  ['script', 'Script'],
-  ['global', 'Global'],
-];
-
-const tunStackOptions = [
-  ['gvisor', 'gVisor'],
-  ['mixed', 'Mixed'],
-  ['system', 'System'],
-];
-
-const mapState = (s: State) => ({
-  configs: getConfigs(s),
-  apiConfig: getClashAPIConfig(s),
-});
-
-const mapState2 = (s: State) => ({
-  selectedChartStyleIndex: getSelectedChartStyleIndex(s),
-  latencyTestUrl: getLatencyTestUrl(s),
-  apiConfig: getClashAPIConfig(s),
-});
-
-const Config = connect(mapState2)(ConfigImpl);
-export default connect(mapState)(ConfigContainer);
-
-function ConfigContainer({ dispatch, configs, apiConfig }) {
-  useEffect(() => {
-    dispatch(fetchConfigs(apiConfig));
-  }, [dispatch, apiConfig]);
-  return <Config configs={configs} />;
-}
-
-type ConfigImplProps = {
+type Props = {
   dispatch: DispatchFn;
   configs: ClashGeneralConfig;
   selectedChartStyleIndex: number;
@@ -110,150 +42,34 @@ type ConfigImplProps = {
   apiConfig: ClashAPIConfig;
 };
 
-function getBackendContent(version: any): string {
-  if (version && version.meta && !version.premium) {
-    return 'Clash.Meta ';
-  } else if (version && version.meta && version.premium) {
-    return 'sing-box ';
-  } else {
-    return 'Clash Premium';
-  }
-}
-
-function ConfigImpl({
+export default function Config({
   dispatch,
   configs,
   selectedChartStyleIndex,
   latencyTestUrl,
   apiConfig,
-}: ConfigImplProps) {
+}: Props) {
   const { t, i18n } = useTranslation();
 
-  const [configState, setConfigStateInternal] = useState(configs);
-  const refConfigs = useRef(configs);
-  useEffect(() => {
-    if (refConfigs.current !== configs) {
-      setConfigStateInternal(configs);
-    }
-    refConfigs.current = configs;
-  }, [configs]);
-
-  const openAPIConfigModal = useCallback(() => {
-    dispatch(openModal('apiConfig'));
-  }, [dispatch]);
-
-  const setConfigState = useCallback(
-    (name: string, val: any) => {
-      setConfigStateInternal({ ...configState, [name]: val });
-    },
-    [configState]
-  );
-
-  const setTunConfigState = useCallback(
-    (name: any, val: any) => {
-      const tun = { ...configState.tun, [name]: val };
-      setConfigStateInternal({ ...configState, tun: { ...tun } });
-    },
-    [configState]
-  );
-
-  const handleInputOnChange = useCallback(
-    ({ name, value }) => {
-      switch (name) {
-        case 'mode':
-        case 'log-level':
-        case 'allow-lan':
-        case 'sniffing':
-          setConfigState(name, value);
-          dispatch(updateConfigs(apiConfig, { [name]: value }));
-          if (name === 'log-level') {
-            logsApi.reconnect({ ...apiConfig, logLevel: value });
-          }
-          break;
-        case 'mitm-port':
-        case 'redir-port':
-        case 'socks-port':
-        case 'mixed-port':
-        case 'port':
-          if (value !== '') {
-            const num = parseInt(value, 10);
-            if (num < 0 || num > 65535) return;
-          }
-          setConfigState(name, value);
-          break;
-        case 'enable':
-        case 'stack':
-          setTunConfigState(name, value);
-          dispatch(updateConfigs(apiConfig, { tun: { [name]: value } }));
-          break;
-        default:
-          return;
-      }
-    },
-    [apiConfig, dispatch, setConfigState, setTunConfigState]
-  );
-
   const { selectChartStyleIndex, updateAppConfig } = useStoreActions();
-
-  const handleInputOnBlur = useCallback(
-    (
-      e:
-        | React.FocusEvent<HTMLSelectElement | HTMLInputElement>
-        | React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
-    ) => {
-      const { name, value } = e.target;
-
-      switch (name) {
-        case 'port':
-        case 'socks-port':
-        case 'mixed-port':
-        case 'redir-port':
-        case 'mitm-port': {
-          const num = parseInt(value, 10);
-          if (num < 0 || num > 65535) return;
-          dispatch(updateConfigs(apiConfig, { [name]: num }));
-          break;
-        }
-        case 'latencyTestUrl': {
-          updateAppConfig(name, value);
-          break;
-        }
-        case 'device name':
-        case 'interface name':
-          break;
-        default:
-          throw new Error(`unknown input name ${name}`);
-      }
-    },
-    [apiConfig, dispatch, updateAppConfig]
-  );
-  const handleReloadConfigFile = useCallback(() => {
-    dispatch(reloadConfigFile(apiConfig));
-  }, [apiConfig, dispatch]);
-
-  const handleRestartCore = useCallback(() => {
-    dispatch(restartCore(apiConfig));
-  }, [apiConfig, dispatch]);
-
-  const handleUpgradeCore = useCallback(() => {
-    dispatch(upgradeCore(apiConfig));
-  }, [apiConfig, dispatch]);
-
-  const handleUpgradeGeo = useCallback(() => {
-    dispatch(upgradeGeo(apiConfig));
-  }, [apiConfig, dispatch]);
-
-  const handleUpgradeUI = useCallback(() => {
-    dispatch(upgradeUI(apiConfig));
-  }, [apiConfig, dispatch]);
-
-  const handleFlushFakeIPPool = useCallback(() => {
-    dispatch(flushFakeIPPool(apiConfig));
-  }, [apiConfig, dispatch]);
-
-  const { data: version } = useQuery(['/version', apiConfig], () =>
-    fetchVersion('/version', apiConfig)
-  );
+  const {
+    configState,
+    openAPIConfigModal,
+    handleInputOnChange,
+    handleInputOnBlur,
+    handleReloadConfigFile,
+    handleRestartCore,
+    handleUpgradeCore,
+    handleUpgradeGeo,
+    handleUpgradeUI,
+    handleFlushFakeIPPool,
+    versionQuery: { data: version },
+  } = useConfigPage({
+    apiConfig,
+    configs,
+    dispatch,
+    updateAppConfig,
+  });
 
   return (
     <div>
@@ -266,7 +82,7 @@ function ConfigImpl({
           </div>
           <div className={s0.section}>
             {(version.meta && version.premium) ||
-              portFields.map((f) =>
+              PORT_FIELDS.map((f) =>
                 configState[f.key] !== undefined ? (
                   <div key={f.key}>
                     <div className={s0.label}>{f.label}</div>
@@ -288,7 +104,7 @@ function ConfigImpl({
                 options={
                   configState['mode-list']
                     ? configState['mode-list'].map((value) => [value, value])
-                    : modeOptions
+                    : MODE_OPTIONS
                 }
                 selected={
                   configState['mode-list'] ? configState.mode : configState.mode.toLowerCase()
@@ -300,7 +116,7 @@ function ConfigImpl({
             <div>
               <div className={s0.label}>Log Level</div>
               <Select
-                options={logLeveOptions}
+                options={LOG_LEVEL_OPTIONS}
                 selected={configState['log-level'].toLowerCase()}
                 onChange={(e) => handleInputOnChange({ name: 'log-level', value: e.target.value })}
               />
@@ -361,7 +177,7 @@ function ConfigImpl({
                   <div>
                     <div className={s0.label}>TUN IP Stack</div>
                     <Select
-                      options={tunStackOptions}
+                      options={TUN_STACK_OPTIONS}
                       selected={configState.tun?.stack?.toLowerCase()}
                       onChange={(e) =>
                         handleInputOnChange({ name: 'stack', value: e.target.value })
@@ -475,7 +291,7 @@ function ConfigImpl({
               <div className={s0.label}>{t('lang')}</div>
               <div>
                 <Select
-                  options={langOptions}
+                  options={LANGUAGE_OPTIONS}
                   selected={i18n.language}
                   onChange={(e) => i18n.changeLanguage(e.target.value)}
                 />
@@ -486,7 +302,7 @@ function ConfigImpl({
               <div className={s0.label}>{t('chart_style')}</div>
               <Selection2
                 OptionComponent={TrafficChartSample}
-                optionPropsList={propsList}
+                optionPropsList={CONFIG_CHART_STYLE_PROPS}
                 selectedIndex={selectedChartStyleIndex}
                 onChange={selectChartStyleIndex}
               />

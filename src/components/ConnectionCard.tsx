@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { FormattedConn } from '~/store/connections';
 
 import prettyBytes from '../misc/pretty-bytes';
+
 import s from './ConnectionCard.module.scss';
 
 interface Props {

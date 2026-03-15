@@ -4,6 +4,7 @@ import ReactSwitch from 'react-switch';
 import { State } from '~/store/types';
 
 import { getTheme } from '../store/app';
+
 import { connect } from './StateProvider';
 
 // workaround https://github.com/vitejs/vite/issues/2139#issuecomment-802981228

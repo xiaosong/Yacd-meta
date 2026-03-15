@@ -2,31 +2,28 @@ import * as React from 'react';
 import { Activity, ArrowDown, ArrowUp, Cpu, Link as LinkIcon, Zap } from 'react-feather';
 import { useTranslation } from 'react-i18next';
 
-import * as connAPI from '../api/connections';
 import useMemory from '../hooks/useMemory';
 import useTraffic from '../hooks/useTraffic';
-import prettyBytes from '../misc/pretty-bytes';
-import { getClashAPIConfig, getSelectedChartStyleIndex } from '../store/app';
+import { useConnectionSummary } from '../modules/home/hooks';
+import { formatTrafficRate } from '../modules/home/utils';
+import { ClashAPIConfig } from '../types';
+
 import Sparkline from './Sparkline';
-import { connect } from './StateProvider';
 import s0 from './TrafficNow.module.scss';
 
-const { useState, useEffect, useCallback } = React;
+type Props = {
+  apiConfig: ClashAPIConfig;
+  selectedChartStyleIndex: number;
+};
 
-const mapState = (s) => ({
-  apiConfig: getClashAPIConfig(s),
-  selectedChartStyleIndex: getSelectedChartStyleIndex(s),
-});
-export default connect(mapState)(TrafficNow);
-
-function TrafficNow({ apiConfig, selectedChartStyleIndex }) {
+export default function TrafficNow({ apiConfig, selectedChartStyleIndex }: Props) {
   const { t } = useTranslation();
   const traffic = useTraffic(apiConfig);
   const memory = useMemory(apiConfig);
-  const { upTotal, dlTotal, connNumber, mUsage } = useConnection(apiConfig);
+  const { upTotal, dlTotal, connNumber, mUsage } = useConnectionSummary(apiConfig);
 
-  const upStr = prettyBytes(traffic.up[traffic.up.length - 1] || 0) + '/s';
-  const downStr = prettyBytes(traffic.down[traffic.down.length - 1] || 0) + '/s';
+  const upStr = formatTrafficRate(traffic.up[traffic.up.length - 1] || 0);
+  const downStr = formatTrafficRate(traffic.down[traffic.down.length - 1] || 0);
 
   return (
     <div className={s0.TrafficNow}>
@@ -96,30 +93,4 @@ function TrafficNow({ apiConfig, selectedChartStyleIndex }) {
       </div>
     </div>
   );
-}
-
-function useConnection(apiConfig) {
-  const [state, setState] = useState({
-    upTotal: '0 B',
-    dlTotal: '0 B',
-    connNumber: 0,
-    mUsage: '0 B',
-  });
-  const read = useCallback(
-    ({ downloadTotal, uploadTotal, connections, memory }) => {
-      setState({
-        upTotal: prettyBytes(uploadTotal),
-        dlTotal: prettyBytes(downloadTotal),
-        connNumber: connections ? connections.length : 0,
-        mUsage: prettyBytes(memory),
-      });
-    },
-    [setState]
-  );
-  useEffect(() => {
-    return connAPI.fetchData(apiConfig, read, () => {
-      /* noop */
-    });
-  }, [apiConfig, read]);
-  return state;
 }

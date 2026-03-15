@@ -3,45 +3,24 @@ import * as React from 'react';
 import { Eye, EyeOff, X as Close } from 'react-feather';
 
 import { useToggle } from '~/hooks/basic';
-import { getClashAPIConfigs, getSelectedClashAPIConfigIndex } from '~/store/app';
-import { ClashAPIConfig } from '~/types';
+import type { ClashAPIConfigWithAddedAt } from '~/store/types';
+import type { ClashAPIConfig } from '~/types';
 
 import s from './BackendList.module.scss';
-import { connect, useStoreActions } from './StateProvider';
 
-type Config = ClashAPIConfig & { addedAt: number };
+type Props = {
+  apiConfigs: ClashAPIConfigWithAddedAt[];
+  selectedClashAPIConfigIndex: number;
+  onRemove: (x: ClashAPIConfig) => void;
+  onSelect: (x: ClashAPIConfig) => void;
+};
 
-const mapState = (s) => ({
-  apiConfigs: getClashAPIConfigs(s),
-  selectedClashAPIConfigIndex: getSelectedClashAPIConfigIndex(s),
-});
-
-export const BackendList = connect(mapState)(BackendListImpl);
-
-function BackendListImpl({
+export function BackendList({
   apiConfigs,
   selectedClashAPIConfigIndex,
-}: {
-  apiConfigs: Config[];
-  selectedClashAPIConfigIndex: number;
-}) {
-  const {
-    app: { removeClashAPIConfig, selectClashAPIConfig },
-  } = useStoreActions();
-
-  const onRemove = React.useCallback(
-    (conf: ClashAPIConfig) => {
-      removeClashAPIConfig(conf);
-    },
-    [removeClashAPIConfig]
-  );
-  const onSelect = React.useCallback(
-    (conf: ClashAPIConfig) => {
-      selectClashAPIConfig(conf);
-    },
-    [selectClashAPIConfig]
-  );
-
+  onRemove,
+  onSelect,
+}: Props) {
   return (
     <>
       <ul className={s.ul}>
@@ -77,7 +56,7 @@ function Item({
   onSelect,
 }: {
   baseURL: string;
-  secret: string;
+  secret?: string;
   disableRemove: boolean;
   onRemove: (x: ClashAPIConfig) => void;
   onSelect: (x: ClashAPIConfig) => void;
@@ -112,7 +91,6 @@ function Item({
         <>
           <span className={s.secret}>{show ? secret : '***'}</span>
 
-          {/* @ts-expect-error ts-migrate(2322) FIXME: Type 'boolean | (() => void)' is not assignable to... Remove this comment to see the full error message */}
           <Button onClick={toggle} className={s.eye}>
             <Icon size={20} />
           </Button>

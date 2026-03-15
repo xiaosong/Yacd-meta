@@ -12,74 +12,64 @@ import { ProxyProvider } from '~/components/proxies/ProxyProvider';
 import Settings from '~/components/proxies/Settings';
 import BaseModal from '~/components/shared/BaseModal';
 import { TextFilter } from '~/components/shared/TextFitler';
-import { connect, useStoreActions } from '~/components/StateProvider';
+import { useStoreActions } from '~/components/StateProvider';
 import Equalizer from '~/components/svg/Equalizer';
-import { getClashAPIConfig, getProxiesLayout } from '~/store/app';
-import {
-  fetchProxies,
-  getDelay,
-  getProxyGroupNames,
-  getProxyProviders,
-  getShowModalClosePrevConns,
-  proxyFilterText,
-} from '~/store/proxies';
-import type { State } from '~/store/types';
+import { useProxiesPage } from '~/modules/proxies/hooks';
+import { formatQty } from '~/modules/proxies/utils';
+import { proxyFilterText } from '~/store/proxies';
+import { DelayMapping, DispatchFn, FormattedProxyProvider, ProxiesMapping } from '~/store/types';
+import { ClashAPIConfig } from '~/types';
 
 import s0 from './Proxies.module.scss';
 
-const { useState, useEffect, useCallback, useRef, useMemo } = React;
+type AppConfig = {
+  proxySortBy: string;
+  hideUnavailableProxies: boolean;
+  autoCloseOldConns: boolean;
+  proxiesLayout: string;
+};
 
-function Proxies({
+type Props = {
+  dispatch: DispatchFn;
+  groupNames: string[];
+  proxies: ProxiesMapping;
+  delay: DelayMapping;
+  latencyTestUrl: string;
+  collapsibleIsOpen: Record<string, boolean>;
+  proxyProviders: FormattedProxyProvider[];
+  apiConfig: ClashAPIConfig;
+  showModalClosePrevConns: boolean;
+  appConfig: AppConfig;
+};
+
+export default function Proxies({
   dispatch,
   groupNames,
+  proxies,
   delay,
+  latencyTestUrl,
+  collapsibleIsOpen,
   proxyProviders,
   apiConfig,
   showModalClosePrevConns,
-  proxiesLayout,
-}) {
-  const refFetchedTimestamp = useRef<{ startAt?: number; completeAt?: number }>({});
-
-  const formatQty = (qty: number) => (qty < 100 ? '' + qty : '99+');
-
-  const fetchProxiesHooked = useCallback(() => {
-    refFetchedTimestamp.current.startAt = Date.now();
-    dispatch(fetchProxies(apiConfig)).then(() => {
-      refFetchedTimestamp.current.completeAt = Date.now();
-    });
-  }, [apiConfig, dispatch]);
-  useEffect(() => {
-    // fetch it now
-    fetchProxiesHooked();
-
-    // arm a window on focus listener to refresh it
-    const fn = () => {
-      if (
-        refFetchedTimestamp.current.startAt &&
-        Date.now() - refFetchedTimestamp.current.startAt > 3e4 // 30s
-      ) {
-        fetchProxiesHooked();
-      }
-    };
-    window.addEventListener('focus', fn, false);
-    return () => window.removeEventListener('focus', fn, false);
-  }, [fetchProxiesHooked]);
-
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const closeSettingsModal = useCallback(() => {
-    setIsSettingsModalOpen(false);
-  }, []);
-
-  const [activeTab, setActiveTab] = useState('proxies');
-
-  const handleTabKeyDown = useCallback(
-    (tab: string) => (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        setActiveTab(tab);
-      }
-    },
-    []
-  );
+  appConfig,
+}: Props) {
+  const {
+    isSettingsModalOpen,
+    openSettingsModal,
+    closeSettingsModal,
+    activeTab,
+    setActiveTab,
+    handleTabKeyDown,
+    proxyGroups,
+    providers,
+  } = useProxiesPage({
+    dispatch,
+    apiConfig,
+    groupNames,
+    proxyProviders,
+    proxiesLayout: appConfig.proxiesLayout,
+  });
 
   const {
     proxies: { closeModalClosePrevConns, closePrevConnsAndTheModal },
@@ -87,34 +77,70 @@ function Proxies({
 
   const { t } = useTranslation();
 
-  const proxyGroups = useMemo(() => {
-    const formatted = groupNames.map((name, i) => ({ name, i }));
-    if (proxiesLayout !== 'double') return [formatted];
-    const left = [];
-    const right = [];
-    formatted.forEach((item, i) => {
-      if (i % 2 === 0) left.push(item);
-      else right.push(item);
-    });
-    return [left, right];
-  }, [groupNames, proxiesLayout]);
-
-  const providers = useMemo(() => {
-    const formatted = proxyProviders.map((item, i) => ({ item, i }));
-    if (proxiesLayout !== 'double') return [formatted];
-    const left = [];
-    const right = [];
-    formatted.forEach((item, i) => {
-      if (i % 2 === 0) left.push(item);
-      else right.push(item);
-    });
-    return [left, right];
-  }, [proxyProviders, proxiesLayout]);
+  const content =
+    activeTab === 'proxies' ? (
+      <div
+        className={cx(s0.groupsContainer, {
+          [s0.doubleColumn]: appConfig.proxiesLayout === 'double',
+        })}
+      >
+        {proxyGroups.map((column, i) => (
+          <div key={i} className={s0.column}>
+            {column.map(({ name, i: originalIndex }) => (
+              <div className={s0.group} key={name} style={{ order: originalIndex }}>
+                <ProxyGroup
+                  name={name}
+                  delay={delay}
+                  apiConfig={apiConfig}
+                  dispatch={dispatch}
+                  proxies={proxies}
+                  hideUnavailableProxies={appConfig.hideUnavailableProxies}
+                  proxySortBy={appConfig.proxySortBy}
+                  isOpen={Boolean(collapsibleIsOpen[`proxyGroup:${name}`])}
+                  latencyTestUrl={latencyTestUrl}
+                />
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div
+        className={cx(s0.groupsContainer, {
+          [s0.doubleColumn]: appConfig.proxiesLayout === 'double',
+        })}
+      >
+        {providers.map((column, i) => (
+          <div key={i} className={s0.column}>
+            {column.map(({ item, i: originalIndex }) => (
+              <div className={s0.group} key={item.name} style={{ order: originalIndex }}>
+                <ProxyProvider
+                  name={item.name}
+                  proxies={item.proxies}
+                  type={item.type}
+                  vehicleType={item.vehicleType}
+                  updatedAt={item.updatedAt}
+                  subscriptionInfo={item.subscriptionInfo}
+                  proxyMapping={proxies}
+                  latencyTestUrl={latencyTestUrl}
+                  delay={delay}
+                  hideUnavailableProxies={appConfig.hideUnavailableProxies}
+                  proxySortBy={appConfig.proxySortBy}
+                  isOpen={Boolean(collapsibleIsOpen[`proxyProvider:${item.name}`])}
+                  dispatch={dispatch}
+                  apiConfig={apiConfig}
+                />
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
 
   return (
     <>
       <BaseModal isOpen={isSettingsModalOpen} onRequestClose={closeSettingsModal}>
-        <Settings />
+        <Settings appConfig={appConfig} />
       </BaseModal>
       <div className={s0.topBar}>
         <ContentHeader>
@@ -148,45 +174,14 @@ function Proxies({
               <TextFilter textAtom={proxyFilterText} placeholder={t('Search')} />
             </div>
             <Tooltip label={t('settings')}>
-              <Button kind="minimal" onClick={() => setIsSettingsModalOpen(true)}>
+              <Button kind="minimal" onClick={openSettingsModal}>
                 <Equalizer size={16} />
               </Button>
             </Tooltip>
           </div>
         </ContentHeader>
       </div>
-      {activeTab === 'proxies' ? (
-        <div className={cx(s0.groupsContainer, { [s0.doubleColumn]: proxiesLayout === 'double' })}>
-          {proxyGroups.map((column, i) => (
-            <div key={i} className={s0.column}>
-              {column.map(({ name, i: originalIndex }) => (
-                <div className={s0.group} key={name} style={{ order: originalIndex }}>
-                  <ProxyGroup name={name} delay={delay} apiConfig={apiConfig} dispatch={dispatch} />
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className={cx(s0.groupsContainer, { [s0.doubleColumn]: proxiesLayout === 'double' })}>
-          {providers.map((column, i) => (
-            <div key={i} className={s0.column}>
-              {column.map(({ item, i: originalIndex }) => (
-                <div className={s0.group} key={item.name} style={{ order: originalIndex }}>
-                  <ProxyProvider
-                    name={item.name}
-                    proxies={item.proxies}
-                    type={item.type}
-                    vehicleType={item.vehicleType}
-                    updatedAt={item.updatedAt}
-                    subscriptionInfo={item.subscriptionInfo}
-                  />
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
+      {content}
       <div style={{ height: 60 }} />
       <ProxyPageFab dispatch={dispatch} apiConfig={apiConfig} proxyProviders={proxyProviders} />
       <BaseModal isOpen={showModalClosePrevConns} onRequestClose={closeModalClosePrevConns}>
@@ -198,14 +193,3 @@ function Proxies({
     </>
   );
 }
-
-const mapState = (s: State) => ({
-  apiConfig: getClashAPIConfig(s),
-  groupNames: getProxyGroupNames(s),
-  proxyProviders: getProxyProviders(s),
-  delay: getDelay(s),
-  showModalClosePrevConns: getShowModalClosePrevConns(s),
-  proxiesLayout: getProxiesLayout(s),
-});
-
-export default connect(mapState)(Proxies);

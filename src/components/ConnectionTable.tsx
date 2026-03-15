@@ -10,16 +10,14 @@ import { useSortBy, useTable } from 'react-table';
 import { FixedSizeList as List } from 'react-window';
 
 import { FormattedConn } from '~/store/connections';
-import { State } from '~/store/types';
 
 import * as connAPI from '../api/connections';
 import prettyBytes from '../misc/pretty-bytes';
-import { getClashAPIConfig } from '../store/app';
+
 import ConnectionCard from './ConnectionCard';
 import s from './ConnectionTable.module.scss';
 import MOdalCloseConnection from './ModalCloseAllConnections';
 import ModalConnectionDetails from './ModalConnectionDetails';
-import { connect } from './StateProvider';
 
 const sortById = { id: 'id', desc: true };
 
@@ -376,8 +374,4 @@ function Table({ data, columns, hiddenColumns, apiConfig, height }) {
   );
 }
 
-const mapState = (s: State) => ({
-  apiConfig: getClashAPIConfig(s),
-});
-
-export default connect(mapState)(Table);
+export default Table;

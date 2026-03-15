@@ -10,8 +10,19 @@ import s from './ModalSourceIP.module.scss';
 export default function ModalSourceIP({ isOpen, onRequestClose, sourceMap, setSourceMap }) {
   const { t } = useTranslation();
   const setSource = (key, index, val) => {
-    sourceMap[index][key] = val;
-    setSourceMap(Array.from(sourceMap));
+    setSourceMap((prev) =>
+      prev.map((source, currentIndex) =>
+        currentIndex === index ? { ...source, [key]: val } : source
+      )
+    );
+  };
+
+  const removeSource = (index) => {
+    setSourceMap((prev) => prev.filter((_, currentIndex) => currentIndex !== index));
+  };
+
+  const addSource = () => {
+    setSourceMap((prev) => [...prev, { reg: '', name: '' }]);
   };
 
   return (
@@ -45,7 +56,7 @@ export default function ModalSourceIP({ isOpen, onRequestClose, sourceMap, setSo
                 />
               </td>
               <td>
-                <Button onClick={() => sourceMap.splice(index, 1)}>{t('delete')}</Button>
+                <Button onClick={() => removeSource(index)}>{t('delete')}</Button>
               </td>
             </tr>
           ))}
@@ -53,7 +64,7 @@ export default function ModalSourceIP({ isOpen, onRequestClose, sourceMap, setSo
       </table>
       <div>
         <div className={s.iptableTipContainer}>{t('sourceip_tip')}</div>
-        <Button onClick={() => sourceMap.push({ reg: '', name: '' })}>{t('add_tag')}</Button>
+        <Button onClick={addSource}>{t('add_tag')}</Button>
       </div>
     </BaseModal>
   );

@@ -2,6 +2,7 @@ import { DispatchFn, GetStateFn, State, StateApp } from '~/store/types';
 
 import { loadState, saveState } from '../misc/storage';
 import { debounce, trimTrailingSlash } from '../misc/utils';
+
 import { fetchConfigs } from './configs';
 import { closeModal } from './modals';
 

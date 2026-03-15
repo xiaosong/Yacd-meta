@@ -3,6 +3,7 @@ import { Line } from 'react-chartjs-2';
 
 import { chartJSResource, chartStyles, commonDataSetProps } from '../misc/chart';
 import prettyBytes from '../misc/pretty-bytes';
+
 import s from './Sparkline.module.scss';
 
 const { useMemo } = React;

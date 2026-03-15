@@ -11,6 +11,8 @@
   max-width: 300px;
 
   @media (max-width: 768px) {
+    order: 3;
+    flex: 1 1 100%;
     max-width: none;
     margin-top: 8px;
   }
@@ -41,7 +43,9 @@
   padding: 4px;
 
   @media (max-width: 768px) {
-    flex: 1;
+    order: 1;
+    flex: 1 1 100%;
+    width: 100%;
   }
 }
 
@@ -62,6 +66,8 @@
     font-size: 0.85em;
     flex: 1;
     justify-content: center;
+    min-width: 0;
+    white-space: nowrap;
   }
 
   &:hover {
@@ -88,4 +94,5 @@
   border-radius: 10px;
   font-weight: 600;
   min-width: 20px;
+  flex-shrink: 0;
 }

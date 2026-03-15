@@ -10,6 +10,7 @@ import { ClashAPIConfig } from '~/types';
 
 import * as configsAPI from '../api/configs';
 import * as trafficAPI from '../api/traffic';
+
 import { openModal } from './modals';
 
 export const getConfigs = (s: State) => s.configs.configs;

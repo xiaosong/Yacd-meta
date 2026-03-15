@@ -2,14 +2,11 @@ import * as React from 'react';
 import { Zap } from 'react-feather';
 import { useTranslation } from 'react-i18next';
 
-import { useUpdateProviderItems } from '~/components/proxies/proxies.hooks';
 import { Action, Fab, IsFetching, position as fabPosition } from '~/components/shared/Fab';
 import { RotateIcon } from '~/components/shared/RotateIcon';
-import { requestDelayAll } from '~/store/proxies';
+import { useTestLatencyAction, useUpdateProviderItems } from '~/modules/proxies/hooks';
 import { DispatchFn, FormattedProxyProvider } from '~/store/types';
 import { ClashAPIConfig } from '~/types';
-
-const { useState, useCallback } = React;
 
 function StatefulZap({ isLoading }: { isLoading: boolean }) {
   return isLoading ? (
@@ -19,26 +16,6 @@ function StatefulZap({ isLoading }: { isLoading: boolean }) {
   ) : (
     <Zap width={16} height={16} />
   );
-}
-
-function useTestLatencyAction({
-  dispatch,
-  apiConfig,
-}: {
-  dispatch: DispatchFn;
-  apiConfig: ClashAPIConfig;
-}): [() => unknown, boolean] {
-  const [isTestingLatency, setIsTestingLatency] = useState(false);
-  const requestDelayAllFn = useCallback(() => {
-    if (isTestingLatency) return;
-
-    setIsTestingLatency(true);
-    dispatch(requestDelayAll(apiConfig)).then(
-      () => setIsTestingLatency(false),
-      () => setIsTestingLatency(false)
-    );
-  }, [apiConfig, dispatch, isTestingLatency]);
-  return [requestDelayAllFn, isTestingLatency];
 }
 
 export function ProxyPageFab({

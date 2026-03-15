@@ -3,16 +3,15 @@ import cx from 'clsx';
 import * as React from 'react';
 
 import { keyCodes } from '~/misc/keycode';
-import { getClashAPIConfig, getLatencyTestUrl } from '~/store/app';
-import { DelayMapping, DispatchFn, ProxiesMapping, ProxyItem } from '~/store/types';
+import { DispatchFn, ProxyItem } from '~/store/types';
 import { ClashAPIConfig } from '~/types';
 
-import { getDelay, getProxies, healthcheckProxy } from '../../store/proxies';
-import { connect } from '../StateProvider';
+import { healthcheckProxy } from '../../store/proxies';
+
 import s0 from './Proxy.module.scss';
 import { ProxyLatency } from './ProxyLatency';
 
-const { useMemo } = React;
+const { memo, useMemo } = React;
 
 const colorMap = {
   // green
@@ -74,7 +73,7 @@ type ProxyProps = {
   dispatch: DispatchFn;
 };
 
-function ProxySmallImpl({
+export const ProxySmall = memo(function ProxySmall({
   now,
   name,
   proxy,
@@ -125,7 +124,7 @@ function ProxySmallImpl({
       {now && <div className={s0.now} />}
     </div>
   );
-}
+});
 
 function formatProxyType(t: string) {
   if (t === 'Shadowsocks') return 'SS';
@@ -154,7 +153,7 @@ function ProxyNameTooltip({ children, label, 'aria-label': ariaLabel }) {
   );
 }
 
-function ProxyImpl({
+export const Proxy = memo(function Proxy({
   now,
   name,
   proxy,
@@ -261,47 +260,4 @@ function ProxyImpl({
       </div>
     </div>
   );
-}
-
-function getLatency(
-  proxies: ProxiesMapping,
-  delay: DelayMapping,
-  name: string,
-  visited = new Set<string>()
-) {
-  if (visited.has(name)) return undefined;
-  visited.add(name);
-
-  const latency = delay[name];
-  if (latency && (latency.testing || typeof latency.number === 'number' || latency.error)) {
-    return latency;
-  }
-
-  const proxy = proxies[name];
-  if (proxy && proxy.now && proxies[proxy.now]) {
-    return getLatency(proxies, delay, proxy.now, visited);
-  }
-
-  const delayFromHistory = proxy?.history?.[proxy.history.length - 1]?.delay;
-  if (typeof delayFromHistory === 'number' && delayFromHistory > 0) {
-    return { number: delayFromHistory };
-  }
-
-  return latency;
-}
-
-const mapState = (s: any, { name }) => {
-  const proxies = getProxies(s);
-  const delay = getDelay(s);
-  const latencyTestUrl = getLatencyTestUrl(s);
-  const proxy = proxies[name] || { name, history: [] };
-  return {
-    proxy: proxy,
-    latency: getLatency(proxies, delay, name),
-    httpsLatencyTest: latencyTestUrl.startsWith('https://'),
-    apiConfig: getClashAPIConfig(s),
-  };
-};
-
-export const Proxy = connect(mapState)(ProxyImpl);
-export const ProxySmall = connect(mapState)(ProxySmallImpl);
+});

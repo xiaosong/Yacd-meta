@@ -1,6 +1,5 @@
 import debounce from 'lodash-es/debounce';
 import React, { useCallback, useMemo, useState } from 'react';
-import { Search as SearchIcon } from 'react-feather';
 import { useTranslation } from 'react-i18next';
 
 import s0 from './Search.module.scss';
@@ -25,20 +24,13 @@ function RuleSearch({ dispatch, searchText, updateSearchText, className }) {
 
   return (
     <div className={className || s0.RuleSearch}>
-      <div className={s0.RuleSearchContainer}>
-        <div className={s0.inputWrapper}>
-          <input
-            type="text"
-            value={text}
-            onChange={onChange}
-            className={s0.input}
-            placeholder={t('Search')}
-          />
-        </div>
-        <div className={s0.iconWrapper}>
-          <SearchIcon size={20} />
-        </div>
-      </div>
+      <input
+        type="text"
+        value={text}
+        onChange={onChange}
+        className={s0.input}
+        placeholder={t('Search')}
+      />
     </div>
   );
 }

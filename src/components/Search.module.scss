@@ -1,47 +1,32 @@
 .RuleSearch {
-  padding: 0 40px 5px;
-  @media (max-width: 768px) {
-    padding: 0 25px 5px;
-  }
-}
-
-.RuleSearchContainer {
-  position: relative;
-  height: 40px;
-  @media (max-width: 768px) {
-    height: 30px;
-  }
-}
-
-.inputWrapper {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  left: 0;
   width: 100%;
 }
 
 .input {
   -webkit-appearance: none;
+  appearance: none;
   background-color: var(--color-input-bg);
   background-image: none;
   border-radius: 8px;
-  border: 1px solid var(--color-input-border);
+  border: 1px solid transparent;
   box-sizing: border-box;
-  color: var(--color-text-secondary);
+  color: var(--color-text);
   display: inline-block;
-  font-size: inherit;
+  font-size: 0.95em;
   height: 40px;
   outline: none;
-  padding: 0 15px 0 35px;
-  transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  padding: 0 16px;
+  transition: all 0.2s ease;
   width: 100%;
-}
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 
-.iconWrapper {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  left: 10px;
-  line-height: 0;
+  &::placeholder {
+    color: var(--color-text-secondary);
+    opacity: 0.6;
+  }
+
+  &:focus {
+    border-color: var(--color-focus-blue);
+    box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.15);
+  }
 }

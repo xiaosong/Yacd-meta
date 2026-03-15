@@ -9,11 +9,20 @@
   & > div {
     flex: 1;
   }
+
+  @media (max-width: 768px) {
+    max-width: none;
+    justify-content: stretch;
+  }
 }
 
 .searchWrapper {
   flex: 1;
   max-width: 300px;
+
+  @media (max-width: 768px) {
+    max-width: none;
+  }
 }
 
 .clearBtn {
@@ -113,7 +122,7 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
   @media (max-width: 768px) {
-    margin: 15px 25px;
+    margin: 10px 15px;
   }
 
   &::-webkit-scrollbar {

@@ -76,7 +76,8 @@ export default function Sparkline({ data: dataArray, labels, type, styleIndex = 
             label(context) {
               if (context.parsed.y !== null) {
                 const suffix = type === 'inuse' ? '' : '/s';
-                return prettyBytes(context.parsed.y) + suffix;
+                // 还原 log1p 变换后的真实值
+                return prettyBytes(Math.expm1(context.parsed.y)) + suffix;
               }
               return '';
             },
@@ -92,7 +93,8 @@ export default function Sparkline({ data: dataArray, labels, type, styleIndex = 
         {
           ...commonDataSetProps,
           ...chartStyles[styleIndex][type],
-          data: dataArray.map((v, i) => ({ x: labels[i], y: v })),
+          // log1p 变换：压缩大尖刺，让小流量也可见；log1p(0)=0 不会出现 -Infinity
+          data: dataArray.map((v, i) => ({ x: labels[i], y: Math.log1p(v) })),
           fill: true,
         },
       ],

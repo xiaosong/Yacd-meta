@@ -56,7 +56,6 @@ export default function Logs({ dispatch, logLevel, apiConfig, logs, logStreaming
   return (
     <div>
       <ContentHeader>
-        <div style={{ flex: 1 }} />
         <div className={s.headerControls}>
           <LogSearch className={s.searchWrapper} />
           <button className={s.clearBtn} onClick={() => dispatch(clearLogs())} title={t('Clear')}>

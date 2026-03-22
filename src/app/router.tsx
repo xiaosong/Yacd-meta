@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { HashRouter, Route, RouteObject, Routes, useRoutes } from 'react-router-dom';
+import { HashRouter, Navigate, Route, RouteObject, Routes, useRoutes } from 'react-router-dom';
 
 import Loading from '~/components/Loading';
 import Loading2 from '~/components/Loading2';
@@ -23,7 +23,8 @@ const BackendPage = lazy(() => import('../pages/BackendPage'));
 const StyleGuidePage = lazy(() => import('../pages/StyleGuidePage'));
 
 const routes = [
-  { path: '/', element: <HomePage /> },
+  { path: '/', element: <Navigate to="/proxies" replace /> },
+  { path: '/home', element: <HomePage /> },
   { path: '/connections', element: <ConnectionsPage /> },
   { path: '/configs', element: <ConfigPage /> },
   { path: '/logs', element: <LogsPage /> },

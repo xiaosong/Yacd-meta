@@ -66,6 +66,7 @@ export type ProxyItem = {
   providerName?: string;
   all?: string[];
   now?: string;
+  hidden?: boolean;
 };
 export type ProxiesMapping = Record<string, ProxyItem>;
 export type DelayMapping = Record<

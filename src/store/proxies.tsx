@@ -388,7 +388,9 @@ function retrieveGroupNamesFrom(proxies: Record<string, ProxyItem>) {
   for (const prop in proxies) {
     const p = proxies[prop];
     if (p.all && Array.isArray(p.all)) {
-      groupNames.push(prop);
+      if (!p.hidden) {
+        groupNames.push(prop);
+      }
       if (prop === 'GLOBAL') {
         globalAll = Array.from(p.all);
       }

@@ -51,7 +51,7 @@ interface SideBarRowProps {
 
 const pages = [
   {
-    to: '/',
+    to: '/home',
     iconId: 'activity',
     labelText: 'Overview',
   },

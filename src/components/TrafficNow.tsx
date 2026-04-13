@@ -27,18 +27,28 @@ export default function TrafficNow({ apiConfig, selectedChartStyleIndex }: Props
 
   return (
     <div className={s0.TrafficNow}>
-      <div className={s0.sec}>
-        <div className={s0.header}>
-          <Cpu size={16} />
-          <span>{t('Memory Usage')}</span>
+      <div className={s0.overview}>
+        <div className={s0.sec}>
+          <div className={s0.header}>
+            <Activity size={16} />
+            <span>{t('Download Total')}</span>
+          </div>
+          <div className={s0.value}>{dlTotal}</div>
         </div>
-        <div className={s0.value}>{mUsage}</div>
-        <Sparkline
-          data={memory.inuse}
-          labels={memory.labels}
-          type="inuse"
-          styleIndex={selectedChartStyleIndex}
-        />
+        <div className={s0.sec}>
+          <div className={s0.header}>
+            <Zap size={16} />
+            <span>{t('Upload Total')}</span>
+          </div>
+          <div className={s0.value}>{upTotal}</div>
+        </div>
+        <div className={s0.sec}>
+          <div className={s0.header}>
+            <LinkIcon size={16} />
+            <span>{t('Active Connections')}</span>
+          </div>
+          <div className={s0.value}>{connNumber}</div>
+        </div>
       </div>
 
       <div className={s0.sec}>
@@ -70,26 +80,16 @@ export default function TrafficNow({ apiConfig, selectedChartStyleIndex }: Props
 
       <div className={s0.sec}>
         <div className={s0.header}>
-          <Activity size={16} />
-          <span>{t('Download Total')}</span>
+          <Cpu size={16} />
+          <span>{t('Memory Usage')}</span>
         </div>
-        <div className={s0.value}>{dlTotal}</div>
-      </div>
-
-      <div className={s0.sec}>
-        <div className={s0.header}>
-          <Zap size={16} />
-          <span>{t('Upload Total')}</span>
-        </div>
-        <div className={s0.value}>{upTotal}</div>
-      </div>
-
-      <div className={s0.sec}>
-        <div className={s0.header}>
-          <LinkIcon size={16} />
-          <span>{t('Active Connections')}</span>
-        </div>
-        <div className={s0.value}>{connNumber}</div>
+        <div className={s0.value}>{mUsage}</div>
+        <Sparkline
+          data={memory.inuse}
+          labels={memory.labels}
+          type="inuse"
+          styleIndex={selectedChartStyleIndex}
+        />{' '}
       </div>
     </div>
   );

@@ -74,7 +74,6 @@
   &:hover {
     background-color: rgba(176, 206, 255, 0.221);
     color: var(--color-focus-blue);
-    transform: translateX(2px);
   }
 
   @media (--breakpoint-not-small) {
@@ -108,10 +107,6 @@
       height: 24px;
     }
   }
-}
-
-.row:hover svg {
-  transform: scale(1.06);
 }
 
 .rowActive {

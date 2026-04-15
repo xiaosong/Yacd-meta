@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Activity, ArrowDown, ArrowUp, Cpu, Link as LinkIcon, Zap } from 'react-feather';
+import { Download, ArrowDown, ArrowUp, Cpu, Link as LinkIcon, Upload } from 'react-feather';
 import { useTranslation } from 'react-i18next';
 
 import useMemory from '../hooks/useMemory';
@@ -30,14 +30,14 @@ export default function TrafficNow({ apiConfig, selectedChartStyleIndex }: Props
       <div className={s0.overview}>
         <div className={s0.sec}>
           <div className={s0.header}>
-            <Activity size={16} />
+            <Download size={16} />
             <span>{t('Download Total')}</span>
           </div>
           <div className={s0.value}>{dlTotal}</div>
         </div>
         <div className={s0.sec}>
           <div className={s0.header}>
-            <Zap size={16} />
+            <Upload size={16} />
             <span>{t('Upload Total')}</span>
           </div>
           <div className={s0.value}>{upTotal}</div>

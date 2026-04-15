@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Download, ArrowDown, ArrowUp, Cpu, Link as LinkIcon, Upload } from 'react-feather';
+import { Download, ArrowDown, ArrowUp, Cpu, Link as LinkIcon, Upload } from '~/components/shared/FeatherIcons';
 import { useTranslation } from 'react-i18next';
 
 import useMemory from '../hooks/useMemory';

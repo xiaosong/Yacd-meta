@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Globe, Hash, Link, Shield, Zap } from 'react-feather';
+import { FileText, Globe, Hash, Link, Shield, Zap } from '~/components/shared/FeatherIcons';
 
 import s0 from './Rule.module.scss';
 

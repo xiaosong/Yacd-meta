@@ -1,15 +1,15 @@
-import produce, * as immer from 'immer';
+import { produce, setAutoFreeze } from 'immer';
 import React from 'react';
 
 // in logs store we update logs in place
 // outside of immer produce
 // this is just workaround
-immer.setAutoFreeze(false);
+setAutoFreeze(false);
 
 const { createContext, memo, useMemo, useRef, useEffect, useCallback, useContext, useState } =
   React;
 
-export { immer };
+export const immer = { produce, setAutoFreeze };
 
 const StateContext = createContext(null);
 const DispatchContext = createContext(null);
@@ -33,7 +33,7 @@ export default function Provider({ initialState, actions = {}, children }) {
   const [state, setState] = useState(initialState);
   const getState = useCallback(() => stateRef.current, []);
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       (window as any).getState2 = getState;
     }
   }, [getState]);
@@ -43,7 +43,7 @@ export default function Provider({ initialState, actions = {}, children }) {
 
       const stateNext = produce(getState(), fn);
       if (stateNext !== stateRef.current) {
-        if (process.env.NODE_ENV === 'development') {
+        if (import.meta.env.DEV) {
           // eslint-disable-next-line no-console
           console.log(actionId, stateNext);
         }
@@ -81,7 +81,7 @@ export function connect(mapStateToProps: any) {
 // steal from https://github.com/reduxjs/redux/blob/master/src/bindActionCreators.ts
 function bindAction(action: any, dispatch: any) {
   return function (...args: any[]) {
-    return dispatch(action.apply(this, args));
+    return dispatch(action(...args));
   };
 }
 

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { GitHub } from 'react-feather';
+import { GitHub } from '~/components/shared/FeatherIcons';
 
 import ContentHeader from '~/components/ContentHeader';
 import { useAboutVersionQuery } from '~/modules/about/hooks';
@@ -34,7 +34,7 @@ export function About({ apiConfig }: Props) {
 
   return (
     <>
-      <ContentHeader title="About" />
+      <ContentHeader>About</ContentHeader>
       {coreVersionMeta && version?.version ? (
         <Version
           name={coreVersionMeta.name}

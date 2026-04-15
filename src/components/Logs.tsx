@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ArrowDown, Pause, Play, Trash2 } from 'react-feather';
+import { ArrowDown, Pause, Play, Trash2 } from '~/components/shared/FeatherIcons';
 import { useTranslation } from 'react-i18next';
 
 import ContentHeader from '~/components/ContentHeader';

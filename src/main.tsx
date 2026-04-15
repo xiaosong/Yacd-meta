@@ -10,6 +10,10 @@ import { registerAppBootstrap } from './app/bootstrap';
 import * as swRegistration from './swRegistration';
 
 const rootEl = document.getElementById('app');
+if (!rootEl) {
+	throw new Error('Cannot find #app root element');
+}
+
 const root = createRoot(rootEl);
 
 Modal.setAppElement(rootEl);

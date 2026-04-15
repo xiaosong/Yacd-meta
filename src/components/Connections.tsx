@@ -1,7 +1,7 @@
 import './Connections.css';
 
 import React from 'react';
-import { Pause, Play, RefreshCcw, Settings, Tag, X as IconClose } from 'react-feather';
+import { Pause, Play, RefreshCcw, Settings, Tag, X as IconClose } from '~/components/shared/FeatherIcons';
 import { useTranslation } from 'react-i18next';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
@@ -114,14 +114,12 @@ export default function Connections({ apiConfig }: Props) {
                 <Tab>
                   <span>{t('Active')}</span>
                   <span className={s.connQty}>
-                    {/* @ts-expect-error ts-migrate(2786) FIXME: 'ConnQty' cannot be used as a JSX component. */}
                     <ConnQty qty={filteredConns.length} />
                   </span>
                 </Tab>
                 <Tab>
                   <span>{t('Closed')}</span>
                   <span className={s.connQty}>
-                    {/* @ts-expect-error ts-migrate(2786) FIXME: 'ConnQty' cannot be used as a JSX component. */}
                     <ConnQty qty={filteredClosedConns.length} />
                   </span>
                 </Tab>

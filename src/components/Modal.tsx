@@ -1,6 +1,6 @@
 import cx from 'clsx';
 import * as React from 'react';
-import Modal, { Props as ReactModalProps } from 'react-modal';
+import ReactModalBase, { Props as ReactModalProps } from 'react-modal';
 
 import s0 from './Modal.module.scss';
 
@@ -8,9 +8,27 @@ type Props = ReactModalProps & {
   isOpen: boolean;
   onRequestClose: (...args: any[]) => any;
   children: React.ReactNode;
-  className?: string;
-  overlayClassName?: string;
 };
+
+const ReactModal = ReactModalBase as unknown as React.ComponentType<ReactModalProps>;
+
+function withBaseClass(
+  className: ReactModalProps['className'],
+  baseClassName: string
+): ReactModalProps['className'] {
+  if (!className) {
+    return baseClassName;
+  }
+
+  if (typeof className === 'string') {
+    return cx(className, baseClassName);
+  }
+
+  return {
+    ...className,
+    base: cx(className.base, baseClassName),
+  };
+}
 
 function ModalAPIConfig({
   isOpen,
@@ -20,10 +38,10 @@ function ModalAPIConfig({
   children,
   ...otherProps
 }: Props) {
-  const contentCls = cx(className, s0.content);
-  const overlayCls = cx(overlayClassName, s0.overlay);
+  const contentCls = withBaseClass(className, s0.content);
+  const overlayCls = withBaseClass(overlayClassName, s0.overlay);
   return (
-    <Modal
+    <ReactModal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
       className={contentCls}
@@ -31,7 +49,7 @@ function ModalAPIConfig({
       {...otherProps}
     >
       {children}
-    </Modal>
+    </ReactModal>
   );
 }
 

@@ -1,7 +1,7 @@
 import cx from 'clsx';
 import { formatDistance } from 'date-fns';
 import * as React from 'react';
-import { ChevronDown, RotateCw, Zap } from 'react-feather';
+import { ChevronDown, RotateCw, Zap } from '~/components/shared/FeatherIcons';
 
 import Button from '~/components/Button';
 import Collapsible from '~/components/Collapsible';

@@ -1,4 +1,4 @@
-@import '~/styles/utils/custom-media';
+@use '~/styles/utils/custom-media' as *;
 
 .proxy {
   padding: 5px;

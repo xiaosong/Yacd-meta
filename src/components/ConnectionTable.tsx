@@ -4,10 +4,10 @@ import cx from 'clsx';
 import { formatDistance, Locale } from 'date-fns';
 import { enUS, zhCN, zhTW } from 'date-fns/locale';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, ChevronDown, Sliders, XCircle } from 'react-feather';
+import { ArrowDown, ArrowUp, ChevronDown, Sliders, XCircle } from '~/components/shared/FeatherIcons';
 import { useTranslation } from 'react-i18next';
 import { useSortBy, useTable } from 'react-table';
-import { FixedSizeList as List } from 'react-window';
+import { List as VirtualList, RowComponentProps } from 'react-window';
 
 import { FormattedConn } from '~/store/connections';
 
@@ -40,19 +40,6 @@ const COLUMN_WIDTHS = {
 
 const TOTAL_WIDTH = Object.values(COLUMN_WIDTHS).reduce((a, b) => a + b, 0);
 
-const InnerElement = React.forwardRef<HTMLDivElement, React.HTMLProps<HTMLDivElement>>(
-  ({ style, ...rest }, ref) => (
-    <div
-      ref={ref}
-      style={{
-        ...style,
-        width: TOTAL_WIDTH,
-      }}
-      {...rest}
-    />
-  )
-);
-
 const getColumnStyle = (columnId: string) => {
   const width = COLUMN_WIDTHS[columnId] || 100;
   const style: React.CSSProperties = {
@@ -82,19 +69,6 @@ function Table({ data, columns, hiddenColumns, apiConfig, height }) {
   const [isMobile, setIsMobile] = useState(false);
 
   const headerRef = React.useRef<HTMLDivElement>(null);
-  const outerRef = React.useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const outer = outerRef.current;
-    if (!outer) return;
-    const handleScroll = () => {
-      if (headerRef.current) {
-        headerRef.current.scrollLeft = outer.scrollLeft;
-      }
-    };
-    outer.addEventListener('scroll', handleScroll);
-    return () => outer.removeEventListener('scroll', handleScroll);
-  }, []);
 
   useEffect(() => {
     const mql = window.matchMedia('(max-width: 768px)');
@@ -193,7 +167,7 @@ function Table({ data, columns, hiddenColumns, apiConfig, height }) {
   }, [state.sortBy]);
 
   const MobileRow = useCallback(
-    ({ index, style }) => {
+    ({ index, style }: RowComponentProps) => {
       const row = rows[index];
       const conn = row.original as FormattedConn;
       return (
@@ -211,7 +185,7 @@ function Table({ data, columns, hiddenColumns, apiConfig, height }) {
   );
 
   const DesktopRow = useCallback(
-    ({ index, style }) => {
+    ({ index, style }: RowComponentProps) => {
       const row = rows[index];
       prepareRow(row);
       return (
@@ -259,6 +233,12 @@ function Table({ data, columns, hiddenColumns, apiConfig, height }) {
     [prepareRow, rows, renderCell, locale]
   );
 
+  const handleDesktopListScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    if (headerRef.current) {
+      headerRef.current.scrollLeft = e.currentTarget.scrollLeft;
+    }
+  }, []);
+
   return (
     <div className={s.tableWrapper} style={{ height, overflow: 'hidden' }}>
       {isMobile ? (
@@ -290,9 +270,13 @@ function Table({ data, columns, hiddenColumns, apiConfig, height }) {
               {currentSort.desc ? <ArrowDown size={18} /> : <ArrowUp size={18} />}
             </button>
           </div>
-          <List height={height - 50} itemCount={rows.length} itemSize={120} width="100%">
-            {MobileRow}
-          </List>
+          <VirtualList
+            style={{ height: height - 50, width: '100%' }}
+            rowCount={rows.length}
+            rowHeight={120}
+            rowComponent={MobileRow}
+            rowProps={{}}
+          />
         </div>
       ) : (
         <div
@@ -347,16 +331,14 @@ function Table({ data, columns, hiddenColumns, apiConfig, height }) {
               ))}
             </div>
           </div>
-          <List
-            height={height - 50}
-            itemCount={rows.length}
-            itemSize={44}
-            width="100%"
-            outerRef={outerRef}
-            innerElementType={InnerElement}
-          >
-            {DesktopRow}
-          </List>
+          <VirtualList
+            style={{ height: height - 50, width: '100%' }}
+            onScroll={handleDesktopListScroll}
+            rowCount={rows.length}
+            rowHeight={44}
+            rowComponent={DesktopRow}
+            rowProps={{}}
+          />
         </div>
       )}
       <MOdalCloseConnection

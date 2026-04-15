@@ -1,14 +1,14 @@
 import cx from 'clsx';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { areEqual, VariableSizeList } from 'react-window';
+import { List as VirtualList, RowComponentProps } from 'react-window';
 
 import ContentHeader from '~/components/ContentHeader';
 import { RuleProviderItem } from '~/components/rules/RuleProviderItem';
 import { RulesPageFab } from '~/components/rules/RulesPageFab';
 import { TextFilter } from '~/components/shared/TextFitler';
 import { useRulesPage } from '~/modules/rules/hooks';
-import { formatQty, getItemSizeFactory, itemKey, RulesListItemData } from '~/modules/rules/utils';
+import { formatQty, getItemSizeFactory, RulesListItemData } from '~/modules/rules/utils';
 import { ruleFilterText } from '~/store/rules';
 import { ClashAPIConfig } from '~/types';
 
@@ -17,10 +17,11 @@ import useRemainingViewPortHeight from '../hooks/useRemainingViewPortHeight';
 import Rule from './Rule';
 import s from './Rules.module.scss';
 
-const { memo } = React;
+type RulesRowProps = {
+  data: RulesListItemData;
+};
 
-// @ts-expect-error ts-migrate(2339) FIXME: Property 'index' does not exist on type '{ childre... Remove this comment to see the full error message
-const Row = memo(({ index, style, data }) => {
+function Row({ index, style, data }: RowComponentProps<RulesRowProps>) {
   const { rules, provider, apiConfig } = data;
 
   if (!rules) {
@@ -39,7 +40,7 @@ const Row = memo(({ index, style, data }) => {
       <Rule {...r} />
     </div>
   );
-}, areEqual);
+}
 
 type RulesProps = {
   apiConfig: ClashAPIConfig;
@@ -86,16 +87,15 @@ export default function Rules({ apiConfig }: RulesProps) {
         </div>
       </ContentHeader>
       <div ref={refRulesContainer} className={s.listWrapper}>
-        <VariableSizeList
-          height={containerHeight}
-          width="100%"
-          itemCount={isRulesTab ? rules.length : provider.names.length}
-          itemSize={getItemSize}
-          itemData={{ rules: isRulesTab ? rules : null, provider, apiConfig } as RulesListItemData}
-          itemKey={itemKey}
-        >
-          {Row}
-        </VariableSizeList>
+        <VirtualList
+          style={{ height: containerHeight, width: '100%' }}
+          rowCount={isRulesTab ? rules.length : provider.names.length}
+          rowHeight={getItemSize}
+          rowComponent={Row}
+          rowProps={{
+            data: { rules: isRulesTab ? rules : null, provider, apiConfig } as RulesListItemData,
+          }}
+        />
       </div>
       {provider && provider.names && provider.names.length > 0 ? (
         <RulesPageFab apiConfig={apiConfig} />

@@ -4,11 +4,14 @@ import { useTranslation } from 'react-i18next';
 
 import ContentHeader from '~/components/ContentHeader';
 import LogSearch from '~/components/LogSearch';
+import Select from '~/components/shared/Select';
 import { useStoreActions } from '~/components/StateProvider';
 import SvgYacd from '~/components/SvgYacd';
 import useRemainingViewPortHeight from '~/hooks/useRemainingViewPortHeight';
 import { useLogsPage } from '~/modules/logs/hooks';
+import { LOG_LEVEL_OPTIONS } from '~/modules/config/utils';
 import { LOG_TYPES, LOGS_HEIGHT_RATIO } from '~/modules/logs/utils';
+import { updateConfigs } from '~/store/configs';
 import { clearLogs } from '~/store/logs';
 import { DispatchFn, Log } from '~/store/types';
 import { ClashAPIConfig } from '~/types';
@@ -58,6 +61,12 @@ export default function Logs({ dispatch, logLevel, apiConfig, logs, logStreaming
       <ContentHeader>
         <div className={s.headerControls}>
           <LogSearch className={s.searchWrapper} />
+          <Select
+            className={s.levelSelect}
+            options={LOG_LEVEL_OPTIONS}
+            selected={logLevel ? logLevel.toLowerCase() : 'info'}
+            onChange={(e) => dispatch(updateConfigs(apiConfig, { 'log-level': e.target.value }))}
+          />
           <button className={s.clearBtn} onClick={() => dispatch(clearLogs())} title={t('Clear')}>
             <Trash2 size={18} />
           </button>

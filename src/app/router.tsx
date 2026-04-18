@@ -1,26 +1,22 @@
-import * as React from 'react';
+import { Suspense } from 'react';
 import { HashRouter, Navigate, Route, RouteObject, Routes, useRoutes } from 'react-router-dom';
 
 import Loading from '~/components/Loading';
-import Loading2 from '~/components/Loading2';
 import { Head } from '~/components/shared/Head';
 import SideBar from '~/components/SideBar';
 
 import styles from '../App.module.scss';
 
 import APIDiscovery from './APIDiscovery';
-
-const { Suspense, lazy } = React;
-
-const HomePage = lazy(() => import('../pages/HomePage'));
-const ConnectionsPage = lazy(() => import('../pages/ConnectionsPage'));
-const ConfigPage = lazy(() => import('../pages/ConfigPage'));
-const LogsPage = lazy(() => import('../pages/LogsPage'));
-const ProxiesPage = lazy(() => import('../pages/ProxiesPage'));
-const RulesPage = lazy(() => import('../pages/RulesPage'));
-const AboutPage = lazy(() => import('../pages/AboutPage'));
-const BackendPage = lazy(() => import('../pages/BackendPage'));
-const StyleGuidePage = lazy(() => import('../pages/StyleGuidePage'));
+import AboutPage from '../pages/AboutPage';
+import BackendPage from '../pages/BackendPage';
+import ConfigPage from '../pages/ConfigPage';
+import ConnectionsPage from '../pages/ConnectionsPage';
+import HomePage from '../pages/HomePage';
+import LogsPage from '../pages/LogsPage';
+import ProxiesPage from '../pages/ProxiesPage';
+import RulesPage from '../pages/RulesPage';
+import StyleGuidePage from '../pages/StyleGuidePage';
 
 const routes = [
   { path: '/', element: <Navigate to="/proxies" replace /> },
@@ -39,9 +35,7 @@ function DashboardRouter() {
     <>
       <APIDiscovery />
       <SideBar />
-      <div className={styles.content}>
-        <Suspense fallback={<Loading2 />}>{useRoutes(routes)}</Suspense>
-      </div>
+      <div className={styles.content}>{useRoutes(routes)}</div>
     </>
   );
 }

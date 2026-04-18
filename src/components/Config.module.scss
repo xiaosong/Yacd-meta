@@ -1,4 +1,4 @@
-@import '~/styles/utils/custom-media';
+@use '~/styles/utils/custom-media' as *;
 
 .root {
   max-width: 1000px;

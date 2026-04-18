@@ -8,7 +8,7 @@ import {
   Settings,
   Tool,
   Trash2,
-} from 'react-feather';
+} from '~/components/shared/FeatherIcons';
 import { useTranslation } from 'react-i18next';
 
 import Select from '~/components/shared/Select';
@@ -73,7 +73,6 @@ export default function Config({
 
   return (
     <div>
-      <ContentHeader />
       <div className={s0.root}>
         <div className={s0.card}>
           <div className={s0.sectionTitle}>

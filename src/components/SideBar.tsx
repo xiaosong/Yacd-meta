@@ -1,7 +1,7 @@
 import { Tooltip } from '@reach/tooltip';
 import cx from 'clsx';
 import * as React from 'react';
-import { Info } from 'react-feather';
+import { Info } from '~/components/shared/FeatherIcons';
 import { useTranslation } from 'react-i18next';
 import { FcAreaChart, FcDocument, FcGlobe, FcLink, FcRuler, FcSettings } from 'react-icons/fc';
 import { useQuery } from 'react-query';

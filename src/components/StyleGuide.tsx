@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap } from 'react-feather';
+import { Zap } from '~/components/shared/FeatherIcons';
 
 import Loading from '~/components/Loading';
 

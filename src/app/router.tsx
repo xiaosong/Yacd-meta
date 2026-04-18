@@ -31,7 +31,7 @@ const routes = [
   { path: '/proxies', element: <ProxiesPage /> },
   { path: '/rules', element: <RulesPage /> },
   { path: '/about', element: <AboutPage /> },
-  process.env.NODE_ENV === 'development' ? { path: '/style', element: <StyleGuidePage /> } : false,
+  import.meta.env.DEV ? { path: '/style', element: <StyleGuidePage /> } : false,
 ].filter(Boolean) as RouteObject[];
 
 function DashboardRouter() {

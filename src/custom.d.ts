@@ -1,7 +1,14 @@
-/// <reference types="react/experimental" />
-/// <reference types="react-dom/experimental" />
+/// <reference types="vite/client" />
 
 // for css modules
+declare module '*.css' {
+  const classes: { [key: string]: string };
+  export default classes;
+}
+declare module '*.scss' {
+  const classes: { [key: string]: string };
+  export default classes;
+}
 declare module '*.module.css' {
   const classes: { [key: string]: string };
   export default classes;
@@ -17,12 +24,6 @@ interface Window {
 
 // webpack definePlugin replacing variables
 declare const __VERSION__: string;
-declare const process = {
-  env: {
-    NODE_ENV: string,
-    PUBLIC_URL: string,
-  },
-};
 
 declare module 'react-table' {
   interface TableOptions {}

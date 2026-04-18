@@ -1,6 +1,7 @@
 import cx from 'clsx';
 import * as React from 'react';
-import Modal from 'react-modal';
+
+import Modal from '../Modal';
 
 import modalStyle from '../Modal.module.scss';
 
@@ -8,7 +9,13 @@ import s from './BaseModal.module.scss';
 
 const { useMemo } = React;
 
-export default function BaseModal({ isOpen, onRequestClose, children }) {
+type BaseModalProps = {
+  isOpen: boolean;
+  onRequestClose: (...args: any[]) => unknown;
+  children: React.ReactNode;
+};
+
+export default function BaseModal({ isOpen, onRequestClose, children }: BaseModalProps) {
   const className = useMemo(
     () => ({
       base: cx(modalStyle.content, s.cnt),

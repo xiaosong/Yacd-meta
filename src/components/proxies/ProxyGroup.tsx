@@ -1,6 +1,6 @@
 import cx from 'clsx';
 import * as React from 'react';
-import { ChevronDown, Zap } from 'react-feather';
+import { ChevronDown, Zap } from '~/components/shared/FeatherIcons';
 import { useQuery } from 'react-query';
 
 import * as proxiesAPI from '~/api/proxies';

@@ -1,6 +1,6 @@
 import cx from 'clsx';
 import * as React from 'react';
-import { Eye, EyeOff, X as Close } from 'react-feather';
+import { Eye, EyeOff, X as Close } from '~/components/shared/FeatherIcons';
 
 import { useToggle } from '~/hooks/basic';
 import type { ClashAPIConfigWithAddedAt } from '~/store/types';

@@ -18,7 +18,7 @@ export const position = {
 
 interface ABProps extends React.HTMLAttributes<HTMLButtonElement> {
   text?: string;
-  onClick?: (e: React.FormEvent) => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => unknown;
   'data-testid'?: string;
 }
 
@@ -46,7 +46,7 @@ interface FabProps {
   alwaysShowTitle?: boolean;
   icon?: React.ReactNode;
   mainButtonStyles?: React.CSSProperties;
-  onClick?: (e: React.FormEvent) => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => unknown;
   text?: string;
   children?: React.ReactNode;
 }
@@ -68,7 +68,7 @@ const Fab: React.FC<FabProps> = ({
   const close = () => setIsOpen(false);
   const enter = () => event === 'hover' && open();
   const leave = () => event === 'hover' && close();
-  const toggle = (e: React.FormEvent) => {
+  const toggle = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (onClick) {
       return onClick(e);
     }
@@ -76,7 +76,10 @@ const Fab: React.FC<FabProps> = ({
     return event === 'click' ? (isOpen ? close() : open()) : null;
   };
 
-  const actionOnClick = (e: React.FormEvent, userFunc: (e: React.FormEvent) => void) => {
+  const actionOnClick = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    userFunc: (e: React.MouseEvent<HTMLButtonElement>) => unknown
+  ) => {
     e.persist();
     setIsOpen(false);
     setTimeout(() => {
@@ -95,7 +98,7 @@ const Fab: React.FC<FabProps> = ({
               'aria-hidden': ariaHidden,
               tabIndex: isOpen ? 0 : -1,
               ...ch.props,
-              onClick: (e: React.FormEvent) => {
+              onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
                 if (ch.props.onClick) actionOnClick(e, ch.props.onClick);
               },
             })}

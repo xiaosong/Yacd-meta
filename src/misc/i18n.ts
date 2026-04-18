@@ -18,7 +18,7 @@ i18next
   .use(initReactI18next)
   .use(LanguageDetector)
   .init({
-    debug: process.env.NODE_ENV === 'development',
+    debug: import.meta.env.DEV,
     // resources,
     backend: {
       loadPath: '/__{{lng}}/{{ns}}.json',
@@ -67,7 +67,7 @@ i18next
     },
   });
 
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
   window.i18n = i18next;
 }
 

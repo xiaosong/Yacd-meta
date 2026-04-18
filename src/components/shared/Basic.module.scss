@@ -1,4 +1,4 @@
-@import '~/styles/utils/custom-media';
+@use '~/styles/utils/custom-media' as *;
 
 h2.sectionNameType {
   margin: 0;

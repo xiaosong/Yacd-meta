@@ -1,7 +1,7 @@
 import { formatDistance, Locale } from 'date-fns';
 import { enUS, zhCN, zhTW } from 'date-fns/locale';
 import React from 'react';
-import { ArrowDown, ArrowDownCircle, ArrowUp, X } from 'react-feather';
+import { ArrowDown, ArrowDownCircle, ArrowUp, X } from '~/components/shared/FeatherIcons';
 import { useTranslation } from 'react-i18next';
 
 import { FormattedConn } from '~/store/connections';

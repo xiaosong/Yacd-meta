@@ -8,7 +8,7 @@ import Collapsible from '~/components/Collapsible';
 import CollapsibleSectionHeader from '~/components/CollapsibleSectionHeader';
 import s0 from '~/components/proxies/ProxyGroup.module.scss';
 import { useStoreActions } from '~/components/StateProvider';
-import { framerMotionResouce } from '~/misc/motion';
+import { LazyMotion, domAnimation, m } from 'framer-motion';
 import { useFilteredAndSorted, useUpdateProviderItem } from '~/modules/proxies/hooks';
 import { healthcheckProviderByName } from '~/store/proxies';
 import { DelayMapping, DispatchFn, ProxiesMapping, SubscriptionInfo } from '~/store/types';
@@ -190,19 +190,19 @@ function formatBytes(bytes, decimals = 2) {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }
 function Refresh() {
-  const module = framerMotionResouce.read();
-  const motion = module.motion;
   return (
-    <motion.div
-      className={s.refresh}
-      variants={button}
-      initial="rest"
-      whileHover="hover"
-      whileTap="pressed"
-    >
-      <motion.div className="flexCenter" variants={arrow}>
-        <RotateCw size={16} />
-      </motion.div>
-    </motion.div>
+    <LazyMotion features={domAnimation}>
+      <m.div
+        className={s.refresh}
+        variants={button}
+        initial="rest"
+        whileHover="hover"
+        whileTap="pressed"
+      >
+        <m.div className="flexCenter" variants={arrow}>
+          <RotateCw size={16} />
+        </m.div>
+      </m.div>
+    </LazyMotion>
   );
 }

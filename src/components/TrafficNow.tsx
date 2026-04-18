@@ -1,5 +1,12 @@
 import * as React from 'react';
-import { Download, ArrowDown, ArrowUp, Cpu, Link as LinkIcon, Upload } from '~/components/shared/FeatherIcons';
+import {
+  Download,
+  ArrowDown,
+  ArrowUp,
+  Cpu,
+  Link as LinkIcon,
+  Upload,
+} from '~/components/shared/FeatherIcons';
 import { useTranslation } from 'react-i18next';
 
 import useMemory from '../hooks/useMemory';
@@ -51,45 +58,46 @@ export default function TrafficNow({ apiConfig, selectedChartStyleIndex }: Props
         </div>
       </div>
 
-      <div className={s0.sec}>
-        <div className={s0.header}>
-          <ArrowDown size={16} />
-          <span>{t('Download')}</span>
+      <div className={s0.chartsRow}>
+        <div className={s0.sec}>
+          <div className={s0.header}>
+            <ArrowDown size={16} />
+            <span>{t('Download')}</span>
+          </div>
+          <div className={s0.value}>{downStr}</div>
+          <Sparkline
+            data={traffic.down}
+            labels={traffic.labels}
+            type="down"
+            styleIndex={selectedChartStyleIndex}
+          />
         </div>
-        <div className={s0.value}>{downStr}</div>
-        <Sparkline
-          data={traffic.down}
-          labels={traffic.labels}
-          type="down"
-          styleIndex={selectedChartStyleIndex}
-        />
-      </div>
-      <div className={s0.sec}>
-        <div className={s0.header}>
-          <ArrowUp size={16} />
-          <span>{t('Upload')}</span>
+        <div className={s0.sec}>
+          <div className={s0.header}>
+            <ArrowUp size={16} />
+            <span>{t('Upload')}</span>
+          </div>
+          <div className={s0.value}>{upStr}</div>
+          <Sparkline
+            data={traffic.up}
+            labels={traffic.labels}
+            type="up"
+            styleIndex={selectedChartStyleIndex}
+          />
         </div>
-        <div className={s0.value}>{upStr}</div>
-        <Sparkline
-          data={traffic.up}
-          labels={traffic.labels}
-          type="up"
-          styleIndex={selectedChartStyleIndex}
-        />
-      </div>
-
-      <div className={s0.sec}>
-        <div className={s0.header}>
-          <Cpu size={16} />
-          <span>{t('Memory Usage')}</span>
+        <div className={s0.sec}>
+          <div className={s0.header}>
+            <Cpu size={16} />
+            <span>{t('Memory Usage')}</span>
+          </div>
+          <div className={s0.value}>{mUsage}</div>
+          <Sparkline
+            data={memory.inuse}
+            labels={memory.labels}
+            type="inuse"
+            styleIndex={selectedChartStyleIndex}
+          />
         </div>
-        <div className={s0.value}>{mUsage}</div>
-        <Sparkline
-          data={memory.inuse}
-          labels={memory.labels}
-          type="inuse"
-          styleIndex={selectedChartStyleIndex}
-        />{' '}
       </div>
     </div>
   );

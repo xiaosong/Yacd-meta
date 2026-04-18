@@ -63,9 +63,19 @@ const extraChartOptions: any = {
 export default function Sparkline({ data: dataArray, labels, type, styleIndex = 0 }) {
   chartJSResource.read();
 
+  const isMemory = type === 'inuse';
+
   const options = useMemo(() => {
     return {
       ...extraChartOptions,
+      scales: {
+        ...extraChartOptions.scales,
+        y: {
+          display: false,
+          // 内存值稳定，不从零开始，让 Y 轴自动适应数据范围以显示波动
+          beginAtZero: !isMemory,
+        },
+      },
       plugins: {
         ...extraChartOptions.plugins,
         tooltip: {
@@ -75,9 +85,9 @@ export default function Sparkline({ data: dataArray, labels, type, styleIndex = 
             title: () => '',
             label(context) {
               if (context.parsed.y !== null) {
-                const suffix = type === 'inuse' ? '' : '/s';
-                // 还原 log1p 变换后的真实值
-                return prettyBytes(Math.expm1(context.parsed.y)) + suffix;
+                const suffix = isMemory ? '' : '/s';
+                const raw = isMemory ? context.parsed.y : Math.expm1(context.parsed.y);
+                return prettyBytes(raw) + suffix;
               }
               return '';
             },
@@ -85,7 +95,7 @@ export default function Sparkline({ data: dataArray, labels, type, styleIndex = 
         },
       },
     };
-  }, [type]);
+  }, [type, isMemory]);
 
   const data = useMemo(
     () => ({
@@ -93,13 +103,13 @@ export default function Sparkline({ data: dataArray, labels, type, styleIndex = 
         {
           ...commonDataSetProps,
           ...chartStyles[styleIndex][type],
-          // log1p 变换：压缩大尖刺，让小流量也可见；log1p(0)=0 不会出现 -Infinity
-          data: dataArray.map((v, i) => ({ x: labels[i], y: Math.log1p(v) })),
+          // 内存用原始值（变化幅度小，不需要压缩）；流量用 log1p 压缩尖刺
+          data: dataArray.map((v, i) => ({ x: labels[i], y: isMemory ? v : Math.log1p(v) })),
           fill: true,
         },
       ],
     }),
-    [dataArray, labels, type, styleIndex]
+    [dataArray, labels, type, styleIndex, isMemory],
   );
 
   return (

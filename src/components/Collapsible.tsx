@@ -1,6 +1,5 @@
+import { LazyMotion, domAnimation, m } from 'framer-motion';
 import React from 'react';
-
-import { framerMotionResouce } from '../misc/motion';
 
 const { memo } = React;
 
@@ -27,17 +26,17 @@ const variantsCollpapsibleWrap = {
 };
 
 const Collapsible = memo(({ children, isOpen }: { children: React.ReactNode; isOpen: boolean }) => {
-  const module = framerMotionResouce.read();
-  const motion = module.motion;
   return (
-    <motion.div
-      initial={isOpen ? 'initialOpen' : 'closed'}
-      animate={isOpen ? 'open' : 'closed'}
-      variants={variantsCollpapsibleWrap}
-      style={{ overflow: 'hidden' }}
-    >
-      {children}
-    </motion.div>
+    <LazyMotion features={domAnimation}>
+      <m.div
+        initial={isOpen ? 'initialOpen' : 'closed'}
+        animate={isOpen ? 'open' : 'closed'}
+        variants={variantsCollpapsibleWrap}
+        style={{ overflow: 'hidden' }}
+      >
+        {children}
+      </m.div>
+    </LazyMotion>
   );
 });
 

@@ -121,21 +121,20 @@ function Rule({ type, payload, proxy, id, size, extra, apiConfig, provider }: Pr
               <span>{extra.hitCount}</span>
             </div>
           )}
-          <div className={s0.spacer} />
-          {extra && (
-            <div
-              className={cx(s0.wrapSwitch, { [s0.pending]: isPending })}
-              title={disabled ? t('rule_enable') : t('rule_disable')}
-            >
-              <SwitchThemed
-                name={`rule-${id}`}
-                checked={!disabled}
-                onChange={(checked: boolean) => toggleRule(id, !checked)}
-              />
-            </div>
-          )}
         </div>
       </div>
+      {extra && (
+        <div
+          className={cx(s0.wrapSwitch, { [s0.pending]: isPending })}
+          title={disabled ? t('rule_enable') : t('rule_disable')}
+        >
+          <SwitchThemed
+            name={`rule-${id}`}
+            checked={!disabled}
+            onChange={(checked: boolean) => toggleRule(id, !checked)}
+          />
+        </div>
+      )}
     </div>
   );
 }

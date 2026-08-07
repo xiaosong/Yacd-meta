@@ -22,15 +22,15 @@ The site http://yacd.metacubex.one is served with HTTP not HTTPS is because many
 
 ```sh
 # install dependencies
-# you may install pnpm with `npm i -g pnpm`
-pnpm i
+# you may install bun from https://bun.sh
+bun install
 
 # start the dev server
 # then go to http://127.0.0.1:3000
-pnpm start
+bun start
 
 
 # build optimized assets
 # ready to deploy assets will be in the directory `public`
-pnpm build
+bun run build
 ```

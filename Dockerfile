@@ -1,12 +1,11 @@
-FROM --platform=$BUILDPLATFORM node:alpine AS builder
+FROM --platform=$BUILDPLATFORM oven/bun:alpine AS builder
 WORKDIR /app
 
-RUN npm i -g pnpm
-COPY pnpm-lock.yaml package.json .
-RUN pnpm i
+COPY bun.lock package.json ./
+RUN bun install --frozen-lockfile
 
 COPY . .
-RUN pnpm build \
+RUN bun run build \
   # remove source maps - people like small image
   && rm public/*.map || true
 

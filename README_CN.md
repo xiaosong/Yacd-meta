@@ -19,14 +19,14 @@
 
 ```sh
 # 安装依赖库
-# 你可以使用 `npm i -g pnpm` 安装 pnpm
-pnpm i
+# 你可以从 https://bun.sh 安装 bun
+bun install
 
  # 启动开发服务器
  # 然后访问 http://127.0.0.1:3000
- pnpm start
+ bun start
 
  # 构建优化资源
  # 准备好部署的资源将在目录 `public` 中
- pnpm build
+ bun run build
 ```

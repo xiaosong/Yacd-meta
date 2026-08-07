@@ -1,0 +1,11 @@
+# 依赖由镜像内的 `bun install` 安装，不要把宿主机（可能是 Windows）的
+# node_modules 拷进来覆盖掉容器里的 Linux 版本
+node_modules
+
+# 构建产物，由镜像内的 `bun run build` 生成
+public
+pkg
+
+.git
+.github
+.vscode

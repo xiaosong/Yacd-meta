@@ -11,19 +11,27 @@ own — it only talks to a Clash-compatible API server.
 ## Commands
 
 ```sh
-pnpm i           # install deps (pnpm is required, see packageManager in package.json)
-pnpm start       # dev server at http://127.0.0.1:3000 (alias: pnpm dev)
-pnpm build       # production build, output goes to ./public (not ./dist, see vite.config.ts)
-pnpm serve       # preview a production build
-pnpm lint        # eslint src
-pnpm typecheck   # tsc --noEmit
+bun install      # install deps (bun is required, see packageManager in package.json)
+bun start        # dev server at http://127.0.0.1:3000 (alias: bun dev)
+bun run build    # production build, output goes to ./public (not ./dist, see vite.config.ts)
+bun serve        # preview a production build
+bun lint         # eslint src
+bun typecheck    # tsc --noEmit
 ```
 
-There is no test suite in this repo (no test runner configured, no `*.test.*` files) — do not add
-a `test` script or assume one exists.
+Use `bun run build` rather than `bun build` — the latter is Bun's own bundler command, not the
+`build` script.
 
-`pnpm build` writes to `public/` intentionally (not the Vite default `dist/`) so it can be served
+There is no test suite in this repo (no test runner configured, no `*.test.*` files) — do not add
+a `test` script or assume one exists. `bun test` would run Bun's built-in test runner, which this
+repo does not use.
+
+`bun run build` writes to `public/` intentionally (not the Vite default `dist/`) so it can be served
 directly as static assets/gh-pages; don't "fix" this.
+
+Dependency pins that used to live in `pnpm-workspace.yaml` now live in `package.json`:
+`overrides` (replaces pnpm `overrides`) and `trustedDependencies` (replaces pnpm `allowBuilds` —
+only listed packages may run install scripts, so `core-js` and `@parcel/watcher` stay blocked).
 
 ## Architecture
 

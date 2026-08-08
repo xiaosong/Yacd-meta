@@ -5,6 +5,7 @@ import {
   selectClashAPIConfig,
   updateAppConfig,
   updateCollapsibleIsOpen,
+  updateCollapsibleIsOpenBulk,
 } from './app';
 import { initialState as configs } from './configs';
 import { initialState as logs } from './logs';
@@ -25,6 +26,7 @@ export const actions = {
 
   app: {
     updateCollapsibleIsOpen,
+    updateCollapsibleIsOpenBulk,
     updateAppConfig,
     removeClashAPIConfig,
     selectClashAPIConfig,

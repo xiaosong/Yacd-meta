@@ -1,20 +1,5 @@
 @use '~/styles/utils/custom-media' as *;
 
-h2.sectionNameType {
-  margin: 0;
-  font-size: 1em;
-  @media (--breakpoint-not-small) {
-    font-size: 1.3em;
-  }
-
-  span:nth-child(2) {
-    font-size: 12px;
-    color: #777;
-    font-weight: normal;
-    margin: 0 0.3em;
-  }
-}
-
 @mixin light {
   --loading-dot-1-1: rgba(0, 0, 0, 0.1);
   --loading-dot-1-2: rgba(0, 0, 0, 0.5);

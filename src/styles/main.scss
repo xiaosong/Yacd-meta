@@ -133,6 +133,19 @@ body {
   --bg-log-info-card: #1f2937;
   --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --border-radius: 12px;
+
+  // 卡片 / 徽章 / 弹层
+  --color-card: #1f2937;
+  --color-card-border: #374151;
+  --color-badge-bg: rgba(255, 255, 255, 0.08);
+  --color-badge-fg: #9ca3af;
+  --color-accent-soft-bg: rgba(59, 130, 246, 0.2);
+  --color-accent-soft-fg: #93c5fd;
+  --color-node-active-bg: rgba(59, 130, 246, 0.14);
+  --color-hover-soft: rgba(255, 255, 255, 0.06);
+  --color-track: #111827;
+  --shadow-popover: 0 12px 32px -8px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-segment: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 @mixin light {
@@ -174,6 +187,19 @@ body {
   --bg-log-info-card: #f1f5f9;
   --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   --border-radius: 12px;
+
+  // 卡片 / 徽章 / 弹层
+  --color-card: #ffffff;
+  --color-card-border: #e6ebf2;
+  --color-badge-bg: #f1f5f9;
+  --color-badge-fg: #64748b;
+  --color-accent-soft-bg: #e0edff;
+  --color-accent-soft-fg: #2563eb;
+  --color-node-active-bg: #eff6ff;
+  --color-hover-soft: rgba(15, 23, 42, 0.05);
+  --color-track: #eef2f6;
+  --shadow-popover: 0 12px 32px -8px rgba(15, 23, 42, 0.22), 0 2px 8px rgba(15, 23, 42, 0.08);
+  --shadow-segment: 0 1px 2px rgba(15, 23, 42, 0.12);
 }
 
 :root[data-theme='auto'] {

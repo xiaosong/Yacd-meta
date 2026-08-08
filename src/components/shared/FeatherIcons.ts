@@ -26,6 +26,7 @@ export {
   RefreshCcw,
   RefreshCw,
   RotateCw,
+  Search,
   Settings,
   Shield,
   Sliders,

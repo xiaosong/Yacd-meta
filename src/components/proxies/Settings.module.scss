@@ -1,84 +1,97 @@
-.labeledInput {
-  max-width: 85vw;
-  width: 400px;
+.panel {
+  width: 340px;
+  // 让内容跟着弹层收缩，宽度不够时不要顶出横向滚动条
+  max-width: 100%;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  padding: 13px 0;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.urlInputWrapper {
+.sectionTitle {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.stackedRow {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.rowLabel {
+  font-size: 0.8rem;
+  color: var(--color-text);
+  line-height: 1.35;
+}
+
+.rowControl {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.inputWrapper {
   position: relative;
   display: flex;
   align-items: center;
-  width: 240px;
 }
 
-.urlInput {
+.input {
   width: 100%;
-  padding: 4px 24px 4px 8px;
-  border: 1px solid var(--color-separator);
-  border-radius: 4px;
-  background: var(--color-bg-1, transparent);
-  color: inherit;
-  font-size: 12px;
+  padding: 8px 26px 8px 10px;
+  border: 1px solid var(--color-card-border);
+  border-radius: 10px;
+  background: var(--color-track);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.78rem;
   outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &::placeholder {
+    color: var(--color-text-secondary);
+    opacity: 0.7;
+  }
 
   &:focus {
-    border-color: var(--color-focus-blue, #409eff);
+    border-color: var(--color-focus-blue);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
   }
 }
 
-.urlClearBtn {
+.clearBtn {
   position: absolute;
-  right: 6px;
+  right: 8px;
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--color-text-secondary, #909399);
+  color: var(--color-text-secondary);
   padding: 0;
   line-height: 1;
-  font-size: 14px;
+  font-size: 15px;
   display: flex;
   align-items: center;
 
   &:hover {
-    color: var(--color-text, inherit);
+    color: var(--color-text);
   }
 }
 
-.timeoutInputWrapper {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.timeoutInput {
-  width: 70px;
-  padding: 4px 8px;
-  border: 1px solid var(--color-separator);
-  border-radius: 4px;
-  background: var(--color-bg-1, transparent);
-  color: inherit;
-  font-size: 12px;
-  text-align: right;
-  outline: none;
-
-  &:focus {
-    border-color: var(--color-focus-blue, #409eff);
-  }
-}
-
-.timeoutUnit {
-  font-size: 12px;
-  color: var(--color-text-secondary, #909399);
-}
-
-hr {
+.divider {
   height: 1px;
   background-color: var(--color-separator);
   border: none;
-  outline: none;
-  margin: 1rem 0px;
+  margin: 2px 0;
 }

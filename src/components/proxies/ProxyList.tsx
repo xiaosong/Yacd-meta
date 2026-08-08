@@ -1,5 +1,6 @@
 import cx from 'clsx';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { getProxyLatency } from '~/modules/proxies/utils';
 import { DelayMapping, DispatchFn, ProxiesMapping } from '~/store/types';
@@ -114,6 +115,7 @@ export function ProxyListGroupedByProvider({
   isSelectable,
   itemOnTapCallback,
 }: ProxyListProps) {
+  const { t } = useTranslation();
   // Group proxy names by their providerName
   const groups: { label: string; names: string[] }[] = React.useMemo(() => {
     const map = new Map<string, string[]>();
@@ -129,7 +131,12 @@ export function ProxyListGroupedByProvider({
     <div>
       {groups.map(({ label, names }) => (
         <div key={label} className={s.providerGroup}>
-          {label ? <div className={s.providerLabel}>{label}</div> : null}
+          {label ? (
+            <div className={s.providerLabel}>
+              <span>{label}</span>
+              <span className={s.providerQty}>{t('node_qty', { n: names.length })}</span>
+            </div>
+          ) : null}
           <div className={cx(s.list, s.detail)}>
             {names.map((proxyName) => {
               const proxy = proxies[proxyName] || {

@@ -1,125 +1,97 @@
-@use '~/styles/utils/custom-media' as *;
-
 .proxy {
-  padding: 5px;
+  padding: 9px 11px;
   position: relative;
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  box-shadow: var(--shadow-card);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-
-  border: 1px solid var(--color-proxy-border);
-
-  &:focus {
-    border-color: var(--color-focus-blue);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
-  }
-
-  &:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    z-index: 1;
-  }
-
-  @media (--breakpoint-not-small) {
-    border-radius: var(--border-radius);
-    padding: 10px;
-  }
-
-  background-color: var(--color-bg-proxy);
+  gap: 5px;
+  min-width: 0;
+  border-radius: 10px;
+  border: 1px solid var(--color-card-border);
+  background-color: var(--color-card);
   color: var(--color-text);
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--color-focus-blue);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+  }
 
   &.now {
-    background-color: var(--color-sb-active-row-bg);
-    color: var(--color-sb-active-row-font);
+    background-color: var(--color-node-active-bg);
     border-color: var(--color-focus-blue);
+    box-shadow: inset 0 0 0 1px var(--color-focus-blue);
   }
 
   &.error {
     opacity: 0.5;
   }
+
   &.selectable {
-    transition: transform 0.2s ease-in-out;
     cursor: pointer;
+
     &:hover {
-      border-color: var(--card-hover-border-lightness);
+      border-color: var(--color-focus-blue);
     }
   }
 }
 
-.proxyType {
-  font-family: var(--font-mono);
-  font-size: 0.6em;
-  @media (--breakpoint-not-small) {
-    font-size: 0.7em;
-  }
-  color: #f596aa;
-  opacity: 0.6;
-
-  .now & {
-    color: inherit;
-    opacity: 0.8;
-  }
-}
-.udpType {
-  font-family: var(--font-mono);
-  font-size: 0.6em;
-  @media (--breakpoint-not-small) {
-    font-size: 0.7em;
-  }
-  color: #51a8dd;
-  opacity: 0.6;
-
-  .now & {
-    color: inherit;
-    opacity: 0.8;
-  }
-}
-.tfoType {
-  padding: 2px;
-}
-.row {
+.topRow,
+.bottomRow {
   display: flex;
   align-items: center;
-  height: auto;
-  font-weight: 400;
   justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
 }
 
 .proxyName {
-  width: 100%;
-  margin-bottom: 5px;
-  font-size: 0.75em;
-  @media (--breakpoint-not-small) {
-    font-size: 0.85em;
-  }
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-text-highlight);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
-.proxySmall {
-  position: relative;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
+.udpBadge {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  padding: 3px 5px;
+  border-radius: 5px;
+  background: var(--color-badge-bg);
+  color: var(--color-badge-fg);
+}
 
-  .now {
-    position: absolute;
-    width: 9px;
-    height: 9px;
-    margin: auto;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    border-radius: 50%;
-    background-color: rgb(255, 253, 253);
-  }
+.proxyType {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* ---------- 折叠态圆点 ---------- */
+
+.proxySmall {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
 
   &.selectable {
-    transition: transform 0.1s ease-in-out;
     cursor: pointer;
+    transition: transform 0.1s ease-in-out;
+
     &:hover {
       transform: scale(1.5);
     }

@@ -1,0 +1,219 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 32px;
+  background: var(--color-background2);
+  backdrop-filter: blur(24px);
+
+  @media (max-width: 1024px) {
+    flex-wrap: wrap;
+    padding: 12px 16px;
+  }
+}
+
+.title {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--color-text-highlight);
+  white-space: nowrap;
+
+  @media (max-width: 1024px) {
+    font-size: 1.35rem;
+  }
+}
+
+/* ---------- 分段标签 ---------- */
+
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--color-track);
+  flex-shrink: 0;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  appearance: none;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  padding: 7px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover:not(.tabActive) {
+    color: var(--color-text);
+    background: var(--color-hover-soft);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-blue);
+    outline-offset: -1px;
+  }
+}
+
+.tabActive {
+  background: var(--color-card);
+  color: var(--color-text-highlight);
+  box-shadow: var(--shadow-segment);
+}
+
+.tabCount {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+/* ---------- 搜索 ---------- */
+
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 1 240px;
+  min-width: 160px;
+  max-width: 340px;
+  margin-left: auto;
+
+  input {
+    padding-left: 38px;
+    height: 38px;
+    border-radius: 10px;
+    box-shadow: none;
+    border-color: var(--color-card-border);
+    background: var(--color-track);
+  }
+
+  @media (max-width: 1024px) {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+    margin-left: 0;
+  }
+}
+
+.searchIcon {
+  position: absolute;
+  left: 13px;
+  color: var(--color-text-secondary);
+  pointer-events: none;
+}
+
+/* ---------- 操作按钮 ---------- */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  appearance: none;
+  height: 38px;
+  padding: 0 15px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+    opacity 0.15s ease;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-blue);
+    outline-offset: 2px;
+  }
+}
+
+.btnGhost {
+  background: var(--color-card);
+  border-color: var(--color-card-border);
+  color: var(--color-text);
+
+  &:hover {
+    border-color: var(--color-focus-blue);
+    color: var(--color-focus-blue);
+  }
+}
+
+.btnPrimary {
+  background: var(--color-focus-blue);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.08);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.btnBusy {
+  opacity: 0.75;
+}
+
+.btnText {
+  @media (max-width: 1200px) {
+    display: none;
+  }
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  appearance: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--color-card-border);
+  background: var(--color-card);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    border-color: var(--color-focus-blue);
+    color: var(--color-focus-blue);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-blue);
+    outline-offset: 2px;
+  }
+}
+
+.iconBtnActive {
+  background: var(--color-focus-blue);
+  border-color: var(--color-focus-blue);
+  color: #fff;
+
+  &:hover {
+    color: #fff;
+  }
+}

@@ -160,6 +160,19 @@ export function updateCollapsibleIsOpen(prefix: string, name: string, v: boolean
   };
 }
 
+/** 一次性展开/收起同一前缀下的多个分组（代理页的「全部收起 / 全部展开」） */
+export function updateCollapsibleIsOpenBulk(prefix: string, names: string[], v: boolean) {
+  return (dispatch: DispatchFn, getState: GetStateFn) => {
+    dispatch('updateCollapsibleIsOpenBulk', (s: State) => {
+      for (const name of names) {
+        s.app.collapsibleIsOpen[`${prefix}:${name}`] = v;
+      }
+    });
+    // side effect
+    saveStateDebounced(getState().app);
+  };
+}
+
 const defaultClashAPIConfig = {
   baseURL: document.getElementById('app')?.getAttribute('data-base-url') ?? 'http://127.0.0.1:9090',
   secret: '',

@@ -1,6 +1,7 @@
 import { useAtom } from 'jotai';
 import * as React from 'react';
 
+import { useStoreActions } from '~/components/StateProvider';
 import {
   fetchProxies,
   NonProxyTypes,
@@ -18,7 +19,7 @@ import {
 } from '~/store/types';
 import { ClashAPIConfig } from '~/types';
 
-import { splitItemsByLayout } from './utils';
+import { matchesFilter, parseFilterSegments, splitItemsByLayout } from './utils';
 
 const { useCallback, useEffect, useMemo, useRef, useState } = React;
 
@@ -81,30 +82,11 @@ const ProxySortingFns = {
   },
 };
 
-function filterStrArr(all: string[], searchText: string) {
-  const segments = searchText
-    .toLowerCase()
-    .split(' ')
-    .map((x) => x.trim())
-    .filter((x) => !!x);
-
-  if (segments.length === 0) return all;
-
-  return all.filter((name) => {
-    let i = 0;
-    for (; i < segments.length; i++) {
-      const seg = segments[i];
-      if (name.toLowerCase().indexOf(seg) > -1) return true;
-    }
-    return false;
-  });
-}
-
 function filterAvailableProxiesAndSort(
   all: string[],
   delay: DelayMapping,
   hideUnavailableProxies: boolean,
-  filterText: string,
+  segments: string[],
   proxySortBy: string,
   proxies?: ProxiesMapping
 ) {
@@ -113,10 +95,18 @@ function filterAvailableProxiesAndSort(
     filtered = filterAvailableProxies(all, delay);
   }
 
-  if (typeof filterText === 'string' && filterText !== '') {
-    filtered = filterStrArr(filtered, filterText);
+  if (segments.length > 0) {
+    filtered = filtered.filter((name) => matchesFilter(name, segments));
   }
   return ProxySortingFns[proxySortBy](filtered, delay, proxies);
+}
+
+const EMPTY_SEGMENTS: string[] = [];
+
+/** 搜索框当前的分词，空数组表示没有搜索 */
+export function useFilterSegments(): string[] {
+  const [filterText] = useAtom(proxyFilterText);
+  return useMemo(() => parseFilterSegments(filterText), [filterText]);
 }
 
 export function useFilteredAndSorted(
@@ -124,21 +114,86 @@ export function useFilteredAndSorted(
   delay: DelayMapping,
   hideUnavailableProxies: boolean,
   proxySortBy: string,
-  proxies?: ProxiesMapping
+  proxies?: ProxiesMapping,
+  /** 组名本身命中搜索时，组内节点就不再过滤，整组原样展示 */
+  skipTextFilter = false
 ) {
-  const [filterText] = useAtom(proxyFilterText);
+  const segments = useFilterSegments();
+  const effectiveSegments = skipTextFilter ? EMPTY_SEGMENTS : segments;
   return useMemo(
     () =>
       filterAvailableProxiesAndSort(
         all,
         delay,
         hideUnavailableProxies,
-        filterText,
+        effectiveSegments,
         proxySortBy,
         proxies
       ),
-    [all, delay, hideUnavailableProxies, filterText, proxySortBy, proxies]
+    [all, delay, hideUnavailableProxies, effectiveSegments, proxySortBy, proxies]
   );
+}
+
+/** 代理组：组名命中，或组内有节点命中，才留在列表里 */
+export function useVisibleGroupNames(groupNames: string[], proxies: ProxiesMapping): string[] {
+  const segments = useFilterSegments();
+  return useMemo(() => {
+    if (segments.length === 0) return groupNames;
+    return groupNames.filter((name) => {
+      if (matchesFilter(name, segments)) return true;
+      const group = proxies[name] as (ProxyItem & { all?: string[] }) | undefined;
+      return (group?.all ?? []).some((n) => matchesFilter(n, segments));
+    });
+  }, [groupNames, proxies, segments]);
+}
+
+/** 提供商：同上，名称命中或旗下有节点命中 */
+export function useVisibleProviders(
+  providers: FormattedProxyProvider[]
+): FormattedProxyProvider[] {
+  const segments = useFilterSegments();
+  return useMemo(() => {
+    if (segments.length === 0) return providers;
+    return providers.filter(
+      (p) =>
+        matchesFilter(p.name, segments) || p.proxies.some((n) => matchesFilter(n, segments))
+    );
+  }, [providers, segments]);
+}
+
+/**
+ * 搜索时，仅因为「组内节点命中」才留下来的卡片会自动展开——否则只能看到一排
+ * 圆点，还得手动点开才能看见搜到的节点。用户手动收起时用本地 override 记下来，
+ * 不写进持久化的折叠状态；搜索词一变就重置。
+ */
+export function useFilterAwareCollapse({
+  isOpen,
+  nameMatched,
+  onToggle,
+}: {
+  isOpen: boolean;
+  nameMatched: boolean;
+  onToggle: (next: boolean) => void;
+}): [boolean, () => void] {
+  const segments = useFilterSegments();
+  const [collapseOverride, setCollapseOverride] = useState(false);
+
+  useEffect(() => {
+    setCollapseOverride(false);
+  }, [segments]);
+
+  const forceOpen = segments.length > 0 && !nameMatched && !collapseOverride;
+  const effectiveIsOpen = isOpen || forceOpen;
+
+  const toggle = useCallback(() => {
+    if (forceOpen) {
+      setCollapseOverride(true);
+      return;
+    }
+    onToggle(!effectiveIsOpen);
+  }, [forceOpen, effectiveIsOpen, onToggle]);
+
+  return [effectiveIsOpen, toggle];
 }
 
 export function useUpdateProviderItem({
@@ -241,17 +296,17 @@ export function useProxiesPage({
     return () => window.removeEventListener('focus', fn, false);
   }, [fetchProxiesHooked]);
 
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const closeSettingsModal = useCallback(() => {
-    setIsSettingsModalOpen(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const closeSettings = useCallback(() => {
+    setIsSettingsOpen(false);
   }, []);
-  const openSettingsModal = useCallback(() => {
-    setIsSettingsModalOpen(true);
+  const toggleSettings = useCallback(() => {
+    setIsSettingsOpen((v) => !v);
   }, []);
 
-  const [activeTab, setActiveTab] = useState('proxies');
+  const [activeTab, setActiveTab] = useState<'proxies' | 'providers'>('proxies');
   const handleTabKeyDown = useCallback(
-    (tab: string) => (e: React.KeyboardEvent) => {
+    (tab: 'proxies' | 'providers') => (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
         setActiveTab(tab);
       }
@@ -270,13 +325,42 @@ export function useProxiesPage({
   }, [proxyProviders, proxiesLayout]);
 
   return {
-    isSettingsModalOpen,
-    openSettingsModal,
-    closeSettingsModal,
+    isSettingsOpen,
+    toggleSettings,
+    closeSettings,
     activeTab,
     setActiveTab,
     handleTabKeyDown,
     proxyGroups,
     providers,
   };
+}
+
+/**
+ * 「全部收起 / 全部展开」：只要当前标签页下还有展开的分组就收起全部，
+ * 全部已收起时再点则展开全部。
+ */
+export function useCollapseAll({
+  prefix,
+  names,
+  collapsibleIsOpen,
+}: {
+  prefix: string;
+  names: string[];
+  collapsibleIsOpen: Record<string, boolean>;
+}): [() => void, boolean] {
+  const {
+    app: { updateCollapsibleIsOpenBulk },
+  } = useStoreActions();
+
+  const allCollapsed = useMemo(
+    () => !names.some((name) => collapsibleIsOpen[`${prefix}:${name}`]),
+    [names, collapsibleIsOpen, prefix]
+  );
+
+  const toggleAll = useCallback(() => {
+    updateCollapsibleIsOpenBulk(prefix, names, allCollapsed);
+  }, [updateCollapsibleIsOpenBulk, prefix, names, allCollapsed]);
+
+  return [toggleAll, allCollapsed];
 }

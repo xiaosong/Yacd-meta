@@ -9,22 +9,25 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-btn-fg);
-  background: var(--color-btn-bg);
-  border: 1px solid var(--color-input-border);
+  // 与顶栏的 .btnGhost 同一套：卡片色底 + 卡片边框色描边，
+  // 悬停是蓝描边而不是整块填蓝
+  color: var(--color-text);
+  background: var(--color-card);
+  border: 1px solid var(--color-card-border);
   border-radius: 100px;
-  transition: all 0.2s ease;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
-  &:focus {
+  &:focus-visible {
     border-color: var(--color-focus-blue);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 0 3px var(--color-accent-soft-bg);
   }
-  &:hover {
-    color: #fff;
-    background: var(--color-focus-blue);
+  &:hover:not(:disabled) {
+    color: var(--color-focus-blue);
     border-color: var(--color-focus-blue);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
 
   font-size: 0.75em;
@@ -37,13 +40,10 @@
   &.minimal {
     border-color: transparent;
     background: none;
-    &:focus {
-      border-color: var(--color-focus-blue);
-    }
-    &:hover {
-      color: #fff;
-      background: var(--color-focus-blue);
-      border: 1px solid var(--color-focus-blue);
+    &:hover:not(:disabled) {
+      color: var(--color-focus-blue);
+      background: var(--color-hover-soft);
+      border-color: transparent;
     }
   }
 }

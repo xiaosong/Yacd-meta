@@ -226,8 +226,10 @@
 
 /* ---------- 下拉筛选 ---------- */
 
-// 叠在 Select 组件自带样式之上，把它拉齐到顶栏这套尺寸
-.select {
+// 叠在 Select 组件自带样式之上，把它拉齐到顶栏这套尺寸。
+// 类名写两遍是为了翻倍特异性——Select 自己的 .select 也是单类，
+// 靠打包顺序决定胜负太脆
+.select.select {
   height: 38px;
   width: auto;
   flex-shrink: 0;

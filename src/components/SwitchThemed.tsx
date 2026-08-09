@@ -1,36 +1,33 @@
+import * as Switch from '@radix-ui/react-switch';
+import cx from 'clsx';
 import * as React from 'react';
-import ReactSwitch from 'react-switch';
 
-import { State } from '~/store/types';
+import s from './SwitchThemed.module.scss';
 
-import { getTheme } from '../store/app';
+type Props = {
+  checked?: boolean;
+  onChange?: (checked: boolean) => void;
+  name?: string;
+  disabled?: boolean;
+  size?: 'default' | 'mini';
+};
 
-import { connect } from './StateProvider';
-
-// workaround https://github.com/vitejs/vite/issues/2139#issuecomment-802981228
-// @ts-ignore
-const Switch = ReactSwitch.default ? ReactSwitch.default : ReactSwitch;
-
-function SwitchThemed({ checked = false, onChange, theme, name }) {
-  const offColor = theme === 'dark' ? '#393939' : '#e9e9e9';
-  const onColor = theme === 'dark' ? '#306081' : '#005caf';
+export default function SwitchThemed({
+  checked = false,
+  onChange,
+  name,
+  disabled,
+  size = 'default',
+}: Props) {
   return (
-    <Switch
-      onChange={onChange}
+    <Switch.Root
+      className={cx(s.root, { [s.mini]: size === 'mini' })}
       checked={checked}
-      uncheckedIcon={false}
-      checkedIcon={false}
-      offColor={offColor}
-      onColor={onColor}
-      offHandleColor="#fff"
-      onHandleColor="#fff"
-      handleDiameter={24}
-      height={28}
-      width={44}
-      className="rs"
+      onCheckedChange={onChange}
       name={name}
-    />
+      disabled={disabled}
+    >
+      <Switch.Thumb className={s.thumb} />
+    </Switch.Root>
   );
 }
-
-export default connect((s: State) => ({ theme: getTheme(s) }))(SwitchThemed);

@@ -1,12 +1,9 @@
-import cx from 'clsx';
 import { formatDistance } from 'date-fns';
 import { enUS, zhCN, zhTW } from 'date-fns/locale';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-
 import Modal from '~/components/Modal';
-import modalStyle from '~/components/Modal.module.scss';
 import prettyBytes from '~/misc/pretty-bytes';
 import { FormattedConn } from '~/store/connections';
 
@@ -54,8 +51,9 @@ export default function ModalConnectionDetails({ isOpen, onRequestClose, connect
     <Modal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
-      className={cx(modalStyle.content, s.content)}
-      overlayClassName={cx(modalStyle.overlay, s.overlay)}
+      className={s.content}
+      overlayClassName={s.overlay}
+      title={t('Connection Details')}
       shouldCloseOnOverlayClick={true}
       shouldCloseOnEsc={true}
     >

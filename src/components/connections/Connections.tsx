@@ -1,8 +1,9 @@
 import './Connections.css';
 
+import * as Tabs from '@radix-ui/react-tabs';
+import cx from 'clsx';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 
 import * as connAPI from '~/api/connections';
 import ContentHeader from '~/components/ContentHeader';
@@ -105,24 +106,24 @@ export default function Connections({ apiConfig }: Props) {
 
   return (
     <div>
-      <Tabs>
+      <Tabs.Root defaultValue="active" className="conn-tabs">
         <ContentHeader>
           <div className={s.controls}>
             <div className={s.tabGroup}>
-              <TabList className={s.tabList}>
-                <Tab>
+              <Tabs.List className={cx('conn-tab-list', s.tabList)}>
+                <Tabs.Trigger value="active" className="conn-tab">
                   <span>{t('Active')}</span>
                   <span className={s.connQty}>
                     <ConnQty qty={filteredConns.length} />
                   </span>
-                </Tab>
-                <Tab>
+                </Tabs.Trigger>
+                <Tabs.Trigger value="closed" className="conn-tab">
                   <span>{t('Closed')}</span>
                   <span className={s.connQty}>
                     <ConnQty qty={filteredClosedConns.length} />
                   </span>
-                </Tab>
-              </TabList>
+                </Tabs.Trigger>
+              </Tabs.List>
               <Select
                 options={connIpSet}
                 selected={filterSourceIpStr}
@@ -182,7 +183,7 @@ export default function Connections({ apiConfig }: Props) {
               height: containerHeight - CONNECTIONS_PADDING_BOTTOM,
             }}
           >
-            <TabPanel>
+            <Tabs.Content value="active">
               {renderTableOrPlaceholder(
                 columns,
                 hiddenColumns,
@@ -197,8 +198,8 @@ export default function Connections({ apiConfig }: Props) {
                 text={isRefreshPaused ? t('Resume Refresh') : t('Pause Refresh')}
                 onClick={toggleIsRefreshPaused}
               />
-            </TabPanel>
-            <TabPanel>
+            </Tabs.Content>
+            <Tabs.Content value="closed">
               {renderTableOrPlaceholder(
                 columns,
                 hiddenColumns,
@@ -206,7 +207,7 @@ export default function Connections({ apiConfig }: Props) {
                 containerHeight - CONNECTIONS_PADDING_BOTTOM,
                 apiConfig
               )}
-            </TabPanel>
+            </Tabs.Content>
           </div>
         </div>
         <ModalCloseAllConnections
@@ -234,7 +235,7 @@ export default function Connections({ apiConfig }: Props) {
           sourceMap={sourceMap}
           setSourceMap={setSourceMap}
         />
-      </Tabs>
+      </Tabs.Root>
     </div>
   );
 }

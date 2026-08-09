@@ -2,33 +2,24 @@ import cx from 'clsx';
 import * as React from 'react';
 
 import Modal from '../Modal';
-import modalStyle from '../Modal.module.scss';
 
 import s from './BaseModal.module.scss';
-
-const { useMemo } = React;
 
 type BaseModalProps = {
   isOpen: boolean;
   onRequestClose: (...args: any[]) => unknown;
+  title?: string;
   children: React.ReactNode;
 };
 
-export default function BaseModal({ isOpen, onRequestClose, children }: BaseModalProps) {
-  const className = useMemo(
-    () => ({
-      base: cx(modalStyle.content, s.cnt),
-      afterOpen: s.afterOpen,
-      beforeClose: '',
-    }),
-    []
-  );
+export default function BaseModal({ isOpen, onRequestClose, title, children }: BaseModalProps) {
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
-      className={className}
-      overlayClassName={cx(modalStyle.overlay, s.overlay)}
+      title={title}
+      className={s.cnt}
+      overlayClassName={cx(s.overlay)}
     >
       {children}
     </Modal>

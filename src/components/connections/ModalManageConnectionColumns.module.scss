@@ -52,8 +52,8 @@
     }
   }
 
+  // 缩放改由 Switch 的 size="mini" 承担（34x20，与旧的 44x28 * 0.75 基本等价）
   .columnManageSwitch {
-    transform: scale(0.75);
     height: 22px;
     display: flex;
     align-items: center;

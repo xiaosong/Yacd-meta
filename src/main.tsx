@@ -3,7 +3,6 @@ import './misc/i18n';
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import Modal from 'react-modal';
 
 import App from './App';
 import { registerAppBootstrap } from './app/bootstrap';
@@ -15,8 +14,6 @@ if (!rootEl) {
 }
 
 const root = createRoot(rootEl);
-
-Modal.setAppElement(rootEl);
 
 root.render(<App />);
 

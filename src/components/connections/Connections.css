@@ -1,8 +1,8 @@
-.react-tabs {
+.conn-tabs {
   -webkit-tap-highlight-color: transparent;
 }
 
-.react-tabs__tab-list {
+.conn-tab-list {
   margin: 0px;
   padding: 0;
   display: flex;
@@ -10,7 +10,7 @@
   gap: 4px;
 }
 
-.react-tabs__tab {
+.conn-tab {
   display: inline-flex;
   align-items: center;
   border: none;
@@ -22,50 +22,35 @@
   font-size: 1em;
   font-weight: 500;
   opacity: 0.6;
+  color: inherit;
   background: transparent;
   transition: all 0.2s ease;
+  font-family: inherit;
 }
 
-.react-tabs__tab:hover {
+.conn-tab:hover {
   opacity: 1;
   color: var(--color-focus-blue);
   background: rgba(176, 206, 255, 0.221);
 }
 
-.react-tabs__tab--selected {
+.conn-tab[data-state='active'] {
   opacity: 1;
   background: var(--color-focus-blue);
   color: white;
 }
 
-.react-tabs__tab--selected:hover {
+.conn-tab[data-state='active']:hover {
   background: var(--color-focus-blue);
   opacity: 1;
 }
 
-.react-tabs__tab--disabled {
+.conn-tab:disabled {
   color: GrayText;
   cursor: default;
 }
 
-.react-tabs__tab:focus {
+.conn-tab:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.3);
-}
-
-.react-tabs__tab:focus:after {
-  content: '';
-  position: absolute;
-}
-
-.react-tabs__tab-panel {
-  display: none;
-}
-
-.react-tabs__tab-panel--selected {
-  display: block;
-}
-
-._btn_lzu00_1 {
-  margin-right: 10px;
 }

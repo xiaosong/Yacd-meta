@@ -1,14 +1,12 @@
-import cx from 'clsx';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Button from '~/components/Button';
 import Modal from '~/components/Modal';
-import modalStyle from '~/components/Modal.module.scss';
 
 import s from './ModalCloseAllConnections.module.scss';
 
-const { useRef, useCallback, useMemo } = React;
+const { useRef, useCallback } = React;
 
 type Props = {
   confirm?: string;
@@ -30,21 +28,14 @@ export default function Comp({
       primaryButtonRef.current.focus();
     }
   }, []);
-  const className = useMemo(
-    () => ({
-      base: cx(modalStyle.content, s.cnt),
-      afterOpen: s.afterOpen,
-      beforeClose: '',
-    }),
-    []
-  );
   return (
     <Modal
       isOpen={isOpen}
       onRequestClose={onRequestClose}
       onAfterOpen={onAfterOpen}
-      className={className}
-      overlayClassName={cx(modalStyle.overlay, s.overlay)}
+      title={t(confirm)}
+      className={s.cnt}
+      overlayClassName={s.overlay}
     >
       <p>{t(confirm)}</p>
       <div className={s.btngrp}>

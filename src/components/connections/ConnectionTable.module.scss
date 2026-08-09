@@ -1,256 +1,437 @@
-.tr {
-  transition: all 0.2s ease;
-  cursor: pointer;
+.card {
   display: flex;
-  align-items: stretch;
-  width: 100%;
-  min-width: fit-content;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  border-radius: 16px;
+  background: var(--color-card);
+  border: 1px solid var(--color-card-border);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
 
-  &:hover {
-    // hover 作用到每个 td，避免 odd 行背景覆盖
-    .td {
-      background: rgba(66, 133, 244, 0.08);
-    }
-
-    .odd {
-      background: rgba(66, 133, 244, 0.08);
-    }
+  @media (max-width: 768px) {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
   }
 }
 
-.th {
-  height: 48px;
-  background: var(--bg-log-info-card);
-  top: 0;
-  font-size: 0.8em;
-  font-weight: 600;
-  user-select: none;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--color-text-secondary);
-  border-bottom: 2px solid var(--color-separator);
-  position: sticky;
-  z-index: 20;
-  padding: 0 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  flex-shrink: 0; // Ensure fixed width is respected
-
-  &:hover {
-    color: var(--color-text-highlight);
-  }
+.body {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-.headerText {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+/* ---------- 表头 ---------- */
 
-.cellText {
+.headWrap {
   overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
-}
-
-.sortIconContainer {
-  margin-left: 4px;
   flex-shrink: 0;
+  background: var(--color-track);
+  border-bottom: 1px solid var(--color-card-border);
+}
+
+// 列间距和左右内边距由 ConnectionTable 的 COLUMN_GAP / ROW_PADDING_X 内联施加，
+// 因为列宽计算必须扣掉它们，写在这里两边会不同步
+.headRow {
+  display: grid;
+  align-items: center;
+  height: 42px;
+}
+
+.headCell {
   display: flex;
   align-items: center;
-}
+  gap: 3px;
+  min-width: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  user-select: none;
 
-.rotate180 {
-  transform: rotate(180deg);
-}
-
-.btnSection {
-  button {
-    margin-right: 15px;
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-blue);
+    outline-offset: -2px;
+    border-radius: 4px;
   }
 }
 
-.break {
-  word-wrap: break-word;
-  word-break: break-all;
-  align-items: center;
-  text-align: left;
-}
-
-.td {
-  padding: 0 8px;
-  font-size: 0.875em;
+.headCellSortable {
   cursor: pointer;
-  vertical-align: middle;
-  white-space: nowrap;
-  border-bottom: 1px solid var(--color-separator);
-  transition: color 0.15s ease;
-  box-sizing: border-box;
-  flex-shrink: 0; // Ensure fixed width is respected
 
   &:hover {
     color: var(--color-text-highlight);
   }
-
-  font-family: var(--font-normal);
 }
 
-.overlay {
-  background: #444;
+.headCellActive {
+  color: var(--color-focus-blue);
+
+  &:hover {
+    color: var(--color-focus-blue);
+  }
 }
 
-.modal {
-  background-color: var(--bg-modal);
+.headText {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.table {
-  border-collapse: separate;
-  border-spacing: 0;
-  width: 100%;
-  background: transparent;
+.headArrow {
+  font-size: 0.62rem;
+  flex-shrink: 0;
+}
+
+/* ---------- 行 ---------- */
+
+.listWrap {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+.list {
+  overflow-x: auto;
+}
+
+.mobileList {
+  overflow-x: hidden;
+}
+
+.rowWrap {
+  border-bottom: 1px solid var(--color-separator);
+}
+
+.rowWrapExpanded {
+  background: var(--color-node-active-bg);
+}
+
+// 同上，gap / padding 见 ConnectionTable 的常量
+.row {
+  display: grid;
+  align-items: center;
+  height: 44px;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--color-hover-soft);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-blue);
+    outline-offset: -2px;
+  }
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cellRight {
+  justify-content: flex-end;
+}
+
+/* ---------- 单元格内容 ---------- */
+
+.closeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-badge-bg);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: var(--color-danger-soft-bg);
+    color: var(--color-danger);
+  }
+}
+
+.dot {
+  flex: 0 0 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.dotBusy {
+  background: var(--color-success);
+  box-shadow: 0 0 0 3px var(--color-success-soft-bg);
+  animation: pulseDot 2.4s ease-in-out infinite;
+}
+
+.dotIdle {
+  background: var(--color-text-secondary);
+  opacity: 0.4;
+}
+
+@keyframes pulseDot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+
+.hostText {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-text-highlight);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip {
+  display: inline-block;
+  max-width: 100%;
+  padding: 3px 8px;
+  border-radius: 7px;
+  font-size: 0.7rem;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chipTcp {
+  background: var(--color-accent-soft-bg);
+  color: var(--color-accent-soft-fg);
+}
+
+.chipUdp {
+  background: var(--color-udp-bg);
+  color: var(--color-udp-fg);
+}
+
+.chipNeutral {
+  background: var(--color-badge-bg);
+  color: var(--color-badge-fg);
+}
+
+.chainGroup,
+.chainFull {
+  font-size: 0.76rem;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chainSep {
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+.chainNode {
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--color-focus-blue);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chainDirect {
+  color: var(--color-success);
+}
+
+.chainReject {
+  color: var(--color-danger);
+}
+
+.num {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.speed {
+  font-size: 0.76rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.speedDl {
+  color: var(--color-success);
+}
+
+.speedUl {
+  color: var(--color-focus-blue);
+}
+
+.speedDim {
+  color: var(--color-text-secondary);
+  opacity: 0.55;
+}
+
+/* ---------- 展开的详情 ---------- */
+
+.detail {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px 20px;
+  padding: 6px 18px 16px 42px;
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  height: 34px;
+  min-width: 0;
+}
+
+.detailLabel {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detailValue {
+  font-size: 0.76rem;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- 空态 ---------- */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+}
+
+.emptyTitle {
+  font-size: 0.88rem;
+  color: var(--color-text);
+}
+
+.emptyHint {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+}
+
+/* ---------- 页脚 ---------- */
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 36px;
+  flex-shrink: 0;
+  padding: 0 18px;
+  border-top: 1px solid var(--color-card-border);
+  background: var(--color-track);
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.footerNote {
+  margin-left: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   @media (max-width: 768px) {
     display: none;
   }
 }
 
-.tableWrapper {
-  margin-top: 0;
-  border-radius: 12px;
-  overflow: hidden;
-  background: transparent;
-  box-shadow: none;
+/* ---------- 移动端排序工具条 ---------- */
 
-  @media (max-width: 768px) {
-    background: transparent;
-    box-shadow: none;
-  }
-}
-
-.theadWrapper {
-  width: 100%;
-  overflow: hidden;
-  background: var(--bg-log-info-card);
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-}
-
-.cardsView {
-  display: none;
-
-  @media (max-width: 768px) {
-    display: block;
-    padding: 0 4px;
-  }
-}
-
-.mobileSortToolbar {
+.mobileToolbar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0;
-  margin-bottom: 12px;
+  gap: 8px;
+  height: 42px;
+  flex-shrink: 0;
 }
 
-.sortSelectWrapper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  background: var(--color-bg-card);
-  padding: 8px 12px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  color: var(--color-focus-blue);
+.sortSelect {
   position: relative;
-  border: 1px solid var(--color-bg-card-border, rgba(0, 0, 0, 0.05));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  background: var(--color-card);
+  border: 1px solid var(--color-card-border);
+  color: var(--color-text);
+  font-size: 0.82rem;
 
-  select {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 2;
-  }
-
-  .selectedValue {
+  span {
     flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--color-text);
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-}
 
-.selectArrow {
-  opacity: 0.5;
-  color: var(--color-text-secondary);
-  flex-shrink: 0;
-}
-
-.sortDirBtn {
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-bg-card-border, rgba(0, 0, 0, 0.05));
-  color: var(--color-focus-blue);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: all 0.2s ease;
-
-  &:active {
-    transform: scale(0.95);
-    background: var(--color-bg-secondary);
+  select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
   }
 }
 
-.table thead tr:first-child th:first-child {
-  border-top-left-radius: 12px;
+.sortSelectArrow {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
 }
 
-.table thead tr:first-child th:last-child {
-  border-top-right-radius: 12px;
-}
-
-.table tbody tr:last-child td:first-child {
-  border-bottom-left-radius: 12px;
-}
-
-.table tbody tr:last-child td:last-child {
-  border-bottom-right-radius: 12px;
-}
-
-.td.odd {
-  background: var(--color-row-odd);
-}
-
-/* download upload td cells */
-.center {
-  min-width: 7em;
-  text-align: center;
-}
-
-.sortIconContainer {
-  display: inline-flex;
+.sortDirBtn {
+  display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 4px;
-  width: 16px;
-  height: 16px;
-  opacity: 0.7;
-}
-
-.rotate180 {
-  transform: rotate(180deg);
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: 1px solid var(--color-card-border);
+  background: var(--color-card);
+  color: var(--color-focus-blue);
+  cursor: pointer;
 }

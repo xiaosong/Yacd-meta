@@ -1,28 +1,37 @@
+import cx from 'clsx';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { ArrowDown, ArrowDownCircle, ArrowUp, X } from '~/components/shared/FeatherIcons';
+import { ArrowDown, ArrowUp, X } from '~/components/shared/FeatherIcons';
 import prettyBytes from '~/misc/pretty-bytes';
 import { formatElapsed, getDateFnsLocale } from '~/modules/connections/utils';
 import { FormattedConn } from '~/store/connections';
-
 
 import s from './ConnectionCard.module.scss';
 
 interface Props {
   conn: FormattedConn;
+  expanded: boolean;
+  details: { label: string; value: string }[] | null;
   onDisconnect: (id: string, e: React.MouseEvent) => void;
   onClick: () => void;
 }
 
-const ConnectionCard = React.memo(function ConnectionCard({ conn, onDisconnect, onClick }: Props) {
+const ConnectionCard = React.memo(function ConnectionCard({
+  conn,
+  expanded,
+  details,
+  onDisconnect,
+  onClick,
+}: Props) {
   const { i18n } = useTranslation();
 
   const timeAgo = formatElapsed(conn.start, getDateFnsLocale(i18n.language));
+  const busy = (conn.downloadSpeedCurr ?? 0) + (conn.uploadSpeedCurr ?? 0) > 0;
 
   return (
     <div
-      className={s.card}
+      className={cx(s.card, { [s.cardExpanded]: expanded })}
       onClick={onClick}
       role="button"
       tabIndex={0}
@@ -34,42 +43,60 @@ const ConnectionCard = React.memo(function ConnectionCard({ conn, onDisconnect, 
       }}
     >
       <div className={s.row}>
+        <span className={cx(s.dot, { [s.dotBusy]: busy })} aria-hidden />
         <div className={s.host}>{conn.host}</div>
         <div className={s.time}>{timeAgo}</div>
       </div>
+
       <div className={s.row}>
-        <div className={s.typeProtocol}>{conn.type.replace(/\((.*)\)/, ' | $1')}</div>
+        <span className={cx(s.chip, conn.network === 'udp' ? s.chipUdp : s.chipTcp)}>
+          {conn.type}
+        </span>
         <div className={s.totals}>
           <span>
-            {prettyBytes(conn.download)} <ArrowDown size={12} />
+            <ArrowDown size={11} />
+            {prettyBytes(conn.download)}
           </span>
           <span>
-            {prettyBytes(conn.upload)} <ArrowUp size={12} />
+            <ArrowUp size={11} />
+            {prettyBytes(conn.upload)}
           </span>
         </div>
       </div>
+
       <div className={s.row}>
-        <div className={s.ruleChain}>
+        <div className={s.chain}>
           <span className={s.rule}>{conn.rule}</span>
-          <span className={s.arrow}>→</span>
-          <span className={s.chains}>{conn.chains}</span>
+          <span className={s.arrow} aria-hidden>
+            ›
+          </span>
+          <span className={s.node}>{conn.chainNode}</span>
         </div>
         <div className={s.speedAndAction}>
-          <div className={s.speed}>
-            {prettyBytes(conn.downloadSpeedCurr)}/s
-            <ArrowDownCircle size={16} className={s.speedIcon} />
-          </div>
+          <span className={s.speed}>{prettyBytes(conn.downloadSpeedCurr)}/s</span>
           <button
+            type="button"
             className={s.closeBtn}
             onClick={(e) => {
               e.stopPropagation();
               onDisconnect(conn.id, e);
             }}
           >
-            <X size={16} />
+            <X size={14} />
           </button>
         </div>
       </div>
+
+      {details ? (
+        <div className={s.detail}>
+          {details.map((item) => (
+            <div key={item.label} className={s.detailItem}>
+              <span className={s.detailLabel}>{item.label}</span>
+              <span className={s.detailValue}>{item.value || '-'}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 });

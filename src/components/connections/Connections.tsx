@@ -1,61 +1,26 @@
-import './Connections.css';
-
-import * as Tabs from '@radix-ui/react-tabs';
-import cx from 'clsx';
-import React from 'react';
+import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import * as connAPI from '~/api/connections';
-import ContentHeader from '~/components/ContentHeader';
-import Input from '~/components/Input';
-import { Fab, position as fabPosition } from '~/components/shared/Fab';
-import { Pause, Play, RefreshCcw, Settings, Tag, X as IconClose } from '~/components/shared/FeatherIcons';
-import Select from '~/components/shared/Select';
-import SvgYacd from '~/components/SvgYacd';
-import useRemainingViewPortHeight from '~/hooks/useRemainingViewPortHeight';
 import {
   useConnectionColumns,
   useConnectionFilters,
+  useConnectionSettings,
   useConnectionsStream,
+  useConnectionStats,
   useSourceMapState,
 } from '~/modules/connections/hooks';
-import { CONNECTIONS_PADDING_BOTTOM } from '~/modules/connections/utils';
-import { FormattedConn } from '~/store/connections';
+import { getInitialSort, saveSort, sortConns, SortState } from '~/modules/connections/utils';
 import { ClashAPIConfig } from '~/types';
 
 import s from './Connections.module.scss';
+import ConnectionSettingsModal from './ConnectionSettingsModal';
+import { ConnectionsHeader, ConnTabKey } from './ConnectionsHeader';
+import { ConnectionStats } from './ConnectionStats';
 import ConnectionTable from './ConnectionTable';
 import ModalCloseAllConnections from './ModalCloseAllConnections';
-import ModalManageConnectionColumns from './ModalManageConnectionColumns';
-import ModalSourceIP from './ModalSourceIP';
 
-const { useState, useCallback } = React;
-
-function renderTableOrPlaceholder(
-  columns,
-  hiddenColumns,
-  conns: FormattedConn[],
-  height: number,
-  apiConfig: ClashAPIConfig
-) {
-  return conns.length > 0 ? (
-    <ConnectionTable
-      data={conns}
-      columns={columns}
-      hiddenColumns={hiddenColumns}
-      height={height}
-      apiConfig={apiConfig}
-    />
-  ) : (
-    <div className={s.placeHolder}>
-      <SvgYacd width={200} height={200} c1="var(--color-text)" />
-    </div>
-  );
-}
-
-function ConnQty({ qty }) {
-  return qty < 100 ? '' + qty : '99+';
-}
+const { useCallback, useState } = React;
 
 type Props = {
   apiConfig: ClashAPIConfig;
@@ -63,19 +28,23 @@ type Props = {
 
 export default function Connections({ apiConfig }: Props) {
   const { t } = useTranslation();
-  const [showModalColumn, setModalColumn] = useState(false);
-  const { hiddenColumns, setHiddenColumns, columns, setColumns, resetColumns } =
-    useConnectionColumns();
+  const [activeTab, setActiveTab] = useState<ConnTabKey>('active');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  const closeModalColumn = () => {
-    setModalColumn(false);
-  };
+  const { sourceMap, setSourceMap } = useSourceMapState();
+  const { settings, updateSettings } = useConnectionSettings();
+  const {
+    visibleColumns,
+    availableColumns,
+    addColumn,
+    removeColumn,
+    reorderColumns,
+    resetColumns,
+  } = useConnectionColumns();
 
-  const { sourceMapModal, sourceMap, setSourceMap, openModalSource, closeModalSource } =
-    useSourceMapState();
-  const [refContainer, containerHeight] = useRemainingViewPortHeight();
-  const { conns, closedConns, isRefreshPaused, toggleIsRefreshPaused, closeAllConnections } =
+  const { conns, closedConns, total, isRefreshPaused, toggleIsRefreshPaused, closeAllConnections } =
     useConnectionsStream(apiConfig, sourceMap);
+
   const {
     filterKeyword,
     setFilterKeyword,
@@ -84,158 +53,112 @@ export default function Connections({ apiConfig }: Props) {
     filteredConns,
     filteredClosedConns,
     connIpSet,
-  } = useConnectionFilters({ conns, closedConns, sourceMap, t });
+    isFiltering,
+  } = useConnectionFilters({ conns, closedConns, sourceMap, settings, t });
 
-  const [isCloseFilterModalOpen, setIsCloseFilterModalOpen] = useState(false);
-  const openCloseFilterModal = useCallback(() => setIsCloseFilterModalOpen(true), []);
-  const closeCloseFilterModal = useCallback(() => setIsCloseFilterModalOpen(false), []);
+  const stats = useConnectionStats(conns, total);
 
-  const closeFilterConnections = useCallback(async () => {
+  const [sort, setSortState] = useState<SortState>(() => getInitialSort());
+  // 点同一列切换升降序，点别的列换列并回到升序
+  const setSort = useCallback((key: string) => {
+    setSortState((prev) => {
+      const next: SortState =
+        prev.key === key
+          ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
+          : { key, dir: 'asc' };
+      saveSort(next);
+      return next;
+    });
+  }, []);
+
+  const isClosedTab = activeTab === 'closed';
+  const rows = isClosedTab ? filteredClosedConns : filteredConns;
+  const poolSize = isClosedTab ? closedConns.length : conns.length;
+
+  const sortedRows = React.useMemo(() => sortConns(rows, sort), [rows, sort]);
+
+  const closeConn = useCallback(
+    (id: string) => {
+      connAPI.closeConnById(apiConfig, id);
+    },
+    [apiConfig]
+  );
+
+  const [isCloseAllModalOpen, setIsCloseAllModalOpen] = useState(false);
+  const [isCloseFilteredModalOpen, setIsCloseFilteredModalOpen] = useState(false);
+
+  const handleCloseAll = useCallback(() => {
+    closeAllConnections();
+    setIsCloseAllModalOpen(false);
+  }, [closeAllConnections]);
+
+  const handleCloseFiltered = useCallback(async () => {
     await Promise.allSettled(
       filteredConns.map((connection) => connAPI.closeConnById(apiConfig, connection.id))
     );
-    closeCloseFilterModal();
-  }, [apiConfig, filteredConns, closeCloseFilterModal]);
-  const [isCloseAllModalOpen, setIsCloseAllModalOpen] = useState(false);
-  const openCloseAllModal = useCallback(() => setIsCloseAllModalOpen(true), []);
-  const closeCloseAllModal = useCallback(() => setIsCloseAllModalOpen(false), []);
-  const handleCloseAllConnections = useCallback(() => {
-    closeAllConnections();
-    closeCloseAllModal();
-  }, [closeAllConnections, closeCloseAllModal]);
+    setIsCloseFilteredModalOpen(false);
+  }, [apiConfig, filteredConns]);
 
   return (
-    <div>
-      <Tabs.Root defaultValue="active" className="conn-tabs">
-        <ContentHeader>
-          <div className={s.controls}>
-            <div className={s.tabGroup}>
-              <Tabs.List className={cx('conn-tab-list', s.tabList)}>
-                <Tabs.Trigger value="active" className="conn-tab">
-                  <span>{t('Active')}</span>
-                  <span className={s.connQty}>
-                    <ConnQty qty={filteredConns.length} />
-                  </span>
-                </Tabs.Trigger>
-                <Tabs.Trigger value="closed" className="conn-tab">
-                  <span>{t('Closed')}</span>
-                  <span className={s.connQty}>
-                    <ConnQty qty={filteredClosedConns.length} />
-                  </span>
-                </Tabs.Trigger>
-              </Tabs.List>
-              <Select
-                options={connIpSet}
-                selected={filterSourceIpStr}
-                className={s.sourceSelect}
-                onChange={(e) => setFilterSourceIpStr(e.target.value)}
-              />
-            </div>
-            <div style={{ flex: 1 }} />
-            <div className={s.inputWrapper}>
-              <Input
-                type="text"
-                name="filter"
-                autoComplete="off"
-                className={s.input}
-                value={filterKeyword}
-                placeholder={t('Search')}
-                onChange={(e) => setFilterKeyword(e.target.value)}
-              />
-            </div>
-            <div className={s.toolbar}>
-              <button
-                className={s.toolbarBtn}
-                onClick={openCloseAllModal}
-                title={t('close_all_connections')}
-              >
-                <IconClose size={15} />
-              </button>
-              <button
-                className={s.toolbarBtn}
-                onClick={openCloseFilterModal}
-                title={t('close_filter_connections')}
-              >
-                <IconClose size={13} />
-                <span className={s.toolbarBtnBadge}>F</span>
-              </button>
-              <span className={s.toolbarDivider} />
-              <button
-                className={s.toolbarBtn}
-                onClick={() => setModalColumn(true)}
-                title={t('manage_column')}
-              >
-                <Settings size={15} />
-              </button>
-              <button className={s.toolbarBtn} onClick={resetColumns} title={t('reset_column')}>
-                <RefreshCcw size={15} />
-              </button>
-              <button className={s.toolbarBtn} onClick={openModalSource} title={t('client_tag')}>
-                <Tag size={15} />
-              </button>
-            </div>
-          </div>
-        </ContentHeader>
-        <div ref={refContainer} className={s.contentWrapper}>
-          <div
-            className={s.scrollArea}
-            style={{
-              height: containerHeight - CONNECTIONS_PADDING_BOTTOM,
-            }}
-          >
-            <Tabs.Content value="active">
-              {renderTableOrPlaceholder(
-                columns,
-                hiddenColumns,
-                filteredConns,
-                containerHeight - CONNECTIONS_PADDING_BOTTOM,
-                apiConfig
-              )}
-              <Fab
-                icon={isRefreshPaused ? <Play size={16} /> : <Pause size={16} />}
-                mainButtonStyles={isRefreshPaused ? { background: '#e74c3c' } : {}}
-                style={fabPosition}
-                text={isRefreshPaused ? t('Resume Refresh') : t('Pause Refresh')}
-                onClick={toggleIsRefreshPaused}
-              />
-            </Tabs.Content>
-            <Tabs.Content value="closed">
-              {renderTableOrPlaceholder(
-                columns,
-                hiddenColumns,
-                filteredClosedConns,
-                containerHeight - CONNECTIONS_PADDING_BOTTOM,
-                apiConfig
-              )}
-            </Tabs.Content>
-          </div>
-        </div>
-        <ModalCloseAllConnections
-          isOpen={isCloseAllModalOpen}
-          primaryButtonOnTap={handleCloseAllConnections}
-          onRequestClose={closeCloseAllModal}
+    <div className={s.page}>
+      <ConnectionsHeader
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        activeCount={filteredConns.length}
+        closedCount={filteredClosedConns.length}
+        connIpSet={connIpSet}
+        filterSourceIpStr={filterSourceIpStr}
+        setFilterSourceIpStr={setFilterSourceIpStr}
+        filterKeyword={filterKeyword}
+        setFilterKeyword={setFilterKeyword}
+        isRefreshPaused={isRefreshPaused}
+        toggleIsRefreshPaused={toggleIsRefreshPaused}
+        isFiltering={isFiltering}
+        onCloseFiltered={() => setIsCloseFilteredModalOpen(true)}
+        onCloseAll={() => setIsCloseAllModalOpen(true)}
+        onOpenSettings={() => setIsSettingsOpen(true)}
+      />
+
+      <ConnectionStats {...stats} />
+
+      <div className={s.tableArea}>
+        <ConnectionTable
+          data={sortedRows}
+          totalCount={poolSize}
+          columns={visibleColumns}
+          sort={sort}
+          setSort={setSort}
+          isClosed={isClosedTab}
+          fullChain={settings.fullChain}
+          onCloseConn={closeConn}
         />
-        <ModalCloseAllConnections
-          confirm={'close_filter_connections'}
-          isOpen={isCloseFilterModalOpen}
-          primaryButtonOnTap={closeFilterConnections}
-          onRequestClose={closeCloseFilterModal}
-        />
-        <ModalManageConnectionColumns
-          isOpen={showModalColumn}
-          onRequestClose={closeModalColumn}
-          columns={columns}
-          hiddenColumns={hiddenColumns}
-          setColumns={setColumns}
-          setHiddenColumns={setHiddenColumns}
-        />
-        <ModalSourceIP
-          isOpen={sourceMapModal}
-          onRequestClose={closeModalSource}
-          sourceMap={sourceMap}
-          setSourceMap={setSourceMap}
-        />
-      </Tabs.Root>
+      </div>
+
+      <ModalCloseAllConnections
+        isOpen={isCloseAllModalOpen}
+        primaryButtonOnTap={handleCloseAll}
+        onRequestClose={() => setIsCloseAllModalOpen(false)}
+      />
+      <ModalCloseAllConnections
+        confirm={'close_filter_connections'}
+        isOpen={isCloseFilteredModalOpen}
+        primaryButtonOnTap={handleCloseFiltered}
+        onRequestClose={() => setIsCloseFilteredModalOpen(false)}
+      />
+      <ConnectionSettingsModal
+        isOpen={isSettingsOpen}
+        onRequestClose={() => setIsSettingsOpen(false)}
+        settings={settings}
+        updateSettings={updateSettings}
+        visibleColumns={visibleColumns}
+        availableColumns={availableColumns}
+        addColumn={addColumn}
+        removeColumn={removeColumn}
+        reorderColumns={reorderColumns}
+        resetColumns={resetColumns}
+        sourceMap={sourceMap}
+        setSourceMap={setSourceMap}
+      />
     </div>
   );
 }

@@ -1,133 +1,190 @@
 .card {
-  background: var(--color-bg-card);
-  border-radius: 12px;
-  padding: 10px 14px;
-  margin-bottom: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   gap: 4px;
+  height: 112px;
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--color-card);
+  border: 1px solid var(--color-card-border);
+  box-shadow: var(--shadow-card);
   cursor: pointer;
-  transition: transform 0.1s ease;
+  overflow: hidden;
 
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.99);
   }
+}
+
+.cardExpanded {
+  height: 298px; // 112 + 186，与 ConnectionTable 里的 CARD_DETAIL_HEIGHT 对应
+  border-color: var(--color-focus-blue);
 }
 
 .row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 8px;
+  height: 28px;
   min-width: 0;
 }
 
+.dot {
+  flex: 0 0 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-text-secondary);
+  opacity: 0.4;
+}
+
+.dotBusy {
+  background: var(--color-success);
+  opacity: 1;
+}
+
 .host {
-  color: #40c4aa; // Similar to the image
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9rem;
   font-weight: 600;
-  font-size: 0.95rem;
+  color: var(--color-text-highlight);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  flex: 1;
-  margin-right: 8px;
 }
 
 .time {
-  color: var(--color-text-secondary);
-  font-size: 0.8rem;
   flex-shrink: 0;
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
 }
 
-.typeProtocol {
-  color: var(--color-text);
-  font-size: 0.85rem;
-  opacity: 0.8;
+.chip {
+  padding: 3px 8px;
+  border-radius: 7px;
+  font-size: 0.68rem;
+  white-space: nowrap;
+}
+
+.chipTcp {
+  background: var(--color-accent-soft-bg);
+  color: var(--color-accent-soft-fg);
+}
+
+.chipUdp {
+  background: var(--color-udp-bg);
+  color: var(--color-udp-fg);
 }
 
 .totals {
   display: flex;
-  gap: 10px;
-  font-size: 0.8rem;
+  gap: 12px;
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
   color: var(--color-text-secondary);
 
   span {
     display: flex;
     align-items: center;
-    gap: 4px;
-  }
-
-  svg {
-    opacity: 0.5;
+    gap: 3px;
   }
 }
 
-.ruleChain {
+.chain {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--color-text-secondary);
-  font-size: 0.8rem;
-  overflow: hidden;
   flex: 1;
-  margin-right: 8px;
+  min-width: 0;
+  font-size: 0.74rem;
+  color: var(--color-text-secondary);
+}
 
-  .rule {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+.rule {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-  .arrow {
-    opacity: 0.5;
-    font-size: 0.7rem;
-  }
+.arrow {
+  flex-shrink: 0;
+  opacity: 0.55;
+}
 
-  .chains {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-weight: 500;
-    color: var(--color-text);
-    opacity: 0.9;
-  }
+.node {
+  font-weight: 500;
+  color: var(--color-focus-blue);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .speedAndAction {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .speed {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.8rem;
-  color: var(--color-text-secondary);
-  font-family: 'Roboto Mono', monospace;
-
-  .speedIcon {
-    color: #40c4aa;
-    opacity: 0.8;
-  }
+  font-size: 0.74rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-success);
 }
 
 .closeBtn {
-  background: var(--color-bg-secondary, rgba(0, 0, 0, 0.05));
-  border: none;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-badge-bg);
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
 
   &:hover {
-    background: rgba(231, 76, 60, 0.1);
-    color: #e74c3c;
+    background: var(--color-danger-soft-bg);
+    color: var(--color-danger);
   }
+}
+
+/* 展开的详情：2 列 4 行，高度固定以配合虚拟列表的行高计算 */
+.detail {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  margin-top: 9px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-separator);
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  height: 34px;
+  min-width: 0;
+}
+
+.detailLabel {
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detailValue {
+  font-size: 0.74rem;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

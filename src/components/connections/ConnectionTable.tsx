@@ -1,378 +1,572 @@
-import './ConnectionTable.scss';
-
-import {
-  ColumnDef,
-  getCoreRowModel,
-  getSortedRowModel,
-  SortingState,
-  useReactTable,
-  VisibilityState,
-} from '@tanstack/react-table';
 import cx from 'clsx';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { List as VirtualList, RowComponentProps } from 'react-window';
 
-import * as connAPI from '~/api/connections';
-import { ArrowDown, ArrowUp, ChevronDown, Sliders, XCircle } from '~/components/shared/FeatherIcons';
+import { ArrowDown, ArrowUp, ChevronDown, Sliders, X } from '~/components/shared/FeatherIcons';
 import prettyBytes from '~/misc/pretty-bytes';
-import { formatElapsed, getDateFnsLocale } from '~/modules/connections/utils';
+import { useElementWidth } from '~/modules/connections/hooks';
+import {
+  ConnectionColumn,
+  formatElapsed,
+  getDateFnsLocale,
+  SortState,
+} from '~/modules/connections/utils';
 import { FormattedConn } from '~/store/connections';
-
 
 import ConnectionCard from './ConnectionCard';
 import s from './ConnectionTable.module.scss';
-import MOdalCloseConnection from './ModalCloseAllConnections';
-import ModalConnectionDetails from './ModalConnectionDetails';
 
-const sortById = { id: 'id', desc: true };
+const ROW_HEIGHT = 44;
+/** 展开区固定 4 列 8 项，高度可以直接算出来，虚拟列表才不用动态测量 */
+const DETAIL_HEIGHT = 104;
+const CARD_HEIGHT = 120;
+const CARD_DETAIL_HEIGHT = 186;
+/** 纵向滚动条宽度，见 main.scss */
+const SCROLLBAR_SIZE = 8;
+// 列间距和行内边距由 JS 施加而非写在 scss 里：computeWidths 必须把它们算进可用
+// 宽度，两处一旦不同步表格就会横向溢出
+const COLUMN_GAP = 10;
+const ROW_PADDING_X = 12;
 
-const COLUMN_WIDTHS = {
-  ctrl: 50,
-  start: 100,
-  type: 120,
-  host: 300,
-  rule: 200,
-  chains: 250,
-  download: 100,
-  upload: 100,
-  downloadSpeedCurr: 100,
-  uploadSpeedCurr: 100,
-  source: 170,
-  destinationIP: 170,
-  process: 130,
-  sniffHost: 150,
-};
+type DetailItem = { label: string; value: string };
 
-const TOTAL_WIDTH = Object.values(COLUMN_WIDTHS).reduce((a, b) => a + b, 0);
+/**
+ * 按 grow 把剩余宽度分给流式列，返回每列实际像素宽和整行宽度。
+ *
+ * 分配受 max 约束：吃满上限的列退出分配、把余量让给还有余地的列，循环到分完为止。
+ * 全部吃满后剩下的空间就留白，不再无限撑宽那几列。
+ */
+function computeWidths(columns: ConnectionColumn[], containerWidth: number) {
+  const chrome = Math.max(0, columns.length - 1) * COLUMN_GAP + ROW_PADDING_X * 2;
+  const widths = columns.map((c) => c.width);
+  const minTotal = widths.reduce((sum, w) => sum + w, 0);
+  // 列宽之外还要放下 gap 和 padding，可用于列的空间要先把它们扣掉
+  const contentSpace = Math.max(0, containerWidth - SCROLLBAR_SIZE - chrome);
 
-const getColumnStyle = (columnId: string) => {
-  const width = COLUMN_WIDTHS[columnId] || 100;
-  const style: React.CSSProperties = {
-    width,
-    minWidth: width,
-    flex: `0 0 ${width}px`,
-    flexShrink: 0,
-  };
+  let extra = contentSpace - minTotal;
+  const pool = new Set(columns.map((c, i) => i).filter((i) => (columns[i].grow ?? 0) > 0));
 
-  if (['download', 'upload', 'downloadSpeedCurr', 'uploadSpeedCurr', 'start'].includes(columnId)) {
-    style.justifyContent = 'flex-end';
+  while (extra > 0.5 && pool.size > 0) {
+    const growTotal = [...pool].reduce((sum, i) => sum + columns[i].grow, 0);
+    const saturated: number[] = [];
+    let consumed = 0;
+
+    for (const i of pool) {
+      const share = (extra * columns[i].grow) / growTotal;
+      const room = (columns[i].max ?? Infinity) - widths[i];
+      const add = Math.min(share, room);
+      widths[i] += add;
+      consumed += add;
+      if (add < share) saturated.push(i);
+    }
+
+    extra -= consumed;
+    if (consumed <= 0.5) break;
+    for (const i of saturated) pool.delete(i);
   }
 
-  if (columnId === 'ctrl') {
-    style.justifyContent = 'center';
-  }
+  const columnsTotal = widths.reduce((sum, w) => sum + w, 0);
+  // 列没占满时行仍然铺满容器，这样 hover 背景和分隔线不会只画一半
+  const tableWidth = Math.max(columnsTotal + chrome, containerWidth - SCROLLBAR_SIZE);
+  return { widths, tableWidth };
+}
 
-  return style;
-};
+function Cell({
+  column,
+  conn,
+  isClosed,
+  fullChain,
+  locale,
+  onClose,
+}: {
+  column: ConnectionColumn;
+  conn: FormattedConn;
+  isClosed: boolean;
+  fullChain: boolean;
+  locale: ReturnType<typeof getDateFnsLocale>;
+  onClose: (id: string, e: React.MouseEvent) => void;
+}) {
+  switch (column.kind) {
+    case 'ctrl':
+      return (
+        <button
+          type="button"
+          className={s.closeBtn}
+          onClick={(e) => onClose(conn.id, e)}
+          title="close"
+        >
+          <X size={13} />
+        </button>
+      );
 
-function Table({ data, columns, hiddenColumns, apiConfig, height }) {
-  const { t, i18n } = useTranslation();
-  const [operationId, setOperationId] = useState('');
-  const [showModalDisconnect, setShowModalDisconnect] = useState(false);
-  const [selectedConn, setSelectedConn] = useState<FormattedConn | null>(null);
+    case 'host': {
+      const busy = !isClosed && (conn.downloadSpeedCurr ?? 0) + (conn.uploadSpeedCurr ?? 0) > 0;
+      return (
+        <>
+          <span
+            className={cx(s.dot, { [s.dotBusy]: busy, [s.dotIdle]: !busy })}
+            aria-hidden
+          />
+          <span className={s.hostText} title={conn.host}>
+            {conn.host}
+          </span>
+        </>
+      );
+    }
 
-  const [isMobile, setIsMobile] = useState(false);
+    case 'chip': {
+      if (column.id === 'type') {
+        const udp = conn.network === 'udp';
+        return (
+          <span className={cx(s.chip, udp ? s.chipUdp : s.chipTcp)} title={conn.type}>
+            {conn.type}
+          </span>
+        );
+      }
+      const value = String((conn as any)[column.id] ?? '');
+      return (
+        <span className={cx(s.chip, s.chipNeutral)} title={value}>
+          {value}
+        </span>
+      );
+    }
 
-  const headerRef = React.useRef<HTMLDivElement>(null);
+    case 'chain': {
+      if (fullChain) {
+        return (
+          <span className={s.chainFull} title={conn.chainsFull}>
+            {conn.chainsFull}
+          </span>
+        );
+      }
+      return (
+        <>
+          {conn.chainGroup ? (
+            <>
+              <span className={s.chainGroup} title={conn.chainGroup}>
+                {conn.chainGroup}
+              </span>
+              <span className={s.chainSep} aria-hidden>
+                ›
+              </span>
+            </>
+          ) : null}
+          <span
+            className={cx(s.chainNode, {
+              [s.chainDirect]: conn.outboundType === 'Direct',
+              [s.chainReject]: conn.outboundType === 'Reject',
+            })}
+            title={conn.chainNode}
+          >
+            {conn.chainNode}
+          </span>
+        </>
+      );
+    }
 
-  useEffect(() => {
-    const mql = window.matchMedia('(max-width: 768px)');
-    setIsMobile(mql.matches);
-    const listener = (e) => setIsMobile(e.matches);
-    mql.addEventListener('change', listener);
-    return () => mql.removeEventListener('change', listener);
-  }, []);
-
-  // react-table v8 列定义：从项目内部的 ConnectionColumn 形态映射而来
-  const columnDefs = useMemo<ColumnDef<FormattedConn>[]>(
-    () =>
-      columns.map((c) => ({
-        id: c.accessor,
-        accessorFn: (row: FormattedConn) => (row as any)[c.accessor],
-        header: c.Header ?? c.accessor,
-        enableSorting: c.accessor !== 'ctrl',
-        sortDescFirst: c.sortDescFirst ?? false,
-      })),
-    [columns]
-  );
-
-  // 从本地存储加载排序状态（v7 sortBy 与 v8 SortingState 形态一致，可直接复用）
-  const [sorting, setSorting] = useState<SortingState>(() => {
-    return JSON.parse(localStorage.getItem('tableSortBy')) || [sortById];
-  });
-
-  // hiddenColumns 为需隐藏的列 id 列表，转换为 v8 的可见性映射
-  const columnVisibility = useMemo<VisibilityState>(
-    () => Object.fromEntries(hiddenColumns.map((id: string) => [id, false])),
-    [hiddenColumns]
-  );
-
-  const table = useReactTable({
-    data,
-    columns: columnDefs,
-    state: { sorting, columnVisibility },
-    onSortingChange: setSorting,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    autoResetAll: false,
-  });
-
-  const rows = table.getRowModel().rows;
-
-  const sortOptions = useMemo(() => {
-    return columns
-      .filter((c) => c.accessor !== 'id' && c.accessor !== 'ctrl')
-      .map((c) => ({
-        label: t(c.Header),
-        value: c.accessor,
-      }));
-  }, [columns, t]);
-
-  const currentSort = sorting[0] || sortById;
-
-  const locale = getDateFnsLocale(i18n.language);
-
-  const disconnectOperation = useCallback(() => {
-    connAPI.closeConnById(apiConfig, operationId);
-    setShowModalDisconnect(false);
-  }, [apiConfig, operationId]);
-
-  const handlerDisconnect = useCallback((id, e) => {
-    e.stopPropagation();
-    setOperationId(id);
-    setShowModalDisconnect(true);
-  }, []);
-
-  const renderCell = useCallback(
-    (cell, locale) => {
-      switch (cell.column.id) {
-        case 'ctrl':
-          return (
-            <XCircle
-              style={{ cursor: 'pointer' }}
-              onClick={(e) => handlerDisconnect(cell.row.original.id, e)}
-            ></XCircle>
-          );
+    default: {
+      switch (column.id) {
         case 'start':
-          return formatElapsed(cell.getValue(), locale);
+          return (
+            <span className={s.num}>
+              {isClosed ? '—' : formatElapsed(conn.start, locale)}
+            </span>
+          );
         case 'download':
         case 'upload':
-          return prettyBytes(cell.getValue());
+          return <span className={s.num}>{prettyBytes((conn as any)[column.id])}</span>;
         case 'downloadSpeedCurr':
-        case 'uploadSpeedCurr':
-          return prettyBytes(cell.getValue()) + '/s';
-        default:
-          return cell.getValue();
+        case 'uploadSpeedCurr': {
+          const speed = (conn as any)[column.id] as number;
+          const dim = isClosed || speed < 1;
+          return (
+            <span
+              className={cx(s.speed, {
+                [s.speedDim]: dim,
+                [s.speedDl]: !dim && column.id === 'downloadSpeedCurr',
+                [s.speedUl]: !dim && column.id === 'uploadSpeedCurr',
+              })}
+            >
+              {isClosed ? '—' : `${prettyBytes(speed)}/s`}
+            </span>
+          );
+        }
+        case 'network':
+          return <span className={s.num}>{conn.network.toUpperCase()}</span>;
+        default: {
+          const value = String((conn as any)[column.id] ?? '');
+          return (
+            <span className={s.num} title={value}>
+              {value}
+            </span>
+          );
+        }
       }
-    },
-    [handlerDisconnect]
-  );
-
-  // 当排序状态改变时，将新状态保存到本地存储
-  useEffect(() => {
-    localStorage.setItem('tableSortBy', JSON.stringify(sorting));
-  }, [sorting]);
-
-  const MobileRow = useCallback(
-    ({ index, style }: RowComponentProps) => {
-      const row = rows[index];
-      const conn = row.original as FormattedConn;
-      return (
-        <div style={style}>
-          <ConnectionCard
-            key={conn.id}
-            conn={conn}
-            onDisconnect={handlerDisconnect}
-            onClick={() => setSelectedConn(conn)}
-          />
-        </div>
-      );
-    },
-    [rows, handlerDisconnect]
-  );
-
-  const DesktopRow = useCallback(
-    ({ index, style }: RowComponentProps) => {
-      const row = rows[index];
-      return (
-        <div
-          style={{
-            ...style,
-            display: 'flex',
-            width: TOTAL_WIDTH,
-          }}
-          className={s.tr}
-          onClick={() => setSelectedConn(row.original as FormattedConn)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              setSelectedConn(row.original as FormattedConn);
-            }
-          }}
-        >
-          {row.getVisibleCells().map((cell) => {
-            const columnStyle = getColumnStyle(cell.column.id);
-            return (
-              <div
-                key={cell.id}
-                className={cx(s.td, index % 2 === 0 ? s.odd : false, cell.column.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  ...columnStyle,
-                }}
-              >
-                <span className={s.cellText}>{renderCell(cell, locale)}</span>
-              </div>
-            );
-          })}
-        </div>
-      );
-    },
-    [rows, renderCell, locale]
-  );
-
-  const handleDesktopListScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    if (headerRef.current) {
-      headerRef.current.scrollLeft = e.currentTarget.scrollLeft;
     }
-  }, []);
+  }
+}
+
+type RowProps = {
+  rows: FormattedConn[];
+  columns: ConnectionColumn[];
+  widths: number[];
+  tableWidth: number;
+  gridTemplate: string;
+  expandedId: string | null;
+  toggleExpanded: (id: string) => void;
+  isClosed: boolean;
+  fullChain: boolean;
+  locale: ReturnType<typeof getDateFnsLocale>;
+  onClose: (id: string, e: React.MouseEvent) => void;
+  buildDetails: (conn: FormattedConn) => DetailItem[];
+};
+
+function DesktopRow({
+  index,
+  style,
+  rows,
+  columns,
+  tableWidth,
+  gridTemplate,
+  expandedId,
+  toggleExpanded,
+  isClosed,
+  fullChain,
+  locale,
+  onClose,
+  buildDetails,
+}: RowComponentProps<RowProps>) {
+  const conn = rows[index];
+  const expanded = expandedId === conn.id;
 
   return (
-    <div className={s.tableWrapper} style={{ height, overflow: 'hidden' }}>
-      {isMobile ? (
-        <div className={s.cardsView}>
-          <div className={s.mobileSortToolbar}>
-            <div className={s.sortSelectWrapper}>
-              <div className={s.selectedValue}>
-                <Sliders size={14} />
-                <span>
-                  {t('Sort')}: {sortOptions.find((opt) => opt.value === currentSort.id)?.label}
-                </span>
-              </div>
-              <select
-                value={currentSort.id}
-                onChange={(e) => setSorting([{ id: e.target.value, desc: currentSort.desc }])}
-              >
-                {sortOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown size={14} className={s.selectArrow} />
-            </div>
-            <button
-              className={s.sortDirBtn}
-              onClick={() => setSorting([{ id: currentSort.id, desc: !currentSort.desc }])}
-            >
-              {currentSort.desc ? <ArrowDown size={18} /> : <ArrowUp size={18} />}
-            </button>
-          </div>
-          <VirtualList
-            style={{ height: height - 50, width: '100%' }}
-            rowCount={rows.length}
-            rowHeight={120}
-            rowComponent={MobileRow}
-            rowProps={{}}
-          />
-        </div>
-      ) : (
-        <div
-          className={cx(s.table, 'connections-table')}
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100%',
-            width: '100%',
-          }}
-        >
+    <div
+      style={{ ...style, width: tableWidth }}
+      className={cx(s.rowWrap, { [s.rowWrapExpanded]: expanded })}
+    >
+      <div
+        className={s.row}
+        style={{
+          gridTemplateColumns: gridTemplate,
+          columnGap: COLUMN_GAP,
+          paddingLeft: ROW_PADDING_X,
+          paddingRight: ROW_PADDING_X,
+        }}
+        onClick={() => toggleExpanded(conn.id)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleExpanded(conn.id);
+          }
+        }}
+      >
+        {columns.map((column) => (
           <div
-            className={s.theadWrapper}
-            ref={headerRef}
-            style={{ overflow: 'hidden', width: '100%' }}
+            key={column.id}
+            className={cx(s.cell, { [s.cellRight]: column.align === 'right' })}
           >
-            <div className={s.thead} style={{ width: TOTAL_WIDTH }}>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <div className={s.tr} key={headerGroup.id} style={{ display: 'flex' }}>
-                  {headerGroup.headers.map((header) => {
-                    const columnStyle = getColumnStyle(header.column.id);
-                    const sortDir = header.column.getIsSorted();
-                    const canSort = header.column.getCanSort();
-                    const sortHandler = header.column.getToggleSortingHandler();
-                    return (
-                      <div
-                        key={header.id}
-                        className={s.th}
-                        onClick={sortHandler}
-                        onKeyDown={
-                          canSort
-                            ? (e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                  e.preventDefault();
-                                  sortHandler?.(e);
-                                }
-                              }
-                            : undefined
-                        }
-                        role={canSort ? 'button' : undefined}
-                        tabIndex={canSort ? 0 : undefined}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          cursor: canSort ? 'pointer' : 'default',
-                          ...columnStyle,
-                        }}
-                      >
-                        <span className={s.headerText}>
-                          {t(header.column.columnDef.header as string)}
-                        </span>
-                        {header.column.id !== 'ctrl' ? (
-                          <span className={s.sortIconContainer}>
-                            {sortDir ? (
-                              <ChevronDown
-                                size={14}
-                                className={sortDir === 'desc' ? '' : s.rotate180}
-                              />
-                            ) : null}
-                          </span>
-                        ) : null}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
+            <Cell
+              column={column}
+              conn={conn}
+              isClosed={isClosed}
+              fullChain={fullChain}
+              locale={locale}
+              onClose={onClose}
+            />
           </div>
-          <VirtualList
-            style={{ height: height - 50, width: '100%' }}
-            onScroll={handleDesktopListScroll}
-            rowCount={rows.length}
-            rowHeight={44}
-            rowComponent={DesktopRow}
-            rowProps={{}}
-          />
+        ))}
+      </div>
+
+      {expanded ? (
+        <div className={s.detail}>
+          {buildDetails(conn).map((item) => (
+            <div key={item.label} className={s.detailItem}>
+              <span className={s.detailLabel}>{item.label}</span>
+              <span className={s.detailValue} title={item.value}>
+                {item.value || '-'}
+              </span>
+            </div>
+          ))}
         </div>
-      )}
-      <MOdalCloseConnection
-        confirm={'disconnect'}
-        isOpen={showModalDisconnect}
-        onRequestClose={() => setShowModalDisconnect(false)}
-        primaryButtonOnTap={disconnectOperation}
-      ></MOdalCloseConnection>
-      <ModalConnectionDetails
-        isOpen={!!selectedConn}
-        onRequestClose={() => setSelectedConn(null)}
-        connection={selectedConn}
+      ) : null}
+    </div>
+  );
+}
+
+function MobileRow({
+  index,
+  style,
+  rows,
+  expandedId,
+  toggleExpanded,
+  onClose,
+  buildDetails,
+}: RowComponentProps<RowProps>) {
+  const conn = rows[index];
+  return (
+    <div style={style}>
+      <ConnectionCard
+        conn={conn}
+        expanded={expandedId === conn.id}
+        details={expandedId === conn.id ? buildDetails(conn) : null}
+        onDisconnect={onClose}
+        onClick={() => toggleExpanded(conn.id)}
       />
     </div>
   );
 }
 
-export default Table;
+type Props = {
+  data: FormattedConn[];
+  totalCount: number;
+  columns: ConnectionColumn[];
+  sort: SortState;
+  setSort: (key: string) => void;
+  isClosed: boolean;
+  fullChain: boolean;
+  onCloseConn: (id: string) => void;
+};
+
+export default function ConnectionTable({
+  data,
+  totalCount,
+  columns,
+  sort,
+  setSort,
+  isClosed,
+  fullChain,
+  onCloseConn,
+}: Props) {
+  const { t, i18n } = useTranslation();
+  const [expandedId, setExpandedId] = React.useState<string | null>(null);
+  const [isMobile, setIsMobile] = React.useState(false);
+  const [containerRef, containerWidth] = useElementWidth<HTMLDivElement>();
+  const headRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const mql = window.matchMedia('(max-width: 768px)');
+    setIsMobile(mql.matches);
+    const listener = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener('change', listener);
+    return () => mql.removeEventListener('change', listener);
+  }, []);
+
+  const locale = getDateFnsLocale(i18n.language);
+
+  const { widths, tableWidth } = React.useMemo(
+    () => computeWidths(columns, containerWidth),
+    [columns, containerWidth]
+  );
+  const gridTemplate = React.useMemo(() => widths.map((w) => `${w}px`).join(' '), [widths]);
+
+  const toggleExpanded = React.useCallback(
+    (id: string) => setExpandedId((prev) => (prev === id ? null : id)),
+    []
+  );
+
+  const handleClose = React.useCallback(
+    (id: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      onCloseConn(id);
+    },
+    [onCloseConn]
+  );
+
+  const buildDetails = React.useCallback(
+    (conn: FormattedConn): DetailItem[] => [
+      { label: t('c_process'), value: conn.process },
+      { label: t('c_source'), value: conn.source },
+      { label: t('c_type'), value: conn.type },
+      { label: t('c_rule'), value: conn.rule },
+      { label: t('c_full_chain'), value: conn.chainsFull },
+      { label: t('c_sni'), value: conn.sniffHost },
+      {
+        label: t('c_destination'),
+        value: `${conn.destinationIP}:${conn.destinationPort}`,
+      },
+      { label: t('c_conn_id'), value: conn.id },
+    ],
+    [t]
+  );
+
+  // expandedId 变化时 List 需要重新计算行高，把它放进 rowProps 里传下去
+  const rowProps = React.useMemo<RowProps>(
+    () => ({
+      rows: data,
+      columns,
+      widths,
+      tableWidth,
+      gridTemplate,
+      expandedId,
+      toggleExpanded,
+      isClosed,
+      fullChain,
+      locale,
+      onClose: handleClose,
+      buildDetails,
+    }),
+    [
+      data,
+      columns,
+      widths,
+      tableWidth,
+      gridTemplate,
+      expandedId,
+      toggleExpanded,
+      isClosed,
+      fullChain,
+      locale,
+      handleClose,
+      buildDetails,
+    ]
+  );
+
+  const desktopRowHeight = React.useCallback(
+    (index: number, props: RowProps) =>
+      props.rows[index].id === props.expandedId ? ROW_HEIGHT + DETAIL_HEIGHT : ROW_HEIGHT,
+    []
+  );
+
+  const mobileRowHeight = React.useCallback(
+    (index: number, props: RowProps) =>
+      props.rows[index].id === props.expandedId ? CARD_HEIGHT + CARD_DETAIL_HEIGHT : CARD_HEIGHT,
+    []
+  );
+
+  const rowKey = React.useCallback(
+    (index: number, props: RowProps) => props.rows[index].id,
+    []
+  );
+
+  const syncHeadScroll = React.useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    if (headRef.current) headRef.current.scrollLeft = e.currentTarget.scrollLeft;
+  }, []);
+
+  const sortableColumns = React.useMemo(
+    () => columns.filter((c) => c.sortable !== false),
+    [columns]
+  );
+  const sortLabel = sortableColumns.find((c) => c.id === sort.key)?.labelKey;
+
+  const empty = data.length === 0;
+
+  return (
+    <div className={s.card}>
+      <div className={s.body} ref={containerRef}>
+        {isMobile ? (
+          <div className={s.mobileToolbar}>
+            <div className={s.sortSelect}>
+              <Sliders size={14} />
+              <span>
+                {t('Sort')}: {sortLabel ? t(sortLabel) : ''}
+              </span>
+              <select value={sort.key} onChange={(e) => setSort(e.target.value)}>
+                {sortableColumns.map((column) => (
+                  <option key={column.id} value={column.id}>
+                    {t(column.labelKey)}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={14} className={s.sortSelectArrow} />
+            </div>
+            <button
+              type="button"
+              className={s.sortDirBtn}
+              onClick={() => setSort(sort.key)}
+              aria-label={t(sort.dir === 'desc' ? 'sort_desc' : 'sort_asc')}
+            >
+              {sort.dir === 'desc' ? <ArrowDown size={16} /> : <ArrowUp size={16} />}
+            </button>
+          </div>
+        ) : (
+          <div className={s.headWrap} ref={headRef}>
+            <div
+              className={s.headRow}
+              style={{
+                width: tableWidth,
+                gridTemplateColumns: gridTemplate,
+                columnGap: COLUMN_GAP,
+                paddingLeft: ROW_PADDING_X,
+                paddingRight: ROW_PADDING_X,
+              }}
+              role="row"
+            >
+              {columns.map((column) => {
+                const sortable = column.sortable !== false;
+                const active = sortable && sort.key === column.id;
+                return (
+                  <div
+                    key={column.id}
+                    className={cx(s.headCell, {
+                      [s.cellRight]: column.align === 'right',
+                      [s.headCellSortable]: sortable,
+                      [s.headCellActive]: active,
+                    })}
+                    onClick={sortable ? () => setSort(column.id) : undefined}
+                    onKeyDown={
+                      sortable
+                        ? (e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              setSort(column.id);
+                            }
+                          }
+                        : undefined
+                    }
+                    role={sortable ? 'button' : undefined}
+                    tabIndex={sortable ? 0 : undefined}
+                  >
+                    <span className={s.headText}>
+                      {column.kind === 'ctrl' ? '' : t(column.labelKey)}
+                    </span>
+                    {active ? (
+                      <span className={s.headArrow}>{sort.dir === 'desc' ? '↓' : '↑'}</span>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className={s.listWrap}>
+          {empty ? (
+            <div className={s.empty}>
+              <span className={s.emptyTitle}>{t('conn_empty_title')}</span>
+              <span className={s.emptyHint}>{t('conn_empty_hint')}</span>
+            </div>
+          ) : (
+            <VirtualList
+              className={isMobile ? s.mobileList : s.list}
+              style={{ height: '100%', width: '100%' }}
+              onScroll={isMobile ? undefined : syncHeadScroll}
+              rowCount={data.length}
+              rowHeight={isMobile ? mobileRowHeight : desktopRowHeight}
+              rowComponent={isMobile ? MobileRow : DesktopRow}
+              rowKey={rowKey}
+              rowProps={rowProps}
+            />
+          )}
+        </div>
+      </div>
+
+      <div className={s.footer}>
+        <span>{t('conn_shown', { shown: data.length, total: totalCount })}</span>
+        {sortLabel ? (
+          <span>
+            {t('conn_sorted_by', {
+              column: t(sortLabel),
+              dir: t(sort.dir === 'desc' ? 'sort_desc' : 'sort_asc'),
+            })}
+          </span>
+        ) : null}
+        <span className={s.footerNote}>
+          {isClosed ? t('conn_note_closed') : t('conn_note_active')}
+        </span>
+      </div>
+    </div>
+  );
+}

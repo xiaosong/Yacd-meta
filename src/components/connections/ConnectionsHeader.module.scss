@@ -1,0 +1,356 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 32px 15px;
+  // 与代理页一致：半透明外壳色 + 毛玻璃，比卡片暗一档
+  background: var(--color-chrome);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--color-chrome-border);
+
+  @media (max-width: 1024px) {
+    flex-wrap: wrap;
+    padding: 16px 16px 12px;
+  }
+
+  @media (max-width: 768px) {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+}
+
+// DOM 顺序是 标题/标签/操作/换行/搜索/来源，桌面端靠 order 拨回设计稿的排布
+.title {
+  order: 1;
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--color-text-highlight);
+  white-space: nowrap;
+
+  @media (max-width: 1024px) {
+    font-size: 1.35rem;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 1.1rem;
+  }
+}
+
+/** 只在窄屏生效的换行占位，让搜索和来源筛选独占第二行 */
+.rowBreak {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    order: 4;
+    flex-basis: 100%;
+    height: 0;
+  }
+}
+
+/* ---------- 分段标签 ---------- */
+
+.tabs {
+  order: 2;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--color-track);
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    padding: 3px;
+  }
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  appearance: none;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  padding: 7px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover:not(.tabActive) {
+    color: var(--color-text);
+    background: var(--color-hover-soft);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-blue);
+    outline-offset: -1px;
+  }
+
+  @media (max-width: 768px) {
+    gap: 5px;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
+}
+
+.tabActive {
+  background: var(--color-card);
+  color: var(--color-text-highlight);
+  box-shadow: var(--shadow-segment);
+}
+
+.tabCount {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+
+  // 小屏上标题 + 标签 + 四个操作钮刚好挤满一行，计数是这里最先能舍的东西
+  // （统计带第一格就是活动连接数）
+  @media (max-width: 400px) {
+    display: none;
+  }
+}
+
+/* ---------- 来源筛选 ---------- */
+
+.sourceSelect {
+  order: 3;
+  height: 38px;
+  width: auto;
+  min-width: 132px;
+  max-width: 190px;
+  flex-shrink: 0;
+  border-radius: 10px;
+
+  @media (max-width: 1024px) {
+    flex: 1 1 auto;
+    max-width: none;
+  }
+
+  @media (max-width: 768px) {
+    order: 6;
+    flex: 0 0 auto;
+    height: 34px;
+    min-width: 96px;
+    max-width: 130px;
+    font-size: 0.8rem;
+  }
+}
+
+/* ---------- 搜索 ---------- */
+
+.search {
+  order: 4;
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 1 200px;
+  min-width: 150px;
+  max-width: 300px;
+  margin-left: auto;
+
+  input {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px 0 38px;
+    border-radius: 10px;
+    border: 1px solid var(--color-card-border);
+    background: var(--color-track);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 0.85rem;
+    outline: none;
+    appearance: none;
+
+    &::placeholder {
+      color: var(--color-text-secondary);
+      opacity: 0.75;
+    }
+
+    &:focus {
+      border-color: var(--color-focus-blue);
+    }
+  }
+
+  @media (max-width: 1024px) {
+    flex-basis: 100%;
+    max-width: none;
+    margin-left: 0;
+  }
+
+  @media (max-width: 768px) {
+    order: 5;
+    flex: 1 1 auto;
+    flex-basis: auto;
+    min-width: 0;
+
+    input {
+      height: 34px;
+      padding-left: 34px;
+      font-size: 0.8rem;
+    }
+  }
+}
+
+.searchIcon {
+  position: absolute;
+  left: 13px;
+  color: var(--color-text-secondary);
+  pointer-events: none;
+
+  @media (max-width: 768px) {
+    left: 11px;
+  }
+}
+
+/* ---------- 操作按钮 ---------- */
+
+.actions {
+  order: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+
+  @media (max-width: 1024px) {
+    margin-left: auto;
+  }
+
+  @media (max-width: 768px) {
+    order: 3;
+    gap: 6px;
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  appearance: none;
+  height: 38px;
+  padding: 0 15px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-blue);
+    outline-offset: 2px;
+  }
+
+  // 窄屏下文字全部收起，按钮退化成正方形图标钮
+  @media (max-width: 768px) {
+    gap: 0;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+
+.btnGhost {
+  background: var(--color-card);
+  border-color: var(--color-card-border);
+  color: var(--color-text);
+
+  &:hover {
+    border-color: var(--color-focus-blue);
+    color: var(--color-focus-blue);
+  }
+}
+
+.btnPaused {
+  background: var(--color-warn-soft-bg);
+  color: var(--color-warn);
+  border-color: transparent;
+}
+
+.btnDanger {
+  background: var(--color-danger);
+  color: #fff;
+
+  &:hover {
+    filter: brightness(1.08);
+  }
+}
+
+.btnText {
+  @media (max-width: 1280px) {
+    display: none;
+  }
+}
+
+/** 比 .btnText 保留得久一些：只有窄屏才收起 */
+.btnTextSm {
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+/** 「关闭筛选结果」的图标，右上角挂一个 F 角标以区别于「全部关闭」 */
+.btnIconBadged {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btnBadge {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+  min-width: 12px;
+  height: 12px;
+  padding: 0 2px;
+  border-radius: 6px;
+  background: var(--color-danger);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 12px;
+  text-align: center;
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  appearance: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--color-card-border);
+  background: var(--color-card);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    border-color: var(--color-focus-blue);
+    color: var(--color-focus-blue);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-blue);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 768px) {
+    width: 34px;
+    height: 34px;
+  }
+}

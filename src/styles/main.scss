@@ -151,6 +151,16 @@ body {
   // 这样卡片始终是抬起来的那一层
   --color-chrome: rgba(31, 41, 55, 0.72);
   --color-chrome-border: rgba(255, 255, 255, 0.08);
+
+  // 语义状态色
+  --color-success: #4ade80;
+  --color-success-soft-bg: rgba(74, 222, 128, 0.16);
+  --color-danger: #f87171;
+  --color-danger-soft-bg: rgba(248, 113, 113, 0.16);
+  --color-warn: #fbbf24;
+  --color-warn-soft-bg: rgba(251, 191, 36, 0.16);
+  --color-udp-bg: rgba(192, 132, 252, 0.18);
+  --color-udp-fg: #d8b4fe;
 }
 
 @mixin light {
@@ -194,8 +204,10 @@ body {
   --border-radius: 12px;
 
   // 卡片 / 徽章 / 弹层
-  --color-card: #ffffff;
-  --color-card-border: #e6ebf2;
+  // 与概览页 --color-bg-card 同档的柔和灰白，避免代理组 / 连接卡片在
+  // 浅灰页面底色上显得刺眼的纯白；边框同步压深一档保持轮廓清晰
+  --color-card: #f8fafc;
+  --color-card-border: #e2e8f0;
   --color-badge-bg: #f1f5f9;
   --color-badge-fg: #64748b;
   --color-accent-soft-bg: #e0edff;
@@ -210,6 +222,16 @@ body {
   // 比纯白的卡片灰一档，卡片才浮得起来
   --color-chrome: rgba(255, 255, 255, 0.62);
   --color-chrome-border: rgba(0, 0, 0, 0.08);
+
+  // 语义状态色
+  --color-success: #16a34a;
+  --color-success-soft-bg: rgba(22, 163, 74, 0.14);
+  --color-danger: #ef4444;
+  --color-danger-soft-bg: rgba(239, 68, 68, 0.12);
+  --color-warn: #b45309;
+  --color-warn-soft-bg: rgba(245, 158, 11, 0.16);
+  --color-udp-bg: rgba(168, 85, 247, 0.12);
+  --color-udp-fg: #7e22ce;
 }
 
 :root[data-theme='auto'] {

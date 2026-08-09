@@ -152,6 +152,8 @@ export const data = {
   client_tag: '客户端标签',
   sourceip_tip: '/开头为正则，否则为全匹配',
   disconnect: '断开连接',
+  conn_details: '连接详情',
+  close: '关闭',
   internel: '内部链接',
   Clear: '清空',
   group_fixed_tip: '该组已手动固定选择，点击测速可解除固定',

@@ -39,8 +39,7 @@ export const data = {
   settings_display: 'Hiển thị',
   settings_behavior: 'Hành vi',
   group_fixed: 'Đã ghim',
-  group_fixed_tip:
-    'Nhóm này đang ghim lựa chọn thủ công; chạy kiểm tra độ trễ để bỏ ghim',
+  group_fixed_tip: 'Nhóm này đang ghim lựa chọn thủ công; chạy kiểm tra độ trễ để bỏ ghim',
   expire_at: 'Hết hạn {{date}}',
   updated_ago: 'Cập nhật {{time}} trước',
   sort_in_grp: 'Sắp xếp trong nhóm',
@@ -103,6 +102,8 @@ export const data = {
   sourceip_tip:
     'Thêm / vào đầu để sử dụng biểu thức chính quy, nếu không sẽ là kết quả khớp chính xác(By Ohoang7)',
   disconnect: 'Đóng kết nối',
+  conn_details: 'Chi tiết kết nối',
+  close: 'Đóng',
   internel: 'Kết nối nội bộ',
   Clear: 'Dọn dẹp',
 };

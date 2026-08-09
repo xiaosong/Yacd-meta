@@ -11,19 +11,11 @@ import s from './ConnectionCard.module.scss';
 
 interface Props {
   conn: FormattedConn;
-  expanded: boolean;
-  details: { label: string; value: string }[] | null;
   onDisconnect: (id: string, e: React.MouseEvent) => void;
   onClick: () => void;
 }
 
-const ConnectionCard = React.memo(function ConnectionCard({
-  conn,
-  expanded,
-  details,
-  onDisconnect,
-  onClick,
-}: Props) {
+const ConnectionCard = React.memo(function ConnectionCard({ conn, onDisconnect, onClick }: Props) {
   const { i18n } = useTranslation();
 
   const timeAgo = formatElapsed(conn.start, getDateFnsLocale(i18n.language));
@@ -31,7 +23,7 @@ const ConnectionCard = React.memo(function ConnectionCard({
 
   return (
     <div
-      className={cx(s.card, { [s.cardExpanded]: expanded })}
+      className={s.card}
       onClick={onClick}
       role="button"
       tabIndex={0}
@@ -86,17 +78,6 @@ const ConnectionCard = React.memo(function ConnectionCard({
           </button>
         </div>
       </div>
-
-      {details ? (
-        <div className={s.detail}>
-          {details.map((item) => (
-            <div key={item.label} className={s.detailItem}>
-              <span className={s.detailLabel}>{item.label}</span>
-              <span className={s.detailValue}>{item.value || '-'}</span>
-            </div>
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 });

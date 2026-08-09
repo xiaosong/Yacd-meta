@@ -11,15 +11,17 @@
   box-shadow: var(--shadow-card);
   cursor: pointer;
   overflow: hidden;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--color-focus-blue);
+  }
 
   &:active {
     transform: scale(0.99);
   }
-}
-
-.cardExpanded {
-  height: 298px; // 112 + 186，与 ConnectionTable 里的 CARD_DETAIL_HEIGHT 对应
-  border-color: var(--color-focus-blue);
 }
 
 .row {
@@ -151,40 +153,4 @@
     background: var(--color-danger-soft-bg);
     color: var(--color-danger);
   }
-}
-
-/* 展开的详情：2 列 4 行，高度固定以配合虚拟列表的行高计算 */
-.detail {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 16px;
-  margin-top: 9px;
-  padding-top: 10px;
-  border-top: 1px solid var(--color-separator);
-}
-
-.detailItem {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 3px;
-  height: 34px;
-  min-width: 0;
-}
-
-.detailLabel {
-  font-size: 0.66rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.detailValue {
-  font-size: 0.74rem;
-  color: var(--color-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }

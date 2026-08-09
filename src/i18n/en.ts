@@ -151,6 +151,8 @@ export const data = {
   client_tag: 'Client tags',
   sourceip_tip: "Prefix with / for regular expressions, otherwise it's a complete match",
   disconnect: 'Close Connection',
+  conn_details: 'Connection Details',
+  close: 'Close',
   internel: 'Internal Connection',
   Clear: 'Clear',
   group_fixed_tip: 'This group has a manually fixed selection; run a latency test to release it',

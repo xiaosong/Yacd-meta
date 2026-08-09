@@ -40,6 +40,7 @@ export const CONNECTION_COLUMNS: ConnectionColumn[] = [
   { id: 'ctrl', labelKey: 'c_ctrl', width: 34, kind: 'ctrl', sortable: false },
   { id: 'start', labelKey: 'c_time', width: 84, kind: 'text', numeric: true },
   { id: 'type', labelKey: 'c_type', width: 70, kind: 'chip' },
+  { id: 'source', labelKey: 'c_source', width: 120, kind: 'text' },
   { id: 'host', labelKey: 'c_host', width: 100, grow: 1.6, max: 380, kind: 'host' },
   { id: 'rule', labelKey: 'c_rule', width: 70, grow: 1, max: 220, kind: 'chip' },
   { id: 'chains', labelKey: 'c_chains', width: 140, grow: 1.15, max: 280, kind: 'chain' },
@@ -61,7 +62,6 @@ export const CONNECTION_COLUMNS: ConnectionColumn[] = [
   },
   { id: 'download', labelKey: 'c_dl', width: 74, align: 'right', kind: 'text', numeric: true },
   { id: 'upload', labelKey: 'c_ul', width: 74, align: 'right', kind: 'text', numeric: true },
-  { id: 'source', labelKey: 'c_source', width: 120, kind: 'text' },
   { id: 'process', labelKey: 'c_process', width: 110, kind: 'text' },
   { id: 'chainNode', labelKey: 'c_node', width: 110, kind: 'text' },
   {
@@ -86,6 +86,7 @@ export const CONNECTION_COLUMNS_DEFAULT: string[] = [
   'ctrl',
   'start',
   'type',
+  'source',
   'host',
   'rule',
   'chains',
@@ -93,7 +94,6 @@ export const CONNECTION_COLUMNS_DEFAULT: string[] = [
   'uploadSpeedCurr',
   'download',
   'upload',
-  'source',
 ];
 
 export type SortDir = 'asc' | 'desc';

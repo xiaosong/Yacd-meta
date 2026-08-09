@@ -145,6 +145,8 @@ export const data = {
   client_tag: '客戶端標籤',
   sourceip_tip: '/開頭為正規表達式，否則為全面配對',
   disconnect: '斷開連線',
+  conn_details: '連線詳情',
+  close: '關閉',
   internel: '內部連線',
   Clear: '清空',
   group_fixed_tip: '該組已手動固定選擇，點擊測速可解除固定',

@@ -15,21 +15,17 @@ import {
 import { FormattedConn } from '~/store/connections';
 
 import ConnectionCard from './ConnectionCard';
+import ConnectionDetailModal from './ConnectionDetailModal';
 import s from './ConnectionTable.module.scss';
 
 const ROW_HEIGHT = 44;
-/** 展开区固定 4 列 8 项，高度可以直接算出来，虚拟列表才不用动态测量 */
-const DETAIL_HEIGHT = 104;
 const CARD_HEIGHT = 120;
-const CARD_DETAIL_HEIGHT = 186;
 /** 纵向滚动条宽度，见 main.scss */
 const SCROLLBAR_SIZE = 8;
 // 列间距和行内边距由 JS 施加而非写在 scss 里：computeWidths 必须把它们算进可用
 // 宽度，两处一旦不同步表格就会横向溢出
 const COLUMN_GAP = 10;
 const ROW_PADDING_X = 12;
-
-type DetailItem = { label: string; value: string };
 
 /**
  * 按 grow 把剩余宽度分给流式列，返回每列实际像素宽和整行宽度。
@@ -104,10 +100,7 @@ function Cell({
       const busy = !isClosed && (conn.downloadSpeedCurr ?? 0) + (conn.uploadSpeedCurr ?? 0) > 0;
       return (
         <>
-          <span
-            className={cx(s.dot, { [s.dotBusy]: busy, [s.dotIdle]: !busy })}
-            aria-hidden
-          />
+          <span className={cx(s.dot, { [s.dotBusy]: busy, [s.dotIdle]: !busy })} aria-hidden />
           <span className={s.hostText} title={conn.host}>
             {conn.host}
           </span>
@@ -169,9 +162,7 @@ function Cell({
       switch (column.id) {
         case 'start':
           return (
-            <span className={s.num}>
-              {isClosed ? '—' : formatElapsed(conn.start, locale)}
-            </span>
+            <span className={s.num}>{isClosed ? '—' : formatElapsed(conn.start, locale)}</span>
           );
         case 'download':
         case 'upload':
@@ -213,13 +204,11 @@ type RowProps = {
   widths: number[];
   tableWidth: number;
   gridTemplate: string;
-  expandedId: string | null;
-  toggleExpanded: (id: string) => void;
   isClosed: boolean;
   fullChain: boolean;
   locale: ReturnType<typeof getDateFnsLocale>;
   onClose: (id: string, e: React.MouseEvent) => void;
-  buildDetails: (conn: FormattedConn) => DetailItem[];
+  onOpenDetails: (conn: FormattedConn) => void;
 };
 
 function DesktopRow({
@@ -229,22 +218,16 @@ function DesktopRow({
   columns,
   tableWidth,
   gridTemplate,
-  expandedId,
-  toggleExpanded,
   isClosed,
   fullChain,
   locale,
   onClose,
-  buildDetails,
+  onOpenDetails,
 }: RowComponentProps<RowProps>) {
   const conn = rows[index];
-  const expanded = expandedId === conn.id;
 
   return (
-    <div
-      style={{ ...style, width: tableWidth }}
-      className={cx(s.rowWrap, { [s.rowWrapExpanded]: expanded })}
-    >
+    <div style={{ ...style, width: tableWidth }} className={s.rowWrap}>
       <div
         className={s.row}
         style={{
@@ -253,21 +236,18 @@ function DesktopRow({
           paddingLeft: ROW_PADDING_X,
           paddingRight: ROW_PADDING_X,
         }}
-        onClick={() => toggleExpanded(conn.id)}
+        onClick={() => onOpenDetails(conn)}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            toggleExpanded(conn.id);
+            onOpenDetails(conn);
           }
         }}
       >
         {columns.map((column) => (
-          <div
-            key={column.id}
-            className={cx(s.cell, { [s.cellRight]: column.align === 'right' })}
-          >
+          <div key={column.id} className={cx(s.cell, { [s.cellRight]: column.align === 'right' })}>
             <Cell
               column={column}
               conn={conn}
@@ -279,42 +259,15 @@ function DesktopRow({
           </div>
         ))}
       </div>
-
-      {expanded ? (
-        <div className={s.detail}>
-          {buildDetails(conn).map((item) => (
-            <div key={item.label} className={s.detailItem}>
-              <span className={s.detailLabel}>{item.label}</span>
-              <span className={s.detailValue} title={item.value}>
-                {item.value || '-'}
-              </span>
-            </div>
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }
 
-function MobileRow({
-  index,
-  style,
-  rows,
-  expandedId,
-  toggleExpanded,
-  onClose,
-  buildDetails,
-}: RowComponentProps<RowProps>) {
+function MobileRow({ index, style, rows, onClose, onOpenDetails }: RowComponentProps<RowProps>) {
   const conn = rows[index];
   return (
     <div style={style}>
-      <ConnectionCard
-        conn={conn}
-        expanded={expandedId === conn.id}
-        details={expandedId === conn.id ? buildDetails(conn) : null}
-        onDisconnect={onClose}
-        onClick={() => toggleExpanded(conn.id)}
-      />
+      <ConnectionCard conn={conn} onDisconnect={onClose} onClick={() => onOpenDetails(conn)} />
     </div>
   );
 }
@@ -341,7 +294,8 @@ export default function ConnectionTable({
   onCloseConn,
 }: Props) {
   const { t, i18n } = useTranslation();
-  const [expandedId, setExpandedId] = React.useState<string | null>(null);
+  // 只存 id，每次渲染从实时 data 里取最新对象，弹窗里的流量/时长才能实时更新
+  const [detailId, setDetailId] = React.useState<string | null>(null);
   const [isMobile, setIsMobile] = React.useState(false);
   const [containerRef, containerWidth] = useElementWidth<HTMLDivElement>();
   const headRef = React.useRef<HTMLDivElement>(null);
@@ -358,41 +312,42 @@ export default function ConnectionTable({
 
   const { widths, tableWidth } = React.useMemo(
     () => computeWidths(columns, containerWidth),
-    [columns, containerWidth]
+    [columns, containerWidth],
   );
   const gridTemplate = React.useMemo(() => widths.map((w) => `${w}px`).join(' '), [widths]);
-
-  const toggleExpanded = React.useCallback(
-    (id: string) => setExpandedId((prev) => (prev === id ? null : id)),
-    []
-  );
 
   const handleClose = React.useCallback(
     (id: string, e: React.MouseEvent) => {
       e.stopPropagation();
       onCloseConn(id);
     },
-    [onCloseConn]
+    [onCloseConn],
   );
 
-  const buildDetails = React.useCallback(
-    (conn: FormattedConn): DetailItem[] => [
-      { label: t('c_process'), value: conn.process },
-      { label: t('c_source'), value: conn.source },
-      { label: t('c_type'), value: conn.type },
-      { label: t('c_rule'), value: conn.rule },
-      { label: t('c_full_chain'), value: conn.chainsFull },
-      { label: t('c_sni'), value: conn.sniffHost },
-      {
-        label: t('c_destination'),
-        value: `${conn.destinationIP}:${conn.destinationPort}`,
-      },
-      { label: t('c_conn_id'), value: conn.id },
-    ],
-    [t]
-  );
+  const handleOpenDetails = React.useCallback((conn: FormattedConn) => {
+    setDetailId(conn.id);
+  }, []);
 
-  // expandedId 变化时 List 需要重新计算行高，把它放进 rowProps 里传下去
+  const handleCloseDetails = React.useCallback(() => {
+    setDetailId(null);
+  }, []);
+
+  // 详情里的连接被关闭/移出列表（如切换标签、筛选变化）时自动关闭弹窗
+  const detailConn = detailId ? (data.find((c) => c.id === detailId) ?? null) : null;
+  React.useEffect(() => {
+    if (detailId && !detailConn) setDetailId(null);
+  }, [detailId, detailConn]);
+
+  // Esc 关闭详情
+  React.useEffect(() => {
+    if (!detailConn) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setDetailId(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [detailConn]);
+
   const rowProps = React.useMemo<RowProps>(
     () => ({
       rows: data,
@@ -400,13 +355,11 @@ export default function ConnectionTable({
       widths,
       tableWidth,
       gridTemplate,
-      expandedId,
-      toggleExpanded,
       isClosed,
       fullChain,
       locale,
       onClose: handleClose,
-      buildDetails,
+      onOpenDetails: handleOpenDetails,
     }),
     [
       data,
@@ -414,32 +367,19 @@ export default function ConnectionTable({
       widths,
       tableWidth,
       gridTemplate,
-      expandedId,
-      toggleExpanded,
       isClosed,
       fullChain,
       locale,
       handleClose,
-      buildDetails,
-    ]
+      handleOpenDetails,
+    ],
   );
 
-  const desktopRowHeight = React.useCallback(
-    (index: number, props: RowProps) =>
-      props.rows[index].id === props.expandedId ? ROW_HEIGHT + DETAIL_HEIGHT : ROW_HEIGHT,
-    []
-  );
+  const rowHeight = React.useCallback(() => {
+    return isMobile ? CARD_HEIGHT : ROW_HEIGHT;
+  }, [isMobile]);
 
-  const mobileRowHeight = React.useCallback(
-    (index: number, props: RowProps) =>
-      props.rows[index].id === props.expandedId ? CARD_HEIGHT + CARD_DETAIL_HEIGHT : CARD_HEIGHT,
-    []
-  );
-
-  const rowKey = React.useCallback(
-    (index: number, props: RowProps) => props.rows[index].id,
-    []
-  );
+  const rowKey = React.useCallback((index: number, props: RowProps) => props.rows[index].id, []);
 
   const syncHeadScroll = React.useCallback((e: React.UIEvent<HTMLDivElement>) => {
     if (headRef.current) headRef.current.scrollLeft = e.currentTarget.scrollLeft;
@@ -447,7 +387,7 @@ export default function ConnectionTable({
 
   const sortableColumns = React.useMemo(
     () => columns.filter((c) => c.sortable !== false),
-    [columns]
+    [columns],
   );
   const sortLabel = sortableColumns.find((c) => c.id === sort.key)?.labelKey;
 
@@ -544,7 +484,7 @@ export default function ConnectionTable({
               style={{ height: '100%', width: '100%' }}
               onScroll={isMobile ? undefined : syncHeadScroll}
               rowCount={data.length}
-              rowHeight={isMobile ? mobileRowHeight : desktopRowHeight}
+              rowHeight={rowHeight}
               rowComponent={isMobile ? MobileRow : DesktopRow}
               rowKey={rowKey}
               rowProps={rowProps}
@@ -552,6 +492,10 @@ export default function ConnectionTable({
           )}
         </div>
       </div>
+
+      {detailConn ? (
+        <ConnectionDetailModal conn={detailConn} onRequestClose={handleCloseDetails} />
+      ) : null}
 
       <div className={s.footer}>
         <span>{t('conn_shown', { shown: data.length, total: totalCount })}</span>

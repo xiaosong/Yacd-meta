@@ -3,6 +3,7 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  position: relative;
   border-radius: 16px;
   background: var(--color-card);
   border: 1px solid var(--color-card-border);
@@ -107,16 +108,13 @@
   border-bottom: 1px solid var(--color-separator);
 }
 
-.rowWrapExpanded {
-  background: var(--color-node-active-bg);
-}
-
 // 同上，gap / padding 见 ConnectionTable 的常量
 .row {
   display: grid;
   align-items: center;
   height: 44px;
   cursor: pointer;
+  user-select: none;
 
   &:hover {
     background: var(--color-hover-soft);
@@ -154,7 +152,9 @@
   background: var(--color-badge-bg);
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 
   &:hover {
     background: var(--color-danger-soft-bg);
@@ -288,42 +288,6 @@
 .speedDim {
   color: var(--color-text-secondary);
   opacity: 0.55;
-}
-
-/* ---------- 展开的详情 ---------- */
-
-.detail {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px 20px;
-  padding: 6px 18px 16px 42px;
-}
-
-.detailItem {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 3px;
-  height: 34px;
-  min-width: 0;
-}
-
-.detailLabel {
-  font-size: 0.66rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.detailValue {
-  font-size: 0.76rem;
-  color: var(--color-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* ---------- 空态 ---------- */

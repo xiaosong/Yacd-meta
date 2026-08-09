@@ -198,7 +198,7 @@ const defaultState: StateApp = {
   hideUnavailableProxies: false,
   autoCloseOldConns: true,
   logStreamingPaused: false,
-  proxiesLayout: 'single',
+  proxiesLayout: 'double',
   proxyGroupByProvider: false,
 };
 

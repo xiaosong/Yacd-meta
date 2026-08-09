@@ -17,6 +17,17 @@
     flex-wrap: wrap;
     padding: 16px 16px 12px;
   }
+
+  @media (max-width: 768px) {
+    gap: 8px;
+    padding: 10px 12px;
+    // 移动端顶部已经有一条不透明的导航条（SideBar 在窄屏变成 fixed 顶栏，
+    // 用的就是页面底色）。顶栏再铺一层比底色浅的外壳色，会在导航条和内容区
+    // 之间夹出第三条色带。这里直接跟页面底色拉平，让导航条 + 顶栏读成一整块，
+    // 只留底部那条分隔线交代「内容从这里滚进去」；底色不透明了，毛玻璃也就多余
+    background: var(--color-background);
+    backdrop-filter: none;
+  }
 }
 
 .title {
@@ -31,6 +42,10 @@
   @media (max-width: 1024px) {
     font-size: 1.35rem;
   }
+
+  @media (max-width: 768px) {
+    font-size: 1.1rem;
+  }
 }
 
 /* ---------- 分段标签 ---------- */
@@ -43,6 +58,14 @@
   border-radius: 12px;
   background: var(--color-track);
   flex-shrink: 0;
+
+  // 顶栏在窄屏拉平到页面底色后，--color-track 就是底色本身，凹槽会整个消失。
+  // 这里去掉凹槽，改成「选中项浮起来」的样式，和导航胶囊、卡片同一套语言
+  @media (max-width: 768px) {
+    padding: 0;
+    gap: 4px;
+    background: none;
+  }
 }
 
 .tab {
@@ -60,7 +83,10 @@
   border-radius: 9px;
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
 
   &:hover:not(.tabActive) {
     color: var(--color-text);
@@ -71,12 +97,24 @@
     outline: 2px solid var(--color-focus-blue);
     outline-offset: -1px;
   }
+
+  @media (max-width: 768px) {
+    gap: 5px;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
 }
 
 .tabActive {
   background: var(--color-card);
   color: var(--color-text-highlight);
   box-shadow: var(--shadow-segment);
+
+  @media (max-width: 768px) {
+    border: 1px solid var(--color-card-border);
+    // 补掉边框占掉的 1px，选中和未选中的高度才对得齐
+    padding: 4px 9px;
+  }
 }
 
 .tabCount {
@@ -84,10 +122,18 @@
   font-size: 0.72rem;
   font-weight: 500;
   color: var(--color-text-secondary);
+
+  // 与连接页一致：小屏上标题 + 标签 + 四个操作钮刚好挤满一行，
+  // 计数是这里最先能舍的东西
+  @media (max-width: 400px) {
+    display: none;
+  }
 }
 
 /* ---------- 搜索 ---------- */
 
+// DOM 顺序是 标题/标签/搜索/操作。窄屏把搜索的 order 拨到最后，
+// 让它独占第二行，标题、标签、操作留在第一行
 .search {
   position: relative;
   display: flex;
@@ -107,10 +153,21 @@
   }
 
   @media (max-width: 1024px) {
-    order: 3;
+    order: 1;
     flex-basis: 100%;
+    min-width: 0;
     max-width: none;
     margin-left: 0;
+  }
+
+  @media (max-width: 768px) {
+    input {
+      height: 34px;
+      padding-left: 34px;
+      font-size: 0.8rem;
+      // 同上：底色拉平后凹陷的输入框会看不见，改成和卡片同层浮起
+      background: var(--color-card);
+    }
   }
 }
 
@@ -119,6 +176,10 @@
   left: 13px;
   color: var(--color-text-secondary);
   pointer-events: none;
+
+  @media (max-width: 768px) {
+    left: 11px;
+  }
 }
 
 /* ---------- 操作按钮 ---------- */
@@ -128,6 +189,15 @@
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+
+  // 搜索换到第二行后，靠 margin 把操作钮顶到第一行右端
+  @media (max-width: 1024px) {
+    margin-left: auto;
+  }
+
+  @media (max-width: 768px) {
+    gap: 6px;
+  }
 }
 
 .btn {
@@ -144,12 +214,24 @@
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
     opacity 0.15s ease;
 
   &:focus-visible {
     outline: 2px solid var(--color-focus-blue);
     outline-offset: 2px;
+  }
+
+  // 窄屏下文字全部收起，按钮退化成正方形图标钮
+  @media (max-width: 768px) {
+    gap: 0;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    justify-content: center;
   }
 }
 
@@ -187,6 +269,13 @@
   }
 }
 
+/** 比 .btnText 保留得久一些：只有窄屏才收起 */
+.btnTextSm {
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
 .iconBtn {
   display: inline-flex;
   align-items: center;
@@ -199,7 +288,10 @@
   background: var(--color-card);
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 
   &:hover {
     border-color: var(--color-focus-blue);
@@ -209,6 +301,11 @@
   &:focus-visible {
     outline: 2px solid var(--color-focus-blue);
     outline-offset: 2px;
+  }
+
+  @media (max-width: 768px) {
+    width: 34px;
+    height: 34px;
   }
 }
 

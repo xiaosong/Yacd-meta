@@ -2,7 +2,7 @@ import cx from 'clsx';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Search, Sliders } from '~/components/shared/FeatherIcons';
+import { ChevronDown, ChevronUp, Search, Sliders, Zap } from '~/components/shared/FeatherIcons';
 import { Popover } from '~/components/shared/Popover';
 import { RotateIcon } from '~/components/shared/RotateIcon';
 import { TextFilter } from '~/components/shared/TextFitler';
@@ -120,6 +120,7 @@ export function ProxiesHeader({
             type="button"
             className={cx(s.btn, s.btnGhost)}
             onClick={onUpdateAllProviders}
+            aria-label={t('update_all_proxy_provider')}
             title={t('update_all_proxy_provider')}
           >
             <RotateIcon isRotating={isUpdatingProviders} />
@@ -127,8 +128,19 @@ export function ProxiesHeader({
           </button>
         ) : null}
 
-        <button type="button" className={cx(s.btn, s.btnGhost)} onClick={onToggleCollapseAll}>
-          {allCollapsed ? t('expand_all') : t('collapse_all')}
+        <button
+          type="button"
+          className={cx(s.btn, s.btnGhost)}
+          onClick={onToggleCollapseAll}
+          aria-label={allCollapsed ? t('expand_all') : t('collapse_all')}
+          title={allCollapsed ? t('expand_all') : t('collapse_all')}
+        >
+          {allCollapsed ? (
+            <ChevronDown size={17} aria-hidden />
+          ) : (
+            <ChevronUp size={17} aria-hidden />
+          )}
+          <span className={s.btnTextSm}>{allCollapsed ? t('expand_all') : t('collapse_all')}</span>
         </button>
 
         <button
@@ -136,8 +148,11 @@ export function ProxiesHeader({
           className={cx(s.btn, s.btnPrimary, { [s.btnBusy]: isTestingLatency })}
           onClick={onTestAll}
           disabled={isTestingLatency}
+          aria-label={isTestingLatency ? t('testing') : t('test_all')}
+          title={isTestingLatency ? t('testing') : t('test_all')}
         >
-          {isTestingLatency ? t('testing') : t('test_all')}
+          <Zap size={16} aria-hidden />
+          <span className={s.btnTextSm}>{isTestingLatency ? t('testing') : t('test_all')}</span>
         </button>
 
         <Popover

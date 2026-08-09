@@ -16,6 +16,10 @@
   @media (max-width: 768px) {
     gap: 8px;
     padding: 10px 12px;
+    // 与代理页一致：窄屏顶部已有不透明的导航条，顶栏再铺一层浅一档的外壳色
+    // 会夹出第三条色带，所以拉平到页面底色，毛玻璃也一并去掉
+    background: var(--color-background);
+    backdrop-filter: none;
   }
 }
 
@@ -63,8 +67,12 @@
   background: var(--color-track);
   flex-shrink: 0;
 
+  // 顶栏在窄屏拉平到页面底色后，--color-track 就是底色本身，凹槽会整个消失。
+  // 这里去掉凹槽，改成「选中项浮起来」的样式，和导航胶囊、卡片同一套语言
   @media (max-width: 768px) {
-    padding: 3px;
+    padding: 0;
+    gap: 4px;
+    background: none;
   }
 }
 
@@ -106,6 +114,12 @@
   background: var(--color-card);
   color: var(--color-text-highlight);
   box-shadow: var(--shadow-segment);
+
+  @media (max-width: 768px) {
+    border: 1px solid var(--color-card-border);
+    // 补掉边框占掉的 1px，选中和未选中的高度才对得齐
+    padding: 4px 9px;
+  }
 }
 
 .tabCount {
@@ -198,6 +212,8 @@
       height: 34px;
       padding-left: 34px;
       font-size: 0.8rem;
+      // 同上：底色拉平后凹陷的输入框会看不见，改成和卡片同层浮起
+      background: var(--color-card);
     }
   }
 }

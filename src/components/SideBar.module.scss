@@ -1,7 +1,11 @@
 @use '~/styles/utils/custom-media' as *;
 
 .root {
-  background: var(--color-bg-sidebar);
+  // 半透明外壳色而不是纯白卡片色：纯白会和卡片撞成同一层，看不出主次
+  background: var(--color-chrome);
+  backdrop-filter: saturate(180%) blur(24px);
+  // 与内容区之间的竖向分隔线，用低透明度黑而不是实色，叠在底色上更收
+  border-right: 1px solid var(--color-chrome-border);
   width: 180px;
   min-width: 180px;
   flex-shrink: 0;
@@ -11,6 +15,9 @@
     width: 100%;
     min-width: 0;
     background: var(--color-background);
+    // 移动端是顶部悬浮胶囊布局，底色不透明，竖线和毛玻璃都没有意义
+    backdrop-filter: none;
+    border-right: none;
     position: fixed;
     top: 0;
     left: 0;

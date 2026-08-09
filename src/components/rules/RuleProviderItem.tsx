@@ -1,13 +1,18 @@
 import { formatDistance } from 'date-fns';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
-import Button from '~/components/Button';
-import { Activity, Database, RefreshCw } from '~/components/shared/FeatherIcons';
+import type { RuleProvider } from '~/api/rule-provider';
+import { Activity, Database } from '~/components/shared/FeatherIcons';
+import { RotateIcon } from '~/components/shared/RotateIcon';
 import { useUpdateRuleProviderItem } from '~/modules/rules/hooks';
+import { ClashAPIConfig } from '~/types';
 
 import s from './RuleProviderItem.module.scss';
 
-export function RuleProviderItem({
+type Props = RuleProvider & { apiConfig: ClashAPIConfig };
+
+function RuleProviderItemInner({
   idx,
   name,
   vehicleType,
@@ -15,42 +20,46 @@ export function RuleProviderItem({
   updatedAt,
   ruleCount,
   apiConfig,
-}) {
-  const [onClickRefreshButton, isRefreshing] = useUpdateRuleProviderItem(name, apiConfig);
+}: Props) {
+  const { t } = useTranslation();
+  const [refresh, isRefreshing] = useUpdateRuleProviderItem(name, apiConfig);
   const timeAgo = formatDistance(new Date(updatedAt), new Date());
+
   return (
-    <div className={s.RuleProviderItem}>
-      <div className={s.left}>{idx}</div>
-      <div className={s.middle}>
+    <div className={s.item}>
+      <div className={s.index}>{idx}</div>
+
+      <div className={s.main}>
         <div className={s.nameRow}>
           <span className={s.name}>{name}</span>
-          <div className={s.badgeGroup}>
-            <span className={s.badge}>
-              <Database size={12} />
-              {vehicleType}
-            </span>
-            <span className={s.badge}>
-              <Activity size={12} />
-              {behavior}
-            </span>
-          </div>
+          <span className={s.badge}>
+            <Database size={11} />
+            {vehicleType}
+          </span>
+          <span className={s.badge}>
+            <Activity size={11} />
+            {behavior}
+          </span>
         </div>
         <div className={s.infoRow}>
-          <span className={s.count}>{ruleCount} rules</span>
+          <span>{t('rule_entry_count', { count: ruleCount })}</span>
           <span className={s.dot}>•</span>
-          <span className={s.time}>Updated {timeAgo} ago</span>
+          <span>{t('updated_ago', { time: timeAgo })}</span>
         </div>
       </div>
-      <div className={s.right}>
-        <Button
-          kind="minimal"
-          onClick={onClickRefreshButton}
-          disabled={isRefreshing}
-          className={s.refreshButton}
-        >
-          <RefreshCw size={18} className={isRefreshing ? s.rotating : ''} />
-        </Button>
-      </div>
+
+      <button
+        type="button"
+        className={s.refreshBtn}
+        onClick={refresh}
+        disabled={isRefreshing}
+        aria-label={t('update_rule_provider')}
+        title={t('update_rule_provider')}
+      >
+        <RotateIcon isRotating={isRefreshing} />
+      </button>
     </div>
   );
 }
+
+export const RuleProviderItem = React.memo(RuleProviderItemInner);

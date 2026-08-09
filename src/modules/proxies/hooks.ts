@@ -305,14 +305,6 @@ export function useProxiesPage({
   }, []);
 
   const [activeTab, setActiveTab] = useState<'proxies' | 'providers'>('proxies');
-  const handleTabKeyDown = useCallback(
-    (tab: 'proxies' | 'providers') => (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        setActiveTab(tab);
-      }
-    },
-    []
-  );
 
   const proxyGroups = useMemo(() => {
     const formatted = groupNames.map((name, i) => ({ name, i }));
@@ -330,7 +322,6 @@ export function useProxiesPage({
     closeSettings,
     activeTab,
     setActiveTab,
-    handleTabKeyDown,
     proxyGroups,
     providers,
   };

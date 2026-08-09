@@ -1,150 +1,13 @@
-.header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 20px 32px 15px;
-  // 与代理页一致：半透明外壳色 + 毛玻璃，比卡片暗一档
-  background: var(--color-chrome);
-  backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 1px solid var(--color-chrome-border);
-
-  @media (max-width: 1024px) {
-    flex-wrap: wrap;
-    padding: 16px 16px 12px;
-  }
-
-  @media (max-width: 768px) {
-    gap: 8px;
-    padding: 10px 12px;
-    // 与代理页一致：窄屏顶部已有不透明的导航条，顶栏再铺一层浅一档的外壳色
-    // 会夹出第三条色带，所以拉平到页面底色，毛玻璃也一并去掉
-    background: var(--color-background);
-    backdrop-filter: none;
-  }
-}
-
-// DOM 顺序是 标题/标签/操作/换行/搜索/来源，桌面端靠 order 拨回设计稿的排布
-.title {
-  order: 1;
-  margin: 0;
-  font-size: 1.6rem;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-  color: var(--color-text-highlight);
-  white-space: nowrap;
-
-  @media (max-width: 1024px) {
-    font-size: 1.35rem;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 1.1rem;
-  }
-}
-
-/** 只在窄屏生效的换行占位，让搜索和来源筛选独占第二行 */
-.rowBreak {
-  display: none;
-
-  @media (max-width: 768px) {
-    display: block;
-    order: 4;
-    flex-basis: 100%;
-    height: 0;
-  }
-}
-
-/* ---------- 分段标签 ---------- */
-
-.tabs {
-  order: 2;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding: 4px;
-  border-radius: 12px;
-  background: var(--color-track);
-  flex-shrink: 0;
-
-  // 顶栏在窄屏拉平到页面底色后，--color-track 就是底色本身，凹槽会整个消失。
-  // 这里去掉凹槽，改成「选中项浮起来」的样式，和导航胶囊、卡片同一套语言
-  @media (max-width: 768px) {
-    padding: 0;
-    gap: 4px;
-    background: none;
-  }
-}
-
-.tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  appearance: none;
-  border: none;
-  background: transparent;
-  font-family: inherit;
-  font-size: 0.88rem;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  padding: 7px 14px;
-  border-radius: 9px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
-
-  &:hover:not(.tabActive) {
-    color: var(--color-text);
-    background: var(--color-hover-soft);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-focus-blue);
-    outline-offset: -1px;
-  }
-
-  @media (max-width: 768px) {
-    gap: 5px;
-    padding: 5px 10px;
-    font-size: 0.8rem;
-  }
-}
-
-.tabActive {
-  background: var(--color-card);
-  color: var(--color-text-highlight);
-  box-shadow: var(--shadow-segment);
-
-  @media (max-width: 768px) {
-    border: 1px solid var(--color-card-border);
-    // 补掉边框占掉的 1px，选中和未选中的高度才对得齐
-    padding: 4px 9px;
-  }
-}
-
-.tabCount {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-
-  // 小屏上标题 + 标签 + 四个操作钮刚好挤满一行，计数是这里最先能舍的东西
-  // （统计带第一格就是活动连接数）
-  @media (max-width: 400px) {
-    display: none;
-  }
-}
-
-/* ---------- 来源筛选 ---------- */
+/**
+ * 只放连接页特有的东西，顶栏本身的样式在 shared/PageHeader.module.scss。
+ *
+ * DOM 顺序就是桌面端的视觉顺序（标题 · 标签 · 来源 · 搜索 · 操作），
+ * 窄屏要把操作钮提到第一行、搜索和来源并排到第二行，所以这里只拨 order。
+ */
 
 .sourceSelect {
-  order: 3;
-  height: 38px;
-  width: auto;
   min-width: 132px;
   max-width: 190px;
-  flex-shrink: 0;
-  border-radius: 10px;
 
   @media (max-width: 1024px) {
     flex: 1 1 auto;
@@ -152,169 +15,28 @@
   }
 
   @media (max-width: 768px) {
-    order: 6;
+    order: 4;
     flex: 0 0 auto;
-    height: 34px;
     min-width: 96px;
     max-width: 130px;
-    font-size: 0.8rem;
   }
 }
-
-/* ---------- 搜索 ---------- */
 
 .search {
-  order: 4;
-  position: relative;
-  display: flex;
-  align-items: center;
-  flex: 1 1 200px;
-  min-width: 150px;
-  max-width: 300px;
-  margin-left: auto;
-
-  input {
-    width: 100%;
-    height: 38px;
-    padding: 0 12px 0 38px;
-    border-radius: 10px;
-    border: 1px solid var(--color-card-border);
-    background: var(--color-track);
-    color: var(--color-text);
-    font: inherit;
-    font-size: 0.85rem;
-    outline: none;
-    appearance: none;
-
-    &::placeholder {
-      color: var(--color-text-secondary);
-      opacity: 0.75;
-    }
-
-    &:focus {
-      border-color: var(--color-focus-blue);
-    }
-  }
-
-  @media (max-width: 1024px) {
-    flex-basis: 100%;
-    max-width: none;
-    margin-left: 0;
-  }
-
-  @media (max-width: 768px) {
-    order: 5;
-    flex: 1 1 auto;
-    flex-basis: auto;
-    min-width: 0;
-
-    input {
-      height: 34px;
-      padding-left: 34px;
-      font-size: 0.8rem;
-      // 同上：底色拉平后凹陷的输入框会看不见，改成和卡片同层浮起
-      background: var(--color-card);
-    }
-  }
-}
-
-.searchIcon {
-  position: absolute;
-  left: 13px;
-  color: var(--color-text-secondary);
-  pointer-events: none;
-
-  @media (max-width: 768px) {
-    left: 11px;
-  }
-}
-
-/* ---------- 操作按钮 ---------- */
-
-.actions {
-  order: 5;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-
-  @media (max-width: 1024px) {
-    margin-left: auto;
-  }
-
   @media (max-width: 768px) {
     order: 3;
-    gap: 6px;
   }
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  appearance: none;
-  height: 38px;
-  padding: 0 15px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  font-family: inherit;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-
-  &:focus-visible {
-    outline: 2px solid var(--color-focus-blue);
-    outline-offset: 2px;
-  }
-
-  // 窄屏下文字全部收起，按钮退化成正方形图标钮
+.actions {
   @media (max-width: 768px) {
-    gap: 0;
-    width: 34px;
-    height: 34px;
-    padding: 0;
-    justify-content: center;
+    order: 1;
   }
 }
 
-.btnGhost {
-  background: var(--color-card);
-  border-color: var(--color-card-border);
-  color: var(--color-text);
-
-  &:hover {
-    border-color: var(--color-focus-blue);
-    color: var(--color-focus-blue);
-  }
-}
-
-.btnPaused {
-  background: var(--color-warn-soft-bg);
-  color: var(--color-warn);
-  border-color: transparent;
-}
-
-.btnDanger {
-  background: var(--color-danger);
-  color: #fff;
-
-  &:hover {
-    filter: brightness(1.08);
-  }
-}
-
-.btnText {
-  @media (max-width: 1280px) {
-    display: none;
-  }
-}
-
-/** 比 .btnText 保留得久一些：只有窄屏才收起 */
-.btnTextSm {
+.rowBreak {
   @media (max-width: 768px) {
-    display: none;
+    order: 2;
   }
 }
 
@@ -339,34 +61,4 @@
   font-weight: 700;
   line-height: 12px;
   text-align: center;
-}
-
-.iconBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  appearance: none;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  border: 1px solid var(--color-card-border);
-  background: var(--color-card);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-
-  &:hover {
-    border-color: var(--color-focus-blue);
-    color: var(--color-focus-blue);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-focus-blue);
-    outline-offset: 2px;
-  }
-
-  @media (max-width: 768px) {
-    width: 34px;
-    height: 34px;
-  }
 }

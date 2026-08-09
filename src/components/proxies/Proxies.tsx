@@ -70,7 +70,6 @@ export default function Proxies({
     closeSettings,
     activeTab,
     setActiveTab,
-    handleTabKeyDown,
     proxyGroups,
     providers,
   } = useProxiesPage({
@@ -170,7 +169,6 @@ export default function Proxies({
       <ProxiesHeader
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        handleTabKeyDown={handleTabKeyDown}
         groupCount={visibleGroupNames.length}
         providerCount={proxyProviders.length}
         visibleProviderCount={visibleProviders.length}

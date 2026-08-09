@@ -1,39 +1,30 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import ContentHeader from '~/components/ContentHeader';
-import { Fab, position as fabPosition } from '~/components/shared/Fab';
-import { ArrowDown, Pause, Play, Trash2 } from '~/components/shared/FeatherIcons';
-import Select from '~/components/shared/Select';
+import { ArrowDown } from '~/components/shared/FeatherIcons';
 import { useStoreActions } from '~/components/StateProvider';
-import SvgYacd from '~/components/SvgYacd';
-import useRemainingViewPortHeight from '~/hooks/useRemainingViewPortHeight';
-import { LOG_LEVEL_OPTIONS } from '~/modules/config/utils';
-import { useLogsPage } from '~/modules/logs/hooks';
-import { LOG_TYPES, LOGS_HEIGHT_RATIO } from '~/modules/logs/utils';
+import { useFilteredLogs, useLogsPage } from '~/modules/logs/hooks';
+import { LOG_TYPES } from '~/modules/logs/utils';
 import { updateConfigs } from '~/store/configs';
 import { clearLogs } from '~/store/logs';
 import { DispatchFn, Log } from '~/store/types';
 import { ClashAPIConfig } from '~/types';
 
 import s from './Logs.module.scss';
-import LogSearch from './LogSearch';
+import { LogsHeader } from './LogsHeader';
 
-type LogLineProps = Partial<Log>;
-
-function LogLine({ time, payload, type }: LogLineProps) {
+// 一屏最多几十行，但列表整体可以有几百行；memo 之后新日志进来只渲染新增的那一条
+const LogLine = React.memo(function LogLine({ time, payload, type }: Partial<Log>) {
   return (
-    <div className={s.logLine}>
-      <div className={s.logMeta}>
-        <span className={s.logTime}>{time}</span>
-        <span className={s.logType} data-type={type}>
-          {LOG_TYPES[type]}
-        </span>
-      </div>
-      <div className={s.logText}>{payload}</div>
+    <div className={s.line}>
+      <span className={s.time}>{time}</span>
+      <span className={s.type} data-type={type}>
+        {LOG_TYPES[type]}
+      </span>
+      <span className={s.payload}>{payload}</span>
     </div>
   );
-}
+});
 
 type Props = {
   dispatch: DispatchFn;
@@ -44,6 +35,7 @@ type Props = {
 };
 
 export default function Logs({ dispatch, logLevel, apiConfig, logs, logStreamingPaused }: Props) {
+  const { t } = useTranslation();
   const actions = useStoreActions();
   const { toggleIsRefreshPaused, scrollRef, isAtBottom, scrollToBottom, onScroll } = useLogsPage({
     dispatch,
@@ -53,57 +45,59 @@ export default function Logs({ dispatch, logLevel, apiConfig, logs, logStreaming
     logStreamingPaused,
     updateAppConfig: actions.app.updateAppConfig,
   });
-  const [refLogsContainer, containerHeight] = useRemainingViewPortHeight();
-  const { t } = useTranslation();
+
+  const visibleLogs = useFilteredLogs(logs);
+
+  const setLogLevel = React.useCallback(
+    (level: string) => dispatch(updateConfigs(apiConfig, { 'log-level': level })),
+    [dispatch, apiConfig],
+  );
+  const onClear = React.useCallback(() => dispatch(clearLogs()), [dispatch]);
 
   return (
-    <div>
-      <ContentHeader>
-        <div className={s.headerControls}>
-          <LogSearch className={s.searchWrapper} />
-          <Select
-            className={s.levelSelect}
-            options={LOG_LEVEL_OPTIONS}
-            selected={logLevel ? logLevel.toLowerCase() : 'info'}
-            onChange={(e) => dispatch(updateConfigs(apiConfig, { 'log-level': e.target.value }))}
-          />
-          <button className={s.clearBtn} onClick={() => dispatch(clearLogs())} title={t('Clear')}>
-            <Trash2 size={18} />
-          </button>
-        </div>
-      </ContentHeader>
-      <div ref={refLogsContainer} style={{ position: 'relative' }}>
-        <div
-          className={s.logsWrapper}
-          style={{ height: containerHeight * LOGS_HEIGHT_RATIO }}
-          ref={scrollRef}
-          onScroll={onScroll}
-        >
-          {logs.length === 0 ? (
-            <div className={s.logPlaceholder} style={{ height: '100%' }}>
-              <div className={s.logPlaceholderIcon}>
-                <SvgYacd width={200} height={200} />
+    <div className={s.page}>
+      <LogsHeader
+        logLevel={logLevel}
+        setLogLevel={setLogLevel}
+        isPaused={logStreamingPaused}
+        toggleIsPaused={toggleIsRefreshPaused}
+        onClear={onClear}
+      />
+
+      <div className={s.listArea}>
+        <div className={s.card}>
+          <div className={s.scroll} ref={scrollRef} onScroll={onScroll}>
+            {visibleLogs.length === 0 ? (
+              <div className={s.empty}>
+                <span className={s.emptyTitle}>
+                  {logs.length === 0 ? t('no_logs') : t('logs_no_match')}
+                </span>
+                <span className={s.emptyHint}>
+                  {logs.length === 0 ? t('logs_empty_hint') : t('rules_empty_hint')}
+                </span>
               </div>
-              <div>{t('no_logs')}</div>
-            </div>
-          ) : (
-            logs.map((log, index) => <LogLine {...log} key={log.id || index} />)
-          )}
+            ) : (
+              visibleLogs.map((log, index) => <LogLine {...log} key={log.id || index} />)
+            )}
+          </div>
+
+          {visibleLogs.length > 0 && !isAtBottom ? (
+            <button
+              type="button"
+              className={s.toBottomBtn}
+              onClick={scrollToBottom}
+              aria-label={t('logs_scroll_to_bottom')}
+              title={t('logs_scroll_to_bottom')}
+            >
+              <ArrowDown size={16} />
+            </button>
+          ) : null}
+
+          <div className={s.footer}>
+            <span>{t('logs_shown', { count: visibleLogs.length })}</span>
+            {logStreamingPaused ? <span className={s.paused}>{t('logs_paused')}</span> : null}
+          </div>
         </div>
-
-        {logs.length > 0 && !isAtBottom && (
-          <button className={s.scrollToBottomBtn} onClick={scrollToBottom}>
-            <ArrowDown size={16} />
-          </button>
-        )}
-
-        <Fab
-          icon={logStreamingPaused ? <Play size={16} /> : <Pause size={16} />}
-          mainButtonStyles={logStreamingPaused ? { background: '#e74c3c' } : {}}
-          style={fabPosition}
-          text={logStreamingPaused ? t('Resume Refresh') : t('Pause Refresh')}
-          onClick={toggleIsRefreshPaused}
-        ></Fab>
       </div>
     </div>
   );

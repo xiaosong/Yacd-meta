@@ -5,5 +5,5 @@ export const LOG_TYPES: Record<string, string> = {
   error: 'error',
 };
 
-export const LOGS_HEIGHT_RATIO = 0.8;
+/** 距底部多少像素以内算「贴着底」，自动跟随新日志 */
 export const LOGS_SCROLL_BOTTOM_THRESHOLD = 50;

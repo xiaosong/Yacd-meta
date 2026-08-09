@@ -1,3 +1,14 @@
+/**
+ * 页面顶栏的统一样式，代理 / 连接 / 规则 / 日志四个页面共用（见 PageHeader.tsx）。
+ *
+ * 断点约定：
+ *   >1024  一行排下：标题 · 分段标签 · 搜索 · 操作钮
+ *   ≤1024  搜索换到第二行，操作钮靠 margin 顶到第一行右端
+ *   ≤768   顶栏拉平到页面底色（窄屏顶部已经有一条不透明的导航条，
+ *          顶栏再铺一层外壳色会夹出第三条色带），按钮退化成正方形图标钮，
+ *          凹陷的控件（分段标签轨道、输入框）翻成浮起
+ */
+
 .header {
   position: sticky;
   top: 0;
@@ -7,8 +18,8 @@
   gap: 12px;
   padding: 20px 32px 15px;
   // 半透明外壳色 + 毛玻璃 + 下边框：内容从底下滚过去时能透出一点，
-  // 同时比纯白的卡片灰一档。设置弹层已经 portal 到 body，
-  // 不再受 backdrop-filter 生成包含块的影响
+  // 同时比纯白的卡片灰一档。弹层都 portal 到 body，
+  // 不受 backdrop-filter 生成包含块的影响
   background: var(--color-chrome);
   backdrop-filter: saturate(180%) blur(20px);
   border-bottom: 1px solid var(--color-chrome-border);
@@ -21,10 +32,6 @@
   @media (max-width: 768px) {
     gap: 8px;
     padding: 10px 12px;
-    // 移动端顶部已经有一条不透明的导航条（SideBar 在窄屏变成 fixed 顶栏，
-    // 用的就是页面底色）。顶栏再铺一层比底色浅的外壳色，会在导航条和内容区
-    // 之间夹出第三条色带。这里直接跟页面底色拉平，让导航条 + 顶栏读成一整块，
-    // 只留底部那条分隔线交代「内容从这里滚进去」；底色不透明了，毛玻璃也就多余
     background: var(--color-background);
     backdrop-filter: none;
   }
@@ -45,6 +52,17 @@
 
   @media (max-width: 768px) {
     font-size: 1.1rem;
+  }
+}
+
+/** 窄屏下强制换行的占位，让它后面的东西独占下一行 */
+.rowBreak {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+    flex-basis: 100%;
+    height: 0;
   }
 }
 
@@ -123,8 +141,7 @@
   font-weight: 500;
   color: var(--color-text-secondary);
 
-  // 与连接页一致：小屏上标题 + 标签 + 四个操作钮刚好挤满一行，
-  // 计数是这里最先能舍的东西
+  // 小屏上标题 + 标签 + 几个操作钮刚好挤满一行，计数是这里最先能舍的东西
   @media (max-width: 400px) {
     display: none;
   }
@@ -132,8 +149,6 @@
 
 /* ---------- 搜索 ---------- */
 
-// DOM 顺序是 标题/标签/搜索/操作。窄屏把搜索的 order 拨到最后，
-// 让它独占第二行，标题、标签、操作留在第一行
 .search {
   position: relative;
   display: flex;
@@ -143,17 +158,32 @@
   max-width: 340px;
   margin-left: auto;
 
+  // 同时覆盖裸 <input> 和 TextFilter 自带的样式，两种用法长得一样
   input {
-    padding-left: 38px;
+    width: 100%;
     height: 38px;
+    padding: 0 12px 0 38px;
     border-radius: 10px;
-    box-shadow: none;
-    border-color: var(--color-card-border);
+    border: 1px solid var(--color-card-border);
     background: var(--color-track);
+    box-shadow: none;
+    color: var(--color-text);
+    font: inherit;
+    font-size: 0.85rem;
+    outline: none;
+    appearance: none;
+
+    &::placeholder {
+      color: var(--color-text-secondary);
+      opacity: 0.75;
+    }
+
+    &:focus {
+      border-color: var(--color-focus-blue);
+    }
   }
 
   @media (max-width: 1024px) {
-    order: 1;
     flex-basis: 100%;
     min-width: 0;
     max-width: none;
@@ -165,9 +195,21 @@
       height: 34px;
       padding-left: 34px;
       font-size: 0.8rem;
-      // 同上：底色拉平后凹陷的输入框会看不见，改成和卡片同层浮起
+      // 同分段标签：底色拉平后凹陷的输入框会看不见，改成和卡片同层浮起
       background: var(--color-card);
     }
+  }
+}
+
+/**
+ * 搜索旁边还要并排放别的控件（下拉筛选）时叠这个类：
+ * 窄屏下别独占整行，把剩下的宽度让出来
+ */
+.searchInline {
+  @media (max-width: 768px) {
+    flex: 1 1 auto;
+    flex-basis: auto;
+    min-width: 0;
   }
 }
 
@@ -179,6 +221,26 @@
 
   @media (max-width: 768px) {
     left: 11px;
+  }
+}
+
+/* ---------- 下拉筛选 ---------- */
+
+// 叠在 Select 组件自带样式之上，把它拉齐到顶栏这套尺寸
+.select {
+  height: 38px;
+  width: auto;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border-color: var(--color-card-border);
+  background-color: var(--color-track);
+  box-shadow: none;
+  font-size: 0.85rem;
+
+  @media (max-width: 768px) {
+    height: 34px;
+    font-size: 0.8rem;
+    background-color: var(--color-card);
   }
 }
 
@@ -259,10 +321,26 @@
   }
 }
 
+.btnDanger {
+  background: var(--color-danger);
+  color: #fff;
+
+  &:hover {
+    filter: brightness(1.08);
+  }
+}
+
+.btnPaused {
+  background: var(--color-warn-soft-bg);
+  color: var(--color-warn);
+  border-color: transparent;
+}
+
 .btnBusy {
   opacity: 0.75;
 }
 
+/** 中等宽度就收起的文字，让给更重要的按钮 */
 .btnText {
   @media (max-width: 1200px) {
     display: none;

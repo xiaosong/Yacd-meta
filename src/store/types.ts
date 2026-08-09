@@ -130,7 +130,6 @@ export type Log = {
 };
 
 export type StateLogs = {
-  searchText: string;
   logs: Log[];
   tail: number;
 };

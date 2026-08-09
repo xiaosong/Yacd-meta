@@ -11,12 +11,14 @@ import { fetchRules, updateRuleDisabledStatus } from '~/api/rules';
 import { ruleFilterText } from '~/store/rules';
 import type { ClashAPIConfig } from '~/types';
 
-const { useCallback, useState } = React;
+import type { RulesTabKey } from './utils';
+
+const { useCallback, useMemo, useState } = React;
 
 export function useUpdateRuleProviderItem(
   name: string,
   apiConfig: ClashAPIConfig
-): [(ev: React.MouseEvent<HTMLButtonElement>) => unknown, boolean] {
+): [() => void, boolean] {
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
     mutationFn: refreshRuleProviderByName,
@@ -24,16 +26,11 @@ export function useUpdateRuleProviderItem(
       queryClient.invalidateQueries({ queryKey: ['/providers/rules'] });
     },
   });
-  const onClickRefreshButton = (ev: React.MouseEvent<HTMLButtonElement>) => {
-    ev.preventDefault();
-    mutate({ name, apiConfig });
-  };
-  return [onClickRefreshButton, isPending];
+  const refresh = useCallback(() => mutate({ name, apiConfig }), [mutate, name, apiConfig]);
+  return [refresh, isPending];
 }
 
-export function useUpdateAllRuleProviderItems(
-  apiConfig: ClashAPIConfig
-): [(ev: React.MouseEvent<HTMLButtonElement>) => unknown, boolean] {
+export function useUpdateAllRuleProviderItems(apiConfig: ClashAPIConfig): [() => void, boolean] {
   const queryClient = useQueryClient();
   const { data: provider } = useRuleProviderQuery(apiConfig);
   const { mutate, isPending } = useMutation({
@@ -42,11 +39,11 @@ export function useUpdateAllRuleProviderItems(
       queryClient.invalidateQueries({ queryKey: ['/providers/rules'] });
     },
   });
-  const onClickRefreshButton = (ev: React.MouseEvent<HTMLButtonElement>) => {
-    ev.preventDefault();
-    mutate({ names: provider.names, apiConfig });
-  };
-  return [onClickRefreshButton, isPending];
+  const refreshAll = useCallback(
+    () => mutate({ names: provider.names, apiConfig }),
+    [mutate, provider.names, apiConfig]
+  );
+  return [refreshAll, isPending];
 }
 
 export function useToggleRuleDisabled(apiConfig: ClashAPIConfig) {
@@ -65,14 +62,6 @@ export function useToggleRuleDisabled(apiConfig: ClashAPIConfig) {
   return { toggleRule, isPending };
 }
 
-export function useInvalidateQueries() {
-  const queryClient = useQueryClient();
-  return useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['/rules'] });
-    queryClient.invalidateQueries({ queryKey: ['/providers/rules'] });
-  }, [queryClient]);
-}
-
 export function useRuleProviderQuery(apiConfig: ClashAPIConfig) {
   return useSuspenseQuery({
     queryKey: ['/providers/rules', apiConfig],
@@ -88,41 +77,40 @@ export function useRuleAndProvider(apiConfig: ClashAPIConfig) {
   const { data: provider } = useRuleProviderQuery(apiConfig);
 
   const [filterText] = useAtom(ruleFilterText);
-  if (filterText === '') {
-    return { rules, provider, isFetching };
-  }
 
-  const f = filterText.toLowerCase();
-  return {
-    rules: rules.filter((r) => r.payload.toLowerCase().indexOf(f) >= 0),
-    isFetching,
-    provider: {
-      byName: provider.byName,
-      names: provider.names.filter((t) => t.toLowerCase().indexOf(f) >= 0),
-    },
-  };
+  // 规则表动辄上千条，过滤结果必须缓存住：不然每次渲染都重算一遍，
+  // 而且新数组会让下游的 memo 全部失效
+  return useMemo(() => {
+    if (filterText === '') {
+      return { rules, provider, isFetching };
+    }
+    const f = filterText.toLowerCase();
+    return {
+      rules: rules.filter((r) => r.payload.toLowerCase().indexOf(f) >= 0),
+      isFetching,
+      provider: {
+        byName: provider.byName,
+        names: provider.names.filter((t) => t.toLowerCase().indexOf(f) >= 0),
+      },
+    };
+  }, [rules, provider, filterText, isFetching]);
 }
 
 export function useRulesPage(apiConfig: ClashAPIConfig) {
   const { rules, provider } = useRuleAndProvider(apiConfig);
-  const [activeTab, setActiveTab] = useState('rules');
-  const isRulesTab = activeTab === 'rules';
+  // 标签出不出现看提供商总数，不看过滤结果——搜索不该把整个标签搞消失
+  const { data: allProviders } = useRuleProviderQuery(apiConfig);
+  const providerCount = allProviders.names.length;
 
-  const handleTabKeyDown = useCallback(
-    (tab: string) => (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        setActiveTab(tab);
-      }
-    },
-    []
-  );
+  const [activeTab, setActiveTab] = useState<RulesTabKey>('rules');
+  const effectiveTab: RulesTabKey = providerCount > 0 ? activeTab : 'rules';
 
   return {
     rules,
     provider,
-    activeTab,
+    providerCount,
+    activeTab: effectiveTab,
     setActiveTab,
-    isRulesTab,
-    handleTabKeyDown,
+    isRulesTab: effectiveTab === 'rules',
   };
 }

@@ -1,29 +1,37 @@
-.RuleProviderItem {
+.item {
   display: flex;
   align-items: center;
   height: 100%;
-  padding: 16px 20px;
-  transition: all 0.2s ease;
+  padding: 12px 18px;
+  transition: background-color 0.15s ease;
 
   &:hover {
-    background: var(--bg-near-transparent);
+    background: var(--color-hover-soft);
 
-    .refreshButton {
+    .refreshBtn {
       opacity: 1;
     }
   }
+
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
 }
 
-.left {
-  width: 32px;
+.index {
+  width: 40px;
   flex-shrink: 0;
   color: var(--color-text-secondary);
-  font-size: 11px;
-  opacity: 0.4;
+  font-size: 0.68rem;
+  opacity: 0.5;
   font-family: var(--font-mono);
+
+  @media (max-width: 768px) {
+    width: 28px;
+  }
 }
 
-.middle {
+.main {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -34,30 +42,29 @@
 .nameRow {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
   gap: 8px;
+  min-width: 0;
 }
 
 .name {
-  font-size: 14px;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--color-text-highlight);
-}
-
-.badgeGroup {
-  display: flex;
-  gap: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .badge {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 10px;
-  color: var(--color-text-secondary);
-  background: var(--bg-near-transparent);
-  padding: 2px 6px;
-  border-radius: 4px;
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  color: var(--color-badge-fg);
+  background: var(--color-badge-bg);
+  padding: 2px 7px;
+  border-radius: 5px;
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
@@ -66,41 +73,52 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
+  font-size: 0.7rem;
   color: var(--color-text-secondary);
 }
 
 .dot {
-  opacity: 0.5;
-}
-
-.right {
-  margin-left: 12px;
-}
-
-.refreshButton {
   opacity: 0.4;
-  transition: all 0.2s ease;
-  padding: 8px !important;
-  border-radius: 50% !important;
+}
+
+.refreshBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  appearance: none;
+  flex-shrink: 0;
+  margin-left: 12px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: none;
   color: var(--color-text-secondary);
+  cursor: pointer;
+  // 悬停在整行上才完全显形，静态时不抢眼
+  opacity: 0.45;
+  transition:
+    opacity 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease;
 
-  &:hover {
-    opacity: 1;
+  &:hover:not(:disabled) {
     color: var(--color-focus-blue);
-    background: var(--bg-near-transparent) !important;
+    background: var(--color-hover-soft);
   }
-}
 
-.rotating {
-  animation: rotate 1s linear infinite;
-}
-
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
+  &:focus-visible {
+    opacity: 1;
+    outline: 2px solid var(--color-focus-blue);
+    outline-offset: 2px;
   }
-  to {
-    transform: rotate(360deg);
+
+  &:disabled {
+    cursor: default;
+  }
+
+  // 触屏没有 hover，直接常显
+  @media (hover: none) {
+    opacity: 1;
   }
 }

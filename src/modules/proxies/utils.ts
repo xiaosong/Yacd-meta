@@ -8,10 +8,6 @@ export const PROXY_SORT_OPTIONS = [
   ['NameDesc', 'order_name_desc'],
 ] as const;
 
-export function formatQty(qty: number) {
-  return qty < 100 ? String(qty) : '99+';
-}
-
 /** 搜索框分词：空格分隔，任一词命中即算命中 */
 export function parseFilterSegments(filterText: string): string[] {
   if (typeof filterText !== 'string') return [];

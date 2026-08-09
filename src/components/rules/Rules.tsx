@@ -1,42 +1,33 @@
-import cx from 'clsx';
-import React from 'react';
+import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { List as VirtualList, RowComponentProps } from 'react-window';
 
-import ContentHeader from '~/components/ContentHeader';
-import { TextFilter } from '~/components/shared/TextFitler';
-import useRemainingViewPortHeight from '~/hooks/useRemainingViewPortHeight';
-import { useRulesPage } from '~/modules/rules/hooks';
-import { formatQty, getItemSizeFactory, RulesListItemData } from '~/modules/rules/utils';
-import { ruleFilterText } from '~/store/rules';
+import { useRulesPage, useUpdateAllRuleProviderItems } from '~/modules/rules/hooks';
+import {
+  PROVIDER_ROW_HEIGHT,
+  RULE_ROW_HEIGHT,
+  type RulesRowProps,
+} from '~/modules/rules/utils';
 import { ClashAPIConfig } from '~/types';
 
 import Rule from './Rule';
 import { RuleProviderItem } from './RuleProviderItem';
 import s from './Rules.module.scss';
-import { RulesPageFab } from './RulesPageFab';
+import { RulesHeader } from './RulesHeader';
 
-type RulesRowProps = {
-  data: RulesListItemData;
-};
-
-function Row({ index, style, data }: RowComponentProps<RulesRowProps>) {
-  const { rules, provider, apiConfig } = data;
-
+function Row({ index, style, rules, provider, apiConfig }: RowComponentProps<RulesRowProps>) {
   if (!rules) {
-    const name = provider.names[index];
-    const item = provider.byName[name];
+    const item = provider.byName[provider.names[index]];
     return (
-      <div style={style} className={s.RuleProviderItemWrapper}>
+      <div style={style} className={s.row}>
         <RuleProviderItem apiConfig={apiConfig} {...item} />
       </div>
     );
   }
 
-  const r = rules[index];
   return (
-    <div style={style}>
-      <Rule {...r} apiConfig={apiConfig} provider={provider} />
+    <div style={style} className={s.row}>
+      <Rule {...rules[index]} apiConfig={apiConfig} provider={provider} />
     </div>
   );
 }
@@ -46,59 +37,69 @@ type RulesProps = {
 };
 
 export default function Rules({ apiConfig }: RulesProps) {
-  const [refRulesContainer, containerHeight] = useRemainingViewPortHeight();
-  const { rules, provider, activeTab, setActiveTab, isRulesTab, handleTabKeyDown } =
-    useRulesPage(apiConfig);
-  const getItemSize = getItemSizeFactory({ isRulesTab });
-
   const { t } = useTranslation();
+  const { rules, provider, providerCount, activeTab, setActiveTab, isRulesTab } =
+    useRulesPage(apiConfig);
+  const [updateAllProviders, isUpdatingProviders] = useUpdateAllRuleProviderItems(apiConfig);
+
+  const rowCount = isRulesTab ? rules.length : provider.names.length;
+
+  // rowProps 每次渲染新建对象会让所有行跟着重渲染，虚拟列表就白做了
+  const rowProps = React.useMemo<RulesRowProps>(
+    () => ({ rules: isRulesTab ? rules : null, provider, apiConfig }),
+    [isRulesTab, rules, provider, apiConfig],
+  );
+
+  const rowHeight = React.useCallback(
+    () => (isRulesTab ? RULE_ROW_HEIGHT : PROVIDER_ROW_HEIGHT),
+    [isRulesTab],
+  );
+
+  const rowKey = React.useCallback(
+    (index: number, { rules, provider }: RulesRowProps) =>
+      rules ? rules[index].id : provider.names[index],
+    [],
+  );
 
   return (
-    <div className={s.container}>
-      <ContentHeader>
-        <div className={s.tabsContainer}>
-          <div
-            className={cx(s.tab, { [s.active]: activeTab === 'rules' })}
-            onClick={() => setActiveTab('rules')}
-            onKeyDown={handleTabKeyDown('rules')}
-            role="button"
-            tabIndex={0}
-          >
-            {t('Rules')}
-            <span className={s.tabCount}>{formatQty(rules.length)}</span>
+    <div className={s.page}>
+      <RulesHeader
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        ruleCount={rules.length}
+        providerCount={providerCount}
+        visibleProviderCount={provider.names.length}
+        onUpdateAllProviders={updateAllProviders}
+        isUpdatingProviders={isUpdatingProviders}
+      />
+
+      <div className={s.listArea}>
+        <div className={s.card}>
+          <div className={s.listWrap}>
+            {rowCount === 0 ? (
+              <div className={s.empty}>
+                <span className={s.emptyTitle}>
+                  {t(isRulesTab ? 'rules_empty_title' : 'rule_providers_empty_title')}
+                </span>
+                <span className={s.emptyHint}>{t('rules_empty_hint')}</span>
+              </div>
+            ) : (
+              <VirtualList
+                style={{ height: '100%', width: '100%' }}
+                rowCount={rowCount}
+                rowHeight={rowHeight}
+                rowComponent={Row}
+                rowKey={rowKey}
+                rowProps={rowProps}
+              />
+            )}
           </div>
-          {provider.names.length > 0 && (
-            <div
-              className={cx(s.tab, { [s.active]: activeTab === 'providers' })}
-              onClick={() => setActiveTab('providers')}
-              onKeyDown={handleTabKeyDown('providers')}
-              role="button"
-              tabIndex={0}
-            >
-              {t('rule_provider')}
-              <span className={s.tabCount}>{formatQty(provider.names.length)}</span>
-            </div>
-          )}
+
+          <div className={s.footer}>
+            <span>{t('rules_shown', { count: rowCount })}</span>
+          </div>
         </div>
-        <div style={{ flex: 1 }} />
-        <div className={s.filterWrapper}>
-          <TextFilter textAtom={ruleFilterText} placeholder={t('Search')} />
-        </div>
-      </ContentHeader>
-      <div ref={refRulesContainer} className={s.listWrapper}>
-        <VirtualList
-          style={{ height: containerHeight, width: '100%' }}
-          rowCount={isRulesTab ? rules.length : provider.names.length}
-          rowHeight={getItemSize}
-          rowComponent={Row}
-          rowProps={{
-            data: { rules: isRulesTab ? rules : null, provider, apiConfig } as RulesListItemData,
-          }}
-        />
       </div>
-      {provider && provider.names && provider.names.length > 0 ? (
-        <RulesPageFab apiConfig={apiConfig} />
-      ) : null}
     </div>
   );
 }

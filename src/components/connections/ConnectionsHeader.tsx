@@ -1,42 +1,25 @@
-import cx from 'clsx';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Pause, Play, Search, Sliders, X } from '~/components/shared/FeatherIcons';
+import { Pause, Play, Sliders, X } from '~/components/shared/FeatherIcons';
+import {
+  HeaderActions,
+  HeaderButton,
+  HeaderIconButton,
+  HeaderRowBreak,
+  HeaderSearch,
+  headerSearchInlineClass,
+  headerSelectClass,
+  HeaderTab,
+  HeaderTabs,
+  HeaderTitle,
+  PageHeader,
+} from '~/components/shared/PageHeader';
 import Select from '~/components/shared/Select';
 
 import s from './ConnectionsHeader.module.scss';
 
 export type ConnTabKey = 'active' | 'closed';
-
-function formatQty(n: number) {
-  return n < 1000 ? String(n) : '999+';
-}
-
-function Tab({
-  active,
-  label,
-  count,
-  onClick,
-}: {
-  active: boolean;
-  label: string;
-  count: number;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={active}
-      className={cx(s.tab, { [s.tabActive]: active })}
-      onClick={onClick}
-    >
-      {label}
-      <span className={s.tabCount}>{formatQty(count)}</span>
-    </button>
-  );
-}
 
 type Props = {
   activeTab: ConnTabKey;
@@ -76,95 +59,78 @@ export function ConnectionsHeader({
   const { t } = useTranslation();
 
   return (
-    <header className={s.header}>
-      <h1 className={s.title}>{t('Connections')}</h1>
+    <PageHeader>
+      <HeaderTitle>{t('Connections')}</HeaderTitle>
 
-      <div className={s.tabs} role="tablist" aria-label={t('Connections')}>
-        <Tab
+      <HeaderTabs label={t('Connections')}>
+        <HeaderTab
           active={activeTab === 'active'}
           label={t('Active')}
           count={activeCount}
           onClick={() => setActiveTab('active')}
         />
-        <Tab
+        <HeaderTab
           active={activeTab === 'closed'}
           label={t('Closed')}
           count={closedCount}
           onClick={() => setActiveTab('closed')}
         />
-      </div>
-
-      <div className={s.actions}>
-        <button
-          type="button"
-          className={cx(s.btn, isRefreshPaused ? s.btnPaused : s.btnGhost)}
-          onClick={toggleIsRefreshPaused}
-          title={isRefreshPaused ? t('Resume Refresh') : t('Pause Refresh')}
-        >
-          {isRefreshPaused ? <Play size={14} /> : <Pause size={14} />}
-          <span className={s.btnText}>
-            {isRefreshPaused ? t('Resume Refresh') : t('Pause Refresh')}
-          </span>
-        </button>
-
-        {isFiltering ? (
-          <button
-            type="button"
-            className={cx(s.btn, s.btnGhost)}
-            onClick={onCloseFiltered}
-            title={t('close_filter_connections')}
-          >
-            <span className={s.btnIconBadged}>
-              <X size={14} />
-              <span className={s.btnBadge}>F</span>
-            </span>
-            <span className={s.btnTextSm}>{t('close_filtered')}</span>
-          </button>
-        ) : null}
-
-        <button
-          type="button"
-          className={cx(s.btn, s.btnDanger)}
-          onClick={onCloseAll}
-          title={t('close_all')}
-        >
-          <X size={14} />
-          <span className={s.btnTextSm}>{t('close_all')}</span>
-        </button>
-
-        <button
-          type="button"
-          className={s.iconBtn}
-          onClick={onOpenSettings}
-          aria-label={t('conn_settings')}
-          title={t('conn_settings')}
-        >
-          <Sliders size={17} />
-        </button>
-      </div>
-
-      {/* 窄屏下强制换行，让搜索和来源筛选独占第二行 */}
-      <span className={s.rowBreak} aria-hidden />
-
-      <div className={s.search}>
-        <Search size={15} className={s.searchIcon} aria-hidden />
-        <input
-          type="text"
-          name="filter"
-          autoComplete="off"
-          value={filterKeyword}
-          placeholder={t('search_conns_placeholder')}
-          onChange={(e) => setFilterKeyword(e.target.value)}
-        />
-      </div>
+      </HeaderTabs>
 
       <Select
         options={connIpSet}
         selected={filterSourceIpStr}
-        className={s.sourceSelect}
+        className={`${headerSelectClass} ${s.sourceSelect}`}
         aria-label={t('c_source')}
         onChange={(e) => setFilterSourceIpStr(e.target.value)}
       />
-    </header>
+
+      <HeaderSearch
+        className={`${headerSearchInlineClass} ${s.search}`}
+        value={filterKeyword}
+        onChange={setFilterKeyword}
+        placeholder={t('search_conns_placeholder')}
+      />
+
+      <HeaderActions className={s.actions}>
+        <HeaderButton
+          variant={isRefreshPaused ? 'paused' : 'ghost'}
+          icon={isRefreshPaused ? <Play size={14} /> : <Pause size={14} />}
+          label={isRefreshPaused ? t('Resume Refresh') : t('Pause Refresh')}
+          hideLabelAt="md"
+          onClick={toggleIsRefreshPaused}
+        />
+
+        {isFiltering ? (
+          <HeaderButton
+            icon={
+              <span className={s.btnIconBadged}>
+                <X size={14} />
+                <span className={s.btnBadge}>F</span>
+              </span>
+            }
+            label={t('close_filtered')}
+            title={t('close_filter_connections')}
+            onClick={onCloseFiltered}
+          />
+        ) : null}
+
+        <HeaderButton
+          variant="danger"
+          icon={<X size={14} />}
+          label={t('close_all')}
+          onClick={onCloseAll}
+        />
+
+        <HeaderIconButton
+          icon={<Sliders size={17} />}
+          label={t('conn_settings')}
+          onClick={onOpenSettings}
+        />
+      </HeaderActions>
+
+      {/* 窄屏下强制换行，让搜索和来源筛选独占第二行 */}
+      <HeaderRowBreak className={s.rowBreak} />
+    </PageHeader>
   );
 }

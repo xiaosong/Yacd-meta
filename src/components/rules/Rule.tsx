@@ -1,54 +1,50 @@
 import cx from 'clsx';
 import { formatDistanceToNow } from 'date-fns';
-import React from 'react';
+import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { RuleExtra } from '~/api/rules';
-import { Activity, FileText, Globe, Hash, Link, Shield, Zap } from '~/components/shared/FeatherIcons';
+import {
+  Activity,
+  FileText,
+  Globe,
+  Hash,
+  Link,
+  Shield,
+  Zap,
+} from '~/components/shared/FeatherIcons';
 import SwitchThemed from '~/components/SwitchThemed';
 import { useToggleRuleDisabled } from '~/modules/rules/hooks';
+import type { RuleProviderIndex } from '~/modules/rules/utils';
 import { ClashAPIConfig } from '~/types';
 
-import s0 from './Rule.module.scss';
+import s from './Rule.module.scss';
 
-const colorMap = {
-  _default: 'var(--color-focus-blue)',
+const proxyColor: Record<string, string> = {
   DIRECT: '#f5bc41',
   REJECT: '#cb3166',
 };
-
-function getStyleFor({ proxy }) {
-  let color = colorMap._default;
-  if (colorMap[proxy]) {
-    color = colorMap[proxy];
-  }
-  return { color };
-}
 
 function getIconFor(type: string) {
   switch (type) {
     case 'Domain':
     case 'DomainSuffix':
     case 'DomainKeyword':
-      return <Link size={14} />;
+      return <Link size={12} />;
     case 'IPCIDR':
     case 'IPCIDR6':
-      return <Hash size={14} />;
+      return <Hash size={12} />;
     case 'GeoSite':
     case 'GeoIP':
-      return <Globe size={14} />;
+      return <Globe size={12} />;
     case 'REJECT':
-      return <Shield size={14} />;
+      return <Shield size={12} />;
     case 'DIRECT':
-      return <Zap size={14} />;
+      return <Zap size={12} />;
     default:
-      return <FileText size={14} />;
+      return <FileText size={12} />;
   }
 }
-
-type RuleProviderLookup = {
-  byName: Record<string, { ruleCount?: number }>;
-};
 
 type Props = {
   id?: number;
@@ -58,9 +54,10 @@ type Props = {
   size?: number;
   extra?: RuleExtra;
   apiConfig?: ClashAPIConfig;
-  provider?: RuleProviderLookup;
+  provider?: RuleProviderIndex;
 };
 
+/** GeoSite/GeoIP 的条目数后端直接给，RuleSet 的要去提供商表里查 */
 function getEntryCount({
   type,
   payload,
@@ -70,7 +67,7 @@ function getEntryCount({
   type: string;
   payload: string;
   size: number;
-  provider?: RuleProviderLookup;
+  provider?: RuleProviderIndex;
 }): number | undefined {
   if ((type === 'GeoSite' || type === 'GeoIP') && size >= 0) {
     return size;
@@ -83,7 +80,6 @@ function getEntryCount({
 
 function Rule({ type, payload, proxy, id, size, extra, apiConfig, provider }: Props) {
   const { t } = useTranslation();
-  const styleProxy = getStyleFor({ proxy });
   const { toggleRule, isPending } = useToggleRuleDisabled(apiConfig);
   const disabled = extra?.disabled ?? false;
   const entryCount = getEntryCount({ type, payload, size, provider });
@@ -98,45 +94,54 @@ function Rule({ type, payload, proxy, id, size, extra, apiConfig, provider }: Pr
     : undefined;
 
   return (
-    <div className={cx(s0.rule, { [s0.disabled]: disabled })}>
-      <div className={s0.left}>{id}</div>
-      <div className={s0.right}>
-        <div className={s0.payloadRow}>
-          <div className={s0.payload}>{payload}</div>
-          {typeof entryCount === 'number' && (
-            <div className={s0.size}>{t('rule_entry_count', { count: entryCount })}</div>
-          )}
-        </div>
-        <div className={s0.metaRow}>
-          <div className={s0.typeTag}>
-            {getIconFor(type)}
-            <span>{type}</span>
-          </div>
-          <div className={s0.proxyTag} style={styleProxy}>
-            {proxy}
-          </div>
-          {extra && (
-            <div className={s0.hitInfo} title={hitTitle}>
-              <Activity size={12} />
-              <span>{extra.hitCount}</span>
-            </div>
-          )}
-        </div>
-      </div>
-      {extra && (
+    <div className={cx(s.rule, { [s.disabled]: disabled })}>
+      {/* 桌面端在最左边，窄屏靠 .switch 的 order 拨到行尾 */}
+      {extra ? (
         <div
-          className={cx(s0.wrapSwitch, { [s0.pending]: isPending })}
+          className={cx(s.switch, { [s.pending]: isPending })}
           title={disabled ? t('rule_enable') : t('rule_disable')}
         >
           <SwitchThemed
+            size="mini"
             name={`rule-${id}`}
             checked={!disabled}
             onChange={(checked: boolean) => toggleRule(id, !checked)}
           />
         </div>
-      )}
+      ) : null}
+
+      <div className={s.index}>{id}</div>
+
+      <div className={s.main}>
+        <div className={s.payloadRow}>
+          <div className={s.payload}>{payload}</div>
+          {typeof entryCount === 'number' ? (
+            <div className={s.entryCount}>{t('rule_entry_count', { count: entryCount })}</div>
+          ) : null}
+        </div>
+
+        <div className={s.metaRow}>
+          <span className={s.typeTag}>
+            {getIconFor(type)}
+            <span>{type}</span>
+          </span>
+          <span
+            className={s.proxy}
+            style={{ color: proxyColor[proxy] ?? 'var(--color-focus-blue)' }}
+          >
+            {proxy}
+          </span>
+          {extra ? (
+            <span className={s.hitInfo} title={hitTitle}>
+              <Activity size={12} />
+              {extra.hitCount}
+            </span>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }
 
-export default Rule;
+// 上千行的虚拟列表，滚动时不该因为父组件重渲染而整屏重算
+export default React.memo(Rule);

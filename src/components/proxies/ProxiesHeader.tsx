@@ -17,6 +17,7 @@ import { RotateIcon } from '~/components/shared/RotateIcon';
 import { TextFilter } from '~/components/shared/TextFitler';
 import { proxyFilterText } from '~/store/proxies';
 
+import s from './ProxiesHeader.module.scss';
 import Settings from './Settings';
 
 type AppConfig = React.ComponentProps<typeof Settings>['appConfig'];
@@ -84,11 +85,11 @@ export function ProxiesHeader({
         ) : null}
       </HeaderTabs>
 
-      <HeaderSearch>
+      <HeaderSearch className={s.search}>
         <TextFilter textAtom={proxyFilterText} placeholder={t('search_proxies_placeholder')} />
       </HeaderSearch>
 
-      <HeaderActions>
+      <HeaderActions className={s.actions}>
         {activeTab === 'providers' && providerCount > 0 ? (
           <HeaderButton
             icon={<RotateIcon isRotating={isUpdatingProviders} />}

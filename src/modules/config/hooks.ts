@@ -1,6 +1,8 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
+import type { UpgradeChannel } from '~/api/configs';
 import * as logsApi from '~/api/logs';
 import { fetchVersion } from '~/api/version';
 import {
@@ -14,6 +16,7 @@ import {
   upgradeUI,
 } from '~/store/configs';
 import { openModal } from '~/store/modals';
+import { toast } from '~/store/toast';
 import { ClashGeneralConfig, DispatchFn } from '~/store/types';
 import { ClashAPIConfig } from '~/types';
 
@@ -68,6 +71,8 @@ export function useConfigPage({
   dispatch: DispatchFn;
   updateAppConfig: UpdateAppConfigFn;
 }) {
+  const { t } = useTranslation();
+
   useEffect(() => {
     dispatch(fetchConfigs(apiConfig));
   }, [apiConfig, dispatch]);
@@ -155,9 +160,23 @@ export function useConfigPage({
     dispatch(restartCore(apiConfig));
   }, [apiConfig, dispatch]);
 
-  const handleUpgradeCore = useCallback(() => {
-    dispatch(upgradeCore(apiConfig));
-  }, [apiConfig, dispatch]);
+  // 正在更新的通道，null 表示空闲；同时用来给两个按钮做 loading / 互斥
+  const [upgradingChannel, setUpgradingChannel] = useState<UpgradeChannel | null>(null);
+
+  const handleUpgradeCore = useCallback(
+    async (channel: UpgradeChannel) => {
+      if (upgradingChannel !== null) return;
+      setUpgradingChannel(channel);
+      const result = await dispatch(upgradeCore(apiConfig, channel));
+      setUpgradingChannel(null);
+      if (result.ok) {
+        toast('success', t('upgrade_core_success'));
+      } else {
+        toast('error', t('upgrade_core_failed', { message: result.message }));
+      }
+    },
+    [apiConfig, dispatch, t, upgradingChannel]
+  );
 
   const handleUpgradeGeo = useCallback(() => {
     dispatch(upgradeGeo(apiConfig));
@@ -179,6 +198,7 @@ export function useConfigPage({
     handleReloadConfigFile,
     handleRestartCore,
     handleUpgradeCore,
+    upgradingChannel,
     handleUpgradeGeo,
     handleUpgradeUI,
     handleFlushFakeIPPool,

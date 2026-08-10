@@ -4,6 +4,7 @@ export {
   ArrowDown,
   ArrowDownCircle,
   ArrowUp,
+  CheckCircle,
   ChevronDown,
   ChevronUp,
   Cpu,

@@ -148,26 +148,35 @@ export function restartCore(apiConfig: ClashAPIConfig) {
   };
 }
 
-export function upgradeCore(apiConfig: ClashAPIConfig) {
-  return async (dispatch: DispatchFn) => {
-    configsAPI
-      .upgradeCore(apiConfig)
-      .then(
-        (res) => {
-          if (res.ok === false) {
-             
-            console.log('Error upgrade core', res.statusText);
-          }
-        },
-        (err) => {
-           
-          console.log('Error upgrade core', err);
-          throw err;
-        }
-      )
-      .then(() => {
-        dispatch(fetchConfigs(apiConfig));
-      });
+export type UpgradeCoreResult = { ok: boolean; message?: string };
+
+// mihomo 出错时返回 { "message": "..." }
+async function readErrorMessage(res: Response) {
+  try {
+    const payload = await res.json();
+    if (payload && typeof payload.message === 'string') return payload.message;
+  } catch {
+    // 不是 JSON，退回状态行
+  }
+  return res.statusText || String(res.status);
+}
+
+export function upgradeCore(apiConfig: ClashAPIConfig, channel?: configsAPI.UpgradeChannel) {
+  return async (): Promise<UpgradeCoreResult> => {
+    let res: Response;
+    try {
+      res = await configsAPI.upgradeCore(apiConfig, channel);
+    } catch (err) {
+      console.log('Error upgrade core', err);
+      return { ok: false, message: err instanceof Error ? err.message : String(err) };
+    }
+    if (!res.ok) {
+      const message = await readErrorMessage(res);
+      console.log('Error upgrade core', message);
+      return { ok: false, message };
+    }
+    // 内核更新成功后会自行重启，这里不再立刻拉配置，否则大概率打在重启窗口上
+    return { ok: true };
   };
 }
 

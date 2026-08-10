@@ -57,6 +57,7 @@ export default function Config({
     handleReloadConfigFile,
     handleRestartCore,
     handleUpgradeCore,
+    upgradingChannel,
     handleUpgradeGeo,
     handleUpgradeUI,
     handleFlushFakeIPPool,
@@ -254,12 +255,23 @@ export default function Config({
                 )}
                 {version.meta && !version.premium && (
                   <div>
-                    <div className={s0.label}>⚠️ Upgrade ⚠️</div>
-                    <Button
-                      start={<RotateCw size={16} />}
-                      label={t('upgrade_core')}
-                      onClick={handleUpgradeCore}
-                    />
+                    <div className={s0.label}>⚠️ {t('upgrade_core')} ⚠️</div>
+                    <div className={s0.buttonGroup}>
+                      <Button
+                        start={<DownloadCloud size={16} />}
+                        label={t('upgrade_core_release')}
+                        isLoading={upgradingChannel === 'release'}
+                        disabled={upgradingChannel !== null}
+                        onClick={() => handleUpgradeCore('release')}
+                      />
+                      <Button
+                        start={<DownloadCloud size={16} />}
+                        label={t('upgrade_core_alpha')}
+                        isLoading={upgradingChannel === 'alpha'}
+                        disabled={upgradingChannel !== null}
+                        onClick={() => handleUpgradeCore('alpha')}
+                      />
+                    </div>
                   </div>
                 )}
               </div>

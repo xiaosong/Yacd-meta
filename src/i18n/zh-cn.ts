@@ -145,6 +145,8 @@ export const data = {
   upgrade_core_failed: '核心更新失败：{{message}}',
   upgrade_geo: '更新 GEO 数据库',
   upgrade_ui: '更新面板 UI',
+  upgrade_ui_success: '面板 UI 更新成功，正在刷新页面',
+  upgrade_ui_failed: '面板 UI 更新失败：{{message}}',
   close_all_confirm: '确定关闭所有连接？',
   close_all_confirm_yes: '确定',
   close_all_confirm_no: '取消',

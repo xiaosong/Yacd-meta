@@ -114,6 +114,25 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
     });
 }
 
+// 后端刚把面板静态文件换掉。直接 reload 会被 Service Worker 的 precache 挡住 ——
+// 新的 sw.js 只会进入 waiting，要等所有标签页关掉才激活，这一次刷新拿到的还是旧资源。
+// 所以先把 SW 和它的缓存清干净再整页刷新，下次加载 main.tsx 会重新 register。
+export async function unregisterAndReload() {
+  try {
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((registration) => registration.unregister()));
+    }
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((key) => caches.delete(key)));
+    }
+  } catch (err) {
+    console.log('Failed to clear service worker caches before reload', err);
+  }
+  window.location.reload();
+}
+
 export function unregister() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready

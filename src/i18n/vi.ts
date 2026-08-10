@@ -74,6 +74,8 @@ export const data = {
   upgrade_core_release: 'Bản ổn định',
   upgrade_core_alpha: 'Bản Alpha',
   upgrade_core_success: 'Đã nâng cấp lõi, đang khởi động lại',
+  upgrade_ui_success: 'Đã nâng cấp giao diện, đang tải lại trang…',
+  upgrade_ui_failed: 'Nâng cấp giao diện thất bại: {{message}}',
   upgrade_core_failed: 'Nâng cấp lõi thất bại: {{message}}',
   update_geo_databases_file: 'Cập nhật tệp cơ sở dữ liệu GEO',
   flush_fake_ip_pool: 'Xóa bộ nhớ đệm fake-ip',

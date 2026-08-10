@@ -137,6 +137,8 @@ export const data = {
   upgrade_core_release: '穩定版',
   upgrade_core_alpha: 'Alpha 版',
   upgrade_core_success: '核心更新成功，正在重啟',
+  upgrade_ui_success: '面板 UI 更新成功，正在重新整理頁面',
+  upgrade_ui_failed: '面板 UI 更新失敗：{{message}}',
   upgrade_core_failed: '核心更新失敗：{{message}}',
   close_all_confirm: '確定關閉所有連接？',
   close_all_confirm_yes: '確定',

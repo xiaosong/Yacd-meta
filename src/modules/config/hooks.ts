@@ -18,9 +18,13 @@ import {
 import { openModal } from '~/store/modals';
 import { toast } from '~/store/toast';
 import { ClashGeneralConfig, DispatchFn } from '~/store/types';
+import { unregisterAndReload } from '~/swRegistration';
 import { ClashAPIConfig } from '~/types';
 
 const { useCallback, useEffect, useRef, useState } = React;
+
+// 面板更新成功后到自动刷新之间的间隔，够看清通知即可
+const UI_RELOAD_DELAY_MS = 1500;
 
 type UpdateAppConfigFn = (name: string, value: unknown) => void;
 
@@ -182,9 +186,21 @@ export function useConfigPage({
     dispatch(upgradeGeo(apiConfig));
   }, [apiConfig, dispatch]);
 
-  const handleUpgradeUI = useCallback(() => {
-    dispatch(upgradeUI(apiConfig));
-  }, [apiConfig, dispatch]);
+  const [isUpgradingUI, setIsUpgradingUI] = useState(false);
+
+  const handleUpgradeUI = useCallback(async () => {
+    if (isUpgradingUI) return;
+    setIsUpgradingUI(true);
+    const result = await dispatch(upgradeUI(apiConfig));
+    setIsUpgradingUI(false);
+    if (result.ok) {
+      toast('success', t('upgrade_ui_success'));
+      // 留一点时间让通知露个面，再带着清缓存整页刷新
+      setTimeout(unregisterAndReload, UI_RELOAD_DELAY_MS);
+    } else {
+      toast('error', t('upgrade_ui_failed', { message: result.message }));
+    }
+  }, [apiConfig, dispatch, isUpgradingUI, t]);
 
   const handleFlushFakeIPPool = useCallback(() => {
     dispatch(flushFakeIPPool(apiConfig));
@@ -201,6 +217,7 @@ export function useConfigPage({
     upgradingChannel,
     handleUpgradeGeo,
     handleUpgradeUI,
+    isUpgradingUI,
     handleFlushFakeIPPool,
     versionQuery,
   };

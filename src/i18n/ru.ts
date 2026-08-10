@@ -84,6 +84,8 @@ export const data = {
   upgrade_core_failed: 'Не удалось обновить ядро: {{message}}',
   upgrade_geo: 'Обновить GEO базы данных',
   upgrade_ui: 'Обновить интерфейс',
+  upgrade_ui_success: 'Интерфейс обновлён, страница перезагружается…',
+  upgrade_ui_failed: 'Не удалось обновить интерфейс: {{message}}',
   update_geo_databases_file: 'Обновить файлы GEO баз данных',
   flush_fake_ip_pool: 'Очистить пул fake-ip',
   enable_tun_device: 'Включить TUN устройство',

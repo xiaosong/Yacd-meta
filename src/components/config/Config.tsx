@@ -55,6 +55,7 @@ export default function Config({ dispatch, configs, selectedChartStyleIndex, api
     upgradingChannel,
     handleUpgradeGeo,
     handleUpgradeUI,
+    isUpgradingUI,
     handleFlushFakeIPPool,
     versionQuery: { data: version },
   } = useConfigPage({
@@ -226,6 +227,8 @@ export default function Config({ dispatch, configs, selectedChartStyleIndex, api
                     <Button
                       start={<DownloadCloud size={16} />}
                       label={t('upgrade_ui')}
+                      isLoading={isUpgradingUI}
+                      disabled={isUpgradingUI}
                       onClick={handleUpgradeUI}
                     />
                   </div>
@@ -250,7 +253,7 @@ export default function Config({ dispatch, configs, selectedChartStyleIndex, api
                 )}
                 {version.meta && !version.premium && (
                   <div>
-                    <div className={s0.label}>⚠️ {t('upgrade_core')} ⚠️</div>
+                    <div className={s0.label}> {t('upgrade_core')} </div>
                     <div className={s0.buttonGroup}>
                       <Button
                         start={<DownloadCloud size={16} />}

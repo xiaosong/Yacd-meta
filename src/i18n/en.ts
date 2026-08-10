@@ -92,6 +92,8 @@ export const data = {
   upgrade_core_failed: 'Core upgrade failed: {{message}}',
   upgrade_geo: 'Upgrade GEO Databases',
   upgrade_ui: 'Upgrade Dashboard UI',
+  upgrade_ui_success: 'Dashboard UI upgraded, reloading the page…',
+  upgrade_ui_failed: 'Dashboard UI upgrade failed: {{message}}',
   update_geo_databases_file: 'Update GEO Databases ',
   flush_fake_ip_pool: 'Flush fake-ip data',
   enable_tun_device: 'Enable TUN Device',

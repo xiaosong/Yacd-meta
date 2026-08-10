@@ -6,7 +6,9 @@
   left: 0;
   right: 0;
 
-  transform: none;
+  // Modal 用独立的 translate 属性做居中，这里必须同样用 translate 抵消。
+  // 注意别在同一条规则里再写 transform：postcss-preset-env 会把两者合并成
+  // transform: translate(0,0)，translate 声明被吞掉，弹层就会偏移半屏。
   translate: none;
   padding: 0;
   border-radius: 0;

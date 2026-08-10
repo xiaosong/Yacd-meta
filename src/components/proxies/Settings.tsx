@@ -145,7 +145,8 @@ export default function Settings({ appConfig }: Props) {
   }, [sortKey, sortDirection, t]);
 
   const handleSortChange = useCallback(
-    (key: ProxySortKey) => updateAppConfig('proxySortBy', nextProxySortBy(appConfig.proxySortBy, key)),
+    (key: ProxySortKey) =>
+      updateAppConfig('proxySortBy', nextProxySortBy(appConfig.proxySortBy, key)),
     [appConfig.proxySortBy, updateAppConfig],
   );
 

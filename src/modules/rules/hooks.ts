@@ -17,7 +17,7 @@ const { useCallback, useMemo, useState } = React;
 
 export function useUpdateRuleProviderItem(
   name: string,
-  apiConfig: ClashAPIConfig
+  apiConfig: ClashAPIConfig,
 ): [() => void, boolean] {
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
@@ -41,7 +41,7 @@ export function useUpdateAllRuleProviderItems(apiConfig: ClashAPIConfig): [() =>
   });
   const refreshAll = useCallback(
     () => mutate({ names: provider.names, apiConfig }),
-    [mutate, provider.names, apiConfig]
+    [mutate, provider.names, apiConfig],
   );
   return [refreshAll, isPending];
 }
@@ -57,7 +57,7 @@ export function useToggleRuleDisabled(apiConfig: ClashAPIConfig) {
   });
   const toggleRule = useCallback(
     (index: number, disabled: boolean) => mutate({ index, disabled }),
-    [mutate]
+    [mutate],
   );
   return { toggleRule, isPending };
 }

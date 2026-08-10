@@ -62,7 +62,6 @@ function pump(reader: ReadableStreamDefaultReader) {
       parseAndAppend(lastSplit);
       decoded = '';
 
-       
       console.log('GET /memory streaming done');
       fetched = false;
       return;
@@ -110,10 +109,9 @@ function fetchDataWithFetch(apiConfig: ClashAPIConfig) {
       }
     },
     (err) => {
-       
       console.log('fetch /memory error', err);
       fetched = false;
-    }
+    },
   );
   return memory;
 }

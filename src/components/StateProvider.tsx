@@ -44,14 +44,13 @@ export default function Provider({ initialState, actions = {}, children }) {
       const stateNext = produce(getState(), fn);
       if (stateNext !== stateRef.current) {
         if (import.meta.env.DEV) {
-           
           console.log(actionId, stateNext);
         }
         stateRef.current = stateNext;
         setState(stateNext);
       }
     },
-    [getState]
+    [getState],
   );
   const boundActions = useMemo(() => bindActions(actions, dispatch), [actions, dispatch]);
 

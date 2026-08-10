@@ -39,7 +39,7 @@ export const SORT_STORAGE_KEY = 'connSort';
 export const CONNECTION_COLUMNS: ConnectionColumn[] = [
   { id: 'ctrl', labelKey: 'c_ctrl', width: 34, kind: 'ctrl', sortable: false },
   { id: 'start', labelKey: 'c_time', width: 84, kind: 'text', numeric: true },
-  { id: 'type', labelKey: 'c_type', width: 70, kind: 'chip' },
+  { id: 'type', labelKey: 'c_type', width: 120, kind: 'chip' },
   { id: 'source', labelKey: 'c_source', width: 120, kind: 'text' },
   { id: 'host', labelKey: 'c_host', width: 100, grow: 1.6, max: 380, kind: 'host' },
   { id: 'rule', labelKey: 'c_rule', width: 70, grow: 1, max: 220, kind: 'chip' },

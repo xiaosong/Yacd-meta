@@ -45,10 +45,15 @@ export async function restartCore(apiConfig: ClashAPIConfig) {
   return await fetch(url + restartCoreEndpoint, { ...init, body, method: 'POST' });
 }
 
-export async function upgradeCore(apiConfig: ClashAPIConfig) {
+// 内核更新通道，对应 mihomo `POST /upgrade?channel=` 的取值；
+// 不传则由内核按当前版本自动选择
+export type UpgradeChannel = 'release' | 'alpha';
+
+export async function upgradeCore(apiConfig: ClashAPIConfig, channel?: UpgradeChannel) {
   const { url, init } = getURLAndInit(apiConfig);
   const body = '{"path": "", "payload": ""}';
-  return await fetch(url + upgradeCoreEndpoint, { ...init, body, method: 'POST' });
+  const query = channel ? `?channel=${channel}` : '';
+  return await fetch(url + upgradeCoreEndpoint + query, { ...init, body, method: 'POST' });
 }
 
 export async function upgradeGeo(apiConfig: ClashAPIConfig) {

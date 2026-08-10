@@ -68,12 +68,7 @@ export function ConnectionStats({
   return (
     <div className={s.grid}>
       <Stat label={t('Active Connections')} value={String(activeCount)} unit={t('conn_unit')} />
-      <Stat
-        label={t('c_dl_speed')}
-        value={dlValue}
-        unit={`${dlUnit}/s`}
-        tone="download"
-      />
+      <Stat label={t('c_dl_speed')} value={dlValue} unit={`${dlUnit}/s`} tone="download" />
       <Stat label={t('c_ul_speed')} value={ulValue} unit={`${ulUnit}/s`} tone="upload" />
       <Stat
         label={t('total_traffic')}

@@ -26,7 +26,7 @@ i18next
         _options: any,
         url: string,
         _payload: any,
-        callback: BackendRequestCallback
+        callback: BackendRequestCallback,
       ) {
         let p: PromiseLike<{ data: any }>;
 

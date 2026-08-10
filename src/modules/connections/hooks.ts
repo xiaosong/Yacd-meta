@@ -38,16 +38,13 @@ const { useCallback, useEffect, useMemo, useRef, useState } = React;
 export function useSourceMapState() {
   const [sourceMap, setSourceMapState] = useState<SourceMapItem[]>(() => getInitialSourceMap());
 
-  const setSourceMap = useCallback(
-    (updater: React.SetStateAction<SourceMapItem[]>) => {
-      setSourceMapState((prev) => {
-        const next = typeof updater === 'function' ? updater(prev) : updater;
-        saveSourceMap(next.filter((item) => item.reg || item.name));
-        return next;
-      });
-    },
-    []
-  );
+  const setSourceMap = useCallback((updater: React.SetStateAction<SourceMapItem[]>) => {
+    setSourceMapState((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      saveSourceMap(next.filter((item) => item.reg || item.name));
+      return next;
+    });
+  }, []);
 
   return { sourceMap, setSourceMap };
 }
@@ -89,7 +86,7 @@ export function useConnectionsStream(apiConfig: ClashAPIConfig, sourceMap: Sourc
       const now = Date.now();
       const nextConnections =
         connections?.map((item: ConnectionItem) =>
-          formatConnectionDataItem(item, prevConnsKv, now, sourceMap)
+          formatConnectionDataItem(item, prevConnsKv, now, sourceMap),
         ) ?? [];
 
       const nextIds = new Set<string>();
@@ -106,7 +103,7 @@ export function useConnectionsStream(apiConfig: ClashAPIConfig, sourceMap: Sourc
       setTotal((prev) =>
         prev.download === downloadTotal && prev.upload === uploadTotal
           ? prev
-          : { download: downloadTotal ?? 0, upload: uploadTotal ?? 0 }
+          : { download: downloadTotal ?? 0, upload: uploadTotal ?? 0 },
       );
 
       if (nextConnections.length !== 0 || prevConnsRef.current.length !== 0) {
@@ -114,7 +111,7 @@ export function useConnectionsStream(apiConfig: ClashAPIConfig, sourceMap: Sourc
         setConns(nextConnections);
       }
     },
-    [isRefreshPaused, setClosedConns, setConns, setTotal, sourceMap]
+    [isRefreshPaused, setClosedConns, setConns, setTotal, sourceMap],
   );
 
   useEffect(() => {
@@ -146,12 +143,12 @@ export function useConnectionColumns() {
 
   const addColumn = useCallback(
     (id: string) => setColumns([...columns, id]),
-    [columns, setColumns]
+    [columns, setColumns],
   );
 
   const removeColumn = useCallback(
     (id: string) => setColumns(columns.filter((each) => each !== id)),
-    [columns, setColumns]
+    [columns, setColumns],
   );
 
   const reorderColumns = useCallback(
@@ -162,22 +159,19 @@ export function useConnectionColumns() {
       next.splice(toIndex, 0, moved);
       setColumns(next);
     },
-    [columns, setColumns]
+    [columns, setColumns],
   );
 
-  const resetColumns = useCallback(
-    () => setColumns([...CONNECTION_COLUMNS_DEFAULT]),
-    [setColumns]
-  );
+  const resetColumns = useCallback(() => setColumns([...CONNECTION_COLUMNS_DEFAULT]), [setColumns]);
 
   const visibleColumns = useMemo(
     () => columns.map((id) => CONNECTION_COLUMN_MAP[id]).filter(Boolean),
-    [columns]
+    [columns],
   );
 
   const availableColumns = useMemo(
     () => CONNECTION_COLUMNS.filter((column) => !columns.includes(column.id)),
-    [columns]
+    [columns],
   );
 
   return {
@@ -240,11 +234,11 @@ export function useConnectionFilters({
 
   const filteredConns = useMemo(
     () => filterConns(conns, filterKeyword, filterSourceIpStr, hideRegExp),
-    [conns, filterKeyword, filterSourceIpStr, hideRegExp]
+    [conns, filterKeyword, filterSourceIpStr, hideRegExp],
   );
   const filteredClosedConns = useMemo(
     () => filterConns(closedConns, filterKeyword, filterSourceIpStr, hideRegExp),
-    [closedConns, filterKeyword, filterSourceIpStr, hideRegExp]
+    [closedConns, filterKeyword, filterSourceIpStr, hideRegExp],
   );
 
   const connIpSet = useMemo(() => {
@@ -274,7 +268,7 @@ export function useConnectionFilters({
 /** 顶部四张统计卡的数据来源 */
 export function useConnectionStats(
   conns: FormattedConn[],
-  total: { download: number; upload: number }
+  total: { download: number; upload: number },
 ) {
   return useMemo(() => {
     let downloadSpeed = 0;

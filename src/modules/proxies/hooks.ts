@@ -42,7 +42,7 @@ const getSortDelay = (
     | {
         number?: number;
       },
-  proxyInfo: ProxyItem
+  proxyInfo: ProxyItem,
 ) => {
   if (d && typeof d.number === 'number' && d.number > 0) {
     return d.number;
@@ -88,7 +88,7 @@ function filterAvailableProxiesAndSort(
   hideUnavailableProxies: boolean,
   segments: string[],
   proxySortBy: string,
-  proxies?: ProxiesMapping
+  proxies?: ProxiesMapping,
 ) {
   let filtered = [...all];
   if (hideUnavailableProxies) {
@@ -116,7 +116,7 @@ export function useFilteredAndSorted(
   proxySortBy: string,
   proxies?: ProxiesMapping,
   /** 组名本身命中搜索时，组内节点就不再过滤，整组原样展示 */
-  skipTextFilter = false
+  skipTextFilter = false,
 ) {
   const segments = useFilterSegments();
   const effectiveSegments = skipTextFilter ? EMPTY_SEGMENTS : segments;
@@ -128,9 +128,9 @@ export function useFilteredAndSorted(
         hideUnavailableProxies,
         effectiveSegments,
         proxySortBy,
-        proxies
+        proxies,
       ),
-    [all, delay, hideUnavailableProxies, effectiveSegments, proxySortBy, proxies]
+    [all, delay, hideUnavailableProxies, effectiveSegments, proxySortBy, proxies],
   );
 }
 
@@ -148,15 +148,12 @@ export function useVisibleGroupNames(groupNames: string[], proxies: ProxiesMappi
 }
 
 /** 提供商：同上，名称命中或旗下有节点命中 */
-export function useVisibleProviders(
-  providers: FormattedProxyProvider[]
-): FormattedProxyProvider[] {
+export function useVisibleProviders(providers: FormattedProxyProvider[]): FormattedProxyProvider[] {
   const segments = useFilterSegments();
   return useMemo(() => {
     if (segments.length === 0) return providers;
     return providers.filter(
-      (p) =>
-        matchesFilter(p.name, segments) || p.proxies.some((n) => matchesFilter(n, segments))
+      (p) => matchesFilter(p.name, segments) || p.proxies.some((n) => matchesFilter(n, segments)),
     );
   }, [providers, segments]);
 }
@@ -207,7 +204,7 @@ export function useUpdateProviderItem({
 }) {
   return useCallback(
     () => dispatch(updateProviderByName(apiConfig, name)),
-    [apiConfig, dispatch, name]
+    [apiConfig, dispatch, name],
   );
 }
 
@@ -253,7 +250,7 @@ export function useTestLatencyAction({
     setIsTestingLatency(true);
     dispatch(requestDelayAll(apiConfig)).then(
       () => setIsTestingLatency(false),
-      () => setIsTestingLatency(false)
+      () => setIsTestingLatency(false),
     );
   }, [apiConfig, dispatch, isTestingLatency]);
   return [requestDelayAllFn, isTestingLatency];
@@ -346,7 +343,7 @@ export function useCollapseAll({
 
   const allCollapsed = useMemo(
     () => !names.some((name) => collapsibleIsOpen[`${prefix}:${name}`]),
-    [names, collapsibleIsOpen, prefix]
+    [names, collapsibleIsOpen, prefix],
   );
 
   const toggleAll = useCallback(() => {

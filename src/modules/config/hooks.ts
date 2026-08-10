@@ -1,6 +1,8 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
+import type { UpgradeChannel } from '~/api/configs';
 import * as logsApi from '~/api/logs';
 import { fetchVersion } from '~/api/version';
 import {
@@ -14,10 +16,15 @@ import {
   upgradeUI,
 } from '~/store/configs';
 import { openModal } from '~/store/modals';
+import { toast } from '~/store/toast';
 import { ClashGeneralConfig, DispatchFn } from '~/store/types';
+import { unregisterAndReload } from '~/swRegistration';
 import { ClashAPIConfig } from '~/types';
 
 const { useCallback, useEffect, useRef, useState } = React;
+
+// 面板更新成功后到自动刷新之间的间隔，够看清通知即可
+const UI_RELOAD_DELAY_MS = 1500;
 
 type UpdateAppConfigFn = (name: string, value: unknown) => void;
 
@@ -68,6 +75,8 @@ export function useConfigPage({
   dispatch: DispatchFn;
   updateAppConfig: UpdateAppConfigFn;
 }) {
+  const { t } = useTranslation();
+
   useEffect(() => {
     dispatch(fetchConfigs(apiConfig));
   }, [apiConfig, dispatch]);
@@ -112,14 +121,14 @@ export function useConfigPage({
           return;
       }
     },
-    [apiConfig, dispatch, setConfigState, setTunConfigState]
+    [apiConfig, dispatch, setConfigState, setTunConfigState],
   );
 
   const handleInputOnBlur = useCallback(
     (
       e:
         | React.FocusEvent<HTMLSelectElement | HTMLInputElement>
-        | React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
+        | React.ChangeEvent<HTMLSelectElement | HTMLInputElement>,
     ) => {
       const { name, value } = e.target;
 
@@ -144,7 +153,7 @@ export function useConfigPage({
           throw new Error(`unknown input name ${name}`);
       }
     },
-    [apiConfig, dispatch, updateAppConfig]
+    [apiConfig, dispatch, updateAppConfig],
   );
 
   const handleReloadConfigFile = useCallback(() => {
@@ -155,17 +164,43 @@ export function useConfigPage({
     dispatch(restartCore(apiConfig));
   }, [apiConfig, dispatch]);
 
-  const handleUpgradeCore = useCallback(() => {
-    dispatch(upgradeCore(apiConfig));
-  }, [apiConfig, dispatch]);
+  // 正在更新的通道，null 表示空闲；同时用来给两个按钮做 loading / 互斥
+  const [upgradingChannel, setUpgradingChannel] = useState<UpgradeChannel | null>(null);
+
+  const handleUpgradeCore = useCallback(
+    async (channel: UpgradeChannel) => {
+      if (upgradingChannel !== null) return;
+      setUpgradingChannel(channel);
+      const result = await dispatch(upgradeCore(apiConfig, channel));
+      setUpgradingChannel(null);
+      if (result.ok) {
+        toast('success', t('upgrade_core_success'));
+      } else {
+        toast('error', t('upgrade_core_failed', { message: result.message }));
+      }
+    },
+    [apiConfig, dispatch, t, upgradingChannel],
+  );
 
   const handleUpgradeGeo = useCallback(() => {
     dispatch(upgradeGeo(apiConfig));
   }, [apiConfig, dispatch]);
 
-  const handleUpgradeUI = useCallback(() => {
-    dispatch(upgradeUI(apiConfig));
-  }, [apiConfig, dispatch]);
+  const [isUpgradingUI, setIsUpgradingUI] = useState(false);
+
+  const handleUpgradeUI = useCallback(async () => {
+    if (isUpgradingUI) return;
+    setIsUpgradingUI(true);
+    const result = await dispatch(upgradeUI(apiConfig));
+    setIsUpgradingUI(false);
+    if (result.ok) {
+      toast('success', t('upgrade_ui_success'));
+      // 留一点时间让通知露个面，再带着清缓存整页刷新
+      setTimeout(unregisterAndReload, UI_RELOAD_DELAY_MS);
+    } else {
+      toast('error', t('upgrade_ui_failed', { message: result.message }));
+    }
+  }, [apiConfig, dispatch, isUpgradingUI, t]);
 
   const handleFlushFakeIPPool = useCallback(() => {
     dispatch(flushFakeIPPool(apiConfig));
@@ -179,8 +214,10 @@ export function useConfigPage({
     handleReloadConfigFile,
     handleRestartCore,
     handleUpgradeCore,
+    upgradingChannel,
     handleUpgradeGeo,
     handleUpgradeUI,
+    isUpgradingUI,
     handleFlushFakeIPPool,
     versionQuery,
   };

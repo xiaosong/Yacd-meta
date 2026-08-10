@@ -41,7 +41,7 @@ function ModalBase({
     (open: boolean) => {
       if (!open) onRequestClose && onRequestClose();
     },
-    [onRequestClose]
+    [onRequestClose],
   );
 
   // react-modal 的 onAfterOpen 对应 Radix 打开后的自动聚焦时机
@@ -52,7 +52,7 @@ function ModalBase({
         onAfterOpen();
       }
     },
-    [onAfterOpen]
+    [onAfterOpen],
   );
 
   return (

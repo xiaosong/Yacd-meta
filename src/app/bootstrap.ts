@@ -18,9 +18,8 @@ export function registerAppBootstrap(rootEl: HTMLElement | null) {
   rootEl.addEventListener('touchmove', onTouchMove, false);
   rootEl.addEventListener('touchend', onTouchEnd, false);
 
-   
   console.log('Checkout the repo: https://github.com/MetaCubeX/yacd');
-   
+
   console.log('Version:', __VERSION__);
 }
 
@@ -59,7 +58,6 @@ function handleTouch(trace: TouchPoint[]) {
   const tag = window.location.hash.slice(1);
   const index = tags.indexOf(tag);
 
-   
   console.log(index, tag, tags.length);
 
   if (index === 3) return;

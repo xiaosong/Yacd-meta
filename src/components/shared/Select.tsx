@@ -10,7 +10,6 @@ type Props = {
 
 export default function Select({ options, selected, onChange, className, ...props }: Props) {
   return (
-     
     <select className={cx(s.select, className)} value={selected} onChange={onChange} {...props}>
       {options.map(([value, name]) => (
         <option key={value} value={value}>

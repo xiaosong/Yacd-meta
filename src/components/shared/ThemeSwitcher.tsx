@@ -1,4 +1,4 @@
-import { LazyMotion, domAnimation, m } from 'framer-motion';
+import { domAnimation, LazyMotion, m } from 'framer-motion';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 

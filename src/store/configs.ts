@@ -24,9 +24,7 @@ export function fetchConfigs(apiConfig: ClashAPIConfig) {
     let res: Response;
     const haveFetched = getHaveFetched(getState());
     const controller = new AbortController();
-    const timeoutId = haveFetched
-      ? null
-      : setTimeout(() => controller.abort(), STARTUP_TIMEOUT_MS);
+    const timeoutId = haveFetched ? null : setTimeout(() => controller.abort(), STARTUP_TIMEOUT_MS);
     try {
       res = await configsAPI.fetchConfigs(apiConfig, haveFetched ? undefined : controller.signal);
     } catch (err) {
@@ -74,7 +72,7 @@ type generalConfig = Omit<ClashGeneralConfig, 'tun'>;
 
 export function updateConfigs(
   apiConfig: ClashAPIConfig,
-  partialConfg: TunPartial<ClashGeneralConfig>
+  partialConfg: TunPartial<ClashGeneralConfig>,
 ) {
   return async (dispatch: DispatchFn) => {
     configsAPI
@@ -82,15 +80,13 @@ export function updateConfigs(
       .then(
         (res) => {
           if (res.ok === false) {
-             
             console.log('Error update configs', res.statusText);
           }
         },
         (err) => {
-           
           console.log('Error update configs', err);
           throw err;
-        }
+        },
       )
       .then(() => {
         dispatch(fetchConfigs(apiConfig));
@@ -109,15 +105,13 @@ export function reloadConfigFile(apiConfig: ClashAPIConfig) {
       .then(
         (res) => {
           if (res.ok === false) {
-             
             console.log('Error reload config file', res.statusText);
           }
         },
         (err) => {
-           
           console.log('Error reload config file', err);
           throw err;
-        }
+        },
       )
       .then(() => {
         dispatch(fetchConfigs(apiConfig));
@@ -132,15 +126,13 @@ export function restartCore(apiConfig: ClashAPIConfig) {
       .then(
         (res) => {
           if (res.ok === false) {
-             
             console.log('Error restart core', res.statusText);
           }
         },
         (err) => {
-           
           console.log('Error restart core', err);
           throw err;
-        }
+        },
       )
       .then(() => {
         dispatch(fetchConfigs(apiConfig));
@@ -148,27 +140,40 @@ export function restartCore(apiConfig: ClashAPIConfig) {
   };
 }
 
-export function upgradeCore(apiConfig: ClashAPIConfig) {
-  return async (dispatch: DispatchFn) => {
-    configsAPI
-      .upgradeCore(apiConfig)
-      .then(
-        (res) => {
-          if (res.ok === false) {
-             
-            console.log('Error upgrade core', res.statusText);
-          }
-        },
-        (err) => {
-           
-          console.log('Error upgrade core', err);
-          throw err;
-        }
-      )
-      .then(() => {
-        dispatch(fetchConfigs(apiConfig));
-      });
-  };
+export type UpgradeResult = { ok: boolean; message?: string };
+
+// mihomo 出错时返回 { "message": "..." }
+async function readErrorMessage(res: Response) {
+  try {
+    const payload = await res.json();
+    if (payload && typeof payload.message === 'string') return payload.message;
+  } catch {
+    // 不是 JSON，退回状态行
+  }
+  return res.statusText || String(res.status);
+}
+
+// 把 upgrade 类接口的响应收敛成 { ok, message }，交给调用方决定怎么提示
+async function toUpgradeResult(request: Promise<Response>, logLabel: string) {
+  let res: Response;
+  try {
+    res = await request;
+  } catch (err) {
+    console.log(logLabel, err);
+    return { ok: false, message: err instanceof Error ? err.message : String(err) };
+  }
+  if (!res.ok) {
+    const message = await readErrorMessage(res);
+    console.log(logLabel, message);
+    return { ok: false, message };
+  }
+  return { ok: true };
+}
+
+export function upgradeCore(apiConfig: ClashAPIConfig, channel?: configsAPI.UpgradeChannel) {
+  // 内核更新成功后会自行重启，这里不再立刻拉配置，否则大概率打在重启窗口上
+  return async (): Promise<UpgradeResult> =>
+    toUpgradeResult(configsAPI.upgradeCore(apiConfig, channel), 'Error upgrade core');
 }
 
 export function upgradeGeo(apiConfig: ClashAPIConfig) {
@@ -178,15 +183,13 @@ export function upgradeGeo(apiConfig: ClashAPIConfig) {
       .then(
         (res) => {
           if (res.ok === false) {
-             
             console.log('Error upgrade geo', res.statusText);
           }
         },
         (err) => {
-           
           console.log('Error upgrade geo', err);
           throw err;
-        }
+        },
       )
       .then(() => {
         dispatch(fetchConfigs(apiConfig));
@@ -195,26 +198,9 @@ export function upgradeGeo(apiConfig: ClashAPIConfig) {
 }
 
 export function upgradeUI(apiConfig: ClashAPIConfig) {
-  return async (dispatch: DispatchFn) => {
-    configsAPI
-      .upgradeUI(apiConfig)
-      .then(
-        (res) => {
-          if (res.ok === false) {
-             
-            console.log('Error upgrade ui', res.statusText);
-          }
-        },
-        (err) => {
-           
-          console.log('Error upgrade ui', err);
-          throw err;
-        }
-      )
-      .then(() => {
-        dispatch(fetchConfigs(apiConfig));
-      });
-  };
+  // 只是把面板静态文件换掉，内核配置没变，不需要回头拉 configs
+  return async (): Promise<UpgradeResult> =>
+    toUpgradeResult(configsAPI.upgradeUI(apiConfig), 'Error upgrade ui');
 }
 
 export function flushFakeIPPool(apiConfig: ClashAPIConfig) {
@@ -224,15 +210,13 @@ export function flushFakeIPPool(apiConfig: ClashAPIConfig) {
       .then(
         (res) => {
           if (res.ok === false) {
-             
             console.log('Error flush FakeIP pool', res.statusText);
           }
         },
         (err) => {
-           
           console.log('Error flush FakeIP pool', err);
           throw err;
-        }
+        },
       )
       .then(() => {
         dispatch(fetchConfigs(apiConfig));

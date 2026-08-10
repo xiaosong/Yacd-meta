@@ -28,7 +28,7 @@ function getLabelColor(
   }: {
     number?: number;
   } = {},
-  httpsTest: boolean
+  httpsTest: boolean,
 ) {
   const delayMap = {
     good: httpsTest ? 800 : 200,
@@ -71,7 +71,7 @@ export const ProxySmall = memo(function ProxySmall({
   const latencyNumber = latency?.number ?? delay;
   const color = useMemo(
     () => getLabelColor({ number: latencyNumber }, httpsLatencyTest),
-    [latencyNumber, httpsLatencyTest]
+    [latencyNumber, httpsLatencyTest],
   );
 
   const title = useMemo(() => {
@@ -92,7 +92,7 @@ export const ProxySmall = memo(function ProxySmall({
         doSelect();
       }
     },
-    [doSelect]
+    [doSelect],
   );
 
   // 当前选中的节点画成空心圆：用单个元素的 inset 阴影描边，
@@ -102,6 +102,8 @@ export const ProxySmall = memo(function ProxySmall({
     : { background: color };
 
   return (
+    // role 是条件表达式，oxlint 静态分析不出来
+    // oxlint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       title={title}
       className={cx(s0.proxySmall, {
@@ -159,12 +161,12 @@ export const Proxy = memo(function Proxy({
     typeof latency?.number === 'number'
       ? latency.number
       : typeof delay === 'number'
-      ? delay
-      : undefined;
+        ? delay
+        : undefined;
   const hasLatencyNumber = typeof latencyNumber === 'number' && latencyNumber > 0;
   const color = useMemo(
     () => getLabelColor({ number: hasLatencyNumber ? latencyNumber : undefined }, httpsLatencyTest),
-    [hasLatencyNumber, latencyNumber, httpsLatencyTest]
+    [hasLatencyNumber, latencyNumber, httpsLatencyTest],
   );
   const isTestingLatency = Boolean(latency?.testing);
 
@@ -178,7 +180,7 @@ export const Proxy = memo(function Proxy({
         doSelect();
       }
     },
-    [doSelect]
+    [doSelect],
   );
 
   const className = useMemo(() => {
@@ -197,6 +199,8 @@ export const Proxy = memo(function Proxy({
   const udpLabel = formatUdpType(proxy.udp, proxy.xudp);
 
   return (
+    // role 是条件表达式，oxlint 静态分析不出来
+    // oxlint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       tabIndex={0}
       className={className}

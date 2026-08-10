@@ -1,13 +1,18 @@
+import cx from 'clsx';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import Button from '~/components/Button';
-import Field from '~/components/Field';
+import { AlertCircle, Eye, EyeOff } from '~/components/shared/FeatherIcons';
+import { SegmentedControl } from '~/components/shared/SegmentedControl';
 import SvgYacd from '~/components/SvgYacd';
+import { useToggle } from '~/hooks/basic';
 import { useBackendConfigForm } from '~/modules/backend/hooks';
+import type { Protocol } from '~/modules/backend/utils';
 import type { ClashAPIConfigWithAddedAt } from '~/store/types';
 import type { ClashAPIConfig } from '~/types';
 
-import s0 from './APIConfig.module.scss';
+import s from './APIConfig.module.scss';
 import { BackendList } from './BackendList';
 
 type Props = {
@@ -18,7 +23,10 @@ type Props = {
   onSelectConfig: (config: ClashAPIConfig) => void;
 };
 
-const { useRef } = React;
+const protocolOptions: { value: Protocol; label: string }[] = [
+  { value: 'http', label: 'HTTP' },
+  { value: 'https', label: 'HTTPS' },
+];
 
 export default function APIConfig({
   apiConfigs,
@@ -27,50 +35,144 @@ export default function APIConfig({
   onRemoveConfig,
   onSelectConfig,
 }: Props) {
-  const contentEl = useRef(null);
-  const { baseURL, secret, errMsg, handleInputOnChange, handleContentOnKeyDown, onConfirm } =
-    useBackendConfigForm({ onAddConfig });
+  const { t } = useTranslation();
+  const [showSecret, toggleSecret] = useToggle();
+  const {
+    protocol,
+    host,
+    port,
+    secret,
+    errMsg,
+    baseURLPreview,
+    isSubmitting,
+    handleProtocolOnChange,
+    handleInputOnChange,
+    handleContentOnKeyDown,
+    onConfirm,
+  } = useBackendConfigForm({ onAddConfig });
+
+  const SecretIcon = showSecret ? EyeOff : Eye;
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-    <div className={s0.root} ref={contentEl} onKeyDown={handleContentOnKeyDown}>
-      <div className={s0.header}>
-        <div className={s0.icon}>
-          <SvgYacd width={160} height={160} stroke="var(--stroke)" />
+    // oxlint-disable-next-line jsx-a11y/no-static-element-interactions
+    <div className={s.root} onKeyDown={handleContentOnKeyDown}>
+      <header className={s.hero}>
+        <div className={s.logo}>
+          <SvgYacd width={96} height={96} stroke="var(--stroke)" />
         </div>
-      </div>
-      <div className={s0.body}>
-        <div className={s0.hostnamePort}>
-          <Field
-            id="baseURL"
-            name="baseURL"
-            label="API Base URL"
-            type="text"
-            placeholder="http://127.0.0.1:9090"
-            value={baseURL}
-            onChange={handleInputOnChange}
-          />
-          <Field
-            id="secret"
-            name="secret"
-            label="Secret(optional)"
-            value={secret}
-            type="text"
-            onChange={handleInputOnChange}
-          />
+        <h1 className={s.title}>{t('backend_form_title')}</h1>
+        <p className={s.desc}>{t('backend_form_desc')}</p>
+      </header>
+
+      <section className={s.card}>
+        <div className={s.grid}>
+          <div className={cx(s.field, s.protocol)}>
+            <span className={s.label} id="backend-protocol-label">
+              {t('protocol')}
+            </span>
+            <SegmentedControl
+              options={protocolOptions}
+              value={protocol}
+              onChange={handleProtocolOnChange}
+              label={t('protocol')}
+              className={s.protocolControl}
+            />
+          </div>
+
+          <div className={cx(s.field, s.host)}>
+            <label className={s.label} htmlFor="backend-host">
+              {t('host')}
+            </label>
+            <input
+              className={s.input}
+              id="backend-host"
+              name="host"
+              type="text"
+              autoComplete="off"
+              spellCheck={false}
+              placeholder="127.0.0.1"
+              value={host}
+              onChange={handleInputOnChange}
+            />
+          </div>
+
+          <div className={cx(s.field, s.port)}>
+            <label className={s.label} htmlFor="backend-port">
+              {t('port')}
+            </label>
+            <input
+              className={s.input}
+              id="backend-port"
+              name="port"
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="9090"
+              value={port}
+              onChange={handleInputOnChange}
+            />
+          </div>
+
+          <div className={cx(s.field, s.secret)}>
+            <label className={s.label} htmlFor="backend-secret">
+              {t('secret')}
+              <span className={s.optional}>{t('optional')}</span>
+            </label>
+            <div className={s.inputWithAction}>
+              <input
+                className={s.input}
+                id="backend-secret"
+                name="secret"
+                type={showSecret ? 'text' : 'password'}
+                autoComplete="off"
+                spellCheck={false}
+                value={secret}
+                onChange={handleInputOnChange}
+              />
+              <button
+                type="button"
+                className={s.iconBtn}
+                onClick={toggleSecret}
+                title={showSecret ? t('hide_secret') : t('show_secret')}
+                aria-label={showSecret ? t('hide_secret') : t('show_secret')}
+              >
+                <SecretIcon size={16} />
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-      <div className={s0.error}>{errMsg ? errMsg : null}</div>
-      <div className={s0.footer}>
-        <Button label="Add" onClick={onConfirm} />
-      </div>
-      <div style={{ height: 20 }} />
-      <BackendList
-        apiConfigs={apiConfigs}
-        selectedClashAPIConfigIndex={selectedClashAPIConfigIndex}
-        onRemove={onRemoveConfig}
-        onSelect={onSelectConfig}
-      />
+
+        <div className={s.actions}>
+          <div className={s.status}>
+            {errMsg ? (
+              <span className={s.error}>
+                <AlertCircle size={14} />
+                {errMsg}
+              </span>
+            ) : baseURLPreview ? (
+              <span className={s.preview}>{baseURLPreview}</span>
+            ) : null}
+          </div>
+          <Button label={t('add_backend')} onClick={onConfirm} isLoading={isSubmitting} />
+        </div>
+      </section>
+
+      <section className={s.saved}>
+        <div className={s.savedHeader}>
+          <h2 className={s.savedTitle}>{t('saved_backends')}</h2>
+          {apiConfigs.length > 0 ? <span className={s.count}>{apiConfigs.length}</span> : null}
+        </div>
+        {apiConfigs.length > 0 ? (
+          <BackendList
+            apiConfigs={apiConfigs}
+            selectedClashAPIConfigIndex={selectedClashAPIConfigIndex}
+            onRemove={onRemoveConfig}
+            onSelect={onSelectConfig}
+          />
+        ) : (
+          <p className={s.empty}>{t('no_saved_backends')}</p>
+        )}
+      </section>
     </div>
   );
 }

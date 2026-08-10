@@ -1,7 +1,7 @@
 import cx from 'clsx';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { List as VirtualList, RowComponentProps } from 'react-window';
+import { RowComponentProps, List as VirtualList } from 'react-window';
 
 import { ArrowDown, ArrowUp, ChevronDown, Sliders, X } from '~/components/shared/FeatherIcons';
 import prettyBytes from '~/misc/pretty-bytes';
@@ -438,6 +438,8 @@ export default function ConnectionTable({
                 const sortable = column.sortable !== false;
                 const active = sortable && sort.key === column.id;
                 return (
+                  // role 是条件表达式，oxlint 静态分析不出来
+                  // oxlint-disable-next-line jsx-a11y/no-static-element-interactions
                   <div
                     key={column.id}
                     className={cx(s.headCell, {

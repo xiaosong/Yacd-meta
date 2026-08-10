@@ -4,7 +4,9 @@
   border: 1px solid var(--color-card-border);
   border-radius: 14px;
   box-shadow: var(--shadow-card);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 /* ---------- 头部 ---------- */
@@ -92,7 +94,10 @@
   // 隐藏时同时关掉命中区域，避免误点到看不见的按钮
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease;
 
   &:hover {
     background: var(--color-hover-soft);

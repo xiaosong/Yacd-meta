@@ -60,7 +60,6 @@ function appendData(s: string) {
       }
     });
   } catch (err) {
-     
     console.log('JSON.parse error', JSON.parse(s));
   }
   subscribers.forEach((s) => s.listner(o));
@@ -72,7 +71,7 @@ let wsState: number;
 export function fetchData(
   apiConfig: ClashAPIConfig,
   listener: unknown,
-  onClose: () => void
+  onClose: () => void,
 ): UnsubscribeFn | void {
   if (fetched || wsState === 1) {
     if (listener)

@@ -40,12 +40,7 @@ type Props = {
   apiConfig: ClashAPIConfig;
 };
 
-export default function Config({
-  dispatch,
-  configs,
-  selectedChartStyleIndex,
-  apiConfig,
-}: Props) {
+export default function Config({ dispatch, configs, selectedChartStyleIndex, apiConfig }: Props) {
   const { t, i18n } = useTranslation();
 
   const { selectChartStyleIndex, updateAppConfig } = useStoreActions();
@@ -57,8 +52,10 @@ export default function Config({
     handleReloadConfigFile,
     handleRestartCore,
     handleUpgradeCore,
+    upgradingChannel,
     handleUpgradeGeo,
     handleUpgradeUI,
+    isUpgradingUI,
     handleFlushFakeIPPool,
     versionQuery: { data: version },
   } = useConfigPage({
@@ -91,7 +88,7 @@ export default function Config({
                       onBlur={handleInputOnBlur}
                     />
                   </div>
-                ) : null
+                ) : null,
               )}
 
             <div>
@@ -230,6 +227,8 @@ export default function Config({
                     <Button
                       start={<DownloadCloud size={16} />}
                       label={t('upgrade_ui')}
+                      isLoading={isUpgradingUI}
+                      disabled={isUpgradingUI}
                       onClick={handleUpgradeUI}
                     />
                   </div>
@@ -254,12 +253,23 @@ export default function Config({
                 )}
                 {version.meta && !version.premium && (
                   <div>
-                    <div className={s0.label}>⚠️ Upgrade ⚠️</div>
-                    <Button
-                      start={<RotateCw size={16} />}
-                      label={t('upgrade_core')}
-                      onClick={handleUpgradeCore}
-                    />
+                    <div className={s0.label}> {t('upgrade_core')} </div>
+                    <div className={s0.buttonGroup}>
+                      <Button
+                        start={<DownloadCloud size={16} />}
+                        label={t('upgrade_core_release')}
+                        isLoading={upgradingChannel === 'release'}
+                        disabled={upgradingChannel !== null}
+                        onClick={() => handleUpgradeCore('release')}
+                      />
+                      <Button
+                        start={<DownloadCloud size={16} />}
+                        label={t('upgrade_core_alpha')}
+                        isLoading={upgradingChannel === 'alpha'}
+                        disabled={upgradingChannel !== null}
+                        onClick={() => handleUpgradeCore('alpha')}
+                      />
+                    </div>
                   </div>
                 )}
               </div>

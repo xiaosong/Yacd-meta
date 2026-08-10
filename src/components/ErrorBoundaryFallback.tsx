@@ -3,6 +3,7 @@ import React from 'react';
 import s0 from './ErrorBoundaryFallback.module.scss';
 import SvgGithub from './SvgGithub';
 import SvgYacd from './SvgYacd';
+
 const yacdRepoIssueUrl = 'https://github.com/metacubex/yacd';
 
 type Props = {

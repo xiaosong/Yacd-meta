@@ -27,7 +27,7 @@ export type RuleAPIItem = {
 function normalizeAPIResponse(json: { rules: Array<RuleAPIItem> }): Array<RuleItem> {
   invariant(
     json.rules && json.rules.length >= 0,
-    'there is no valid rules list in the rules API response'
+    'there is no valid rules list in the rules API response',
   );
 
   // attach an id, preferring the backend-provided index over array position
@@ -55,7 +55,7 @@ export async function fetchRules(endpoint: string, apiConfig: ClashAPIConfig) {
 
 export async function updateRuleDisabledStatus(
   apiConfig: ClashAPIConfig,
-  updates: Record<number, boolean>
+  updates: Record<number, boolean>,
 ) {
   const { url, init } = getURLAndInit(apiConfig);
   try {

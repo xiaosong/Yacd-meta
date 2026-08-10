@@ -41,7 +41,6 @@ function appendData(s: string) {
   try {
     o = JSON.parse(s);
   } catch (err) {
-
     console.log('JSON.parse error', s);
     return;
   }
@@ -81,7 +80,6 @@ function pump(reader: ReadableStreamDefaultReader) {
     if (done) {
       appendData(lastSplit);
       decoded = '';
-
 
       console.log('GET /logs streaming done');
       usingFetchFallback = false;
@@ -139,7 +137,7 @@ function openConnection(apiConfig: LogsAPIConfig) {
 
 export function fetchLogs(
   apiConfig: LogsAPIConfig,
-  appendLog: AppendLogFn
+  appendLog: AppendLogFn,
 ): UnsubscribeFn | undefined {
   if (apiConfig.logLevel === 'uninit') return undefined;
 
@@ -185,7 +183,6 @@ function fetchLogsWithFetch(apiConfig: LogsAPIConfig) {
     (err) => {
       usingFetchFallback = false;
       if (signal.aborted) return;
-
 
       console.log('GET /logs error:', err.message);
     },

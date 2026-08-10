@@ -23,7 +23,7 @@ Chart.register(
   TimeScale,
   Filler,
   Legend,
-  Tooltip
+  Tooltip,
 );
 
 export { Chart };

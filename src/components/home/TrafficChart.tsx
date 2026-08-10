@@ -46,7 +46,8 @@ const options: any = {
       callbacks: {
         title: (items: any[]) => new Date(items[0].parsed.x).toLocaleTimeString(),
         // 画的是压缩后的值，提示里要还原成真实速率
-        label: (ctx: any) => ` ${ctx.dataset.label}  ${formatTrafficRate(decompress(ctx.parsed.y))}`,
+        label: (ctx: any) =>
+          ` ${ctx.dataset.label}  ${formatTrafficRate(decompress(ctx.parsed.y))}`,
       },
     },
   },

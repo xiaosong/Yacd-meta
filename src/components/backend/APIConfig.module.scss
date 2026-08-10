@@ -1,52 +1,261 @@
 .root {
+  // 弹层里这块是 flex item，写死宽度才不会被内容撑成 shrink-to-fit
+  width: 520px;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 40px 0 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
   &:focus {
     outline: none;
   }
 }
 
-.header {
+/* 顶部品牌区 */
+.hero {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.logo {
+  --stroke: var(--color-background);
+  color: #20497e;
+  opacity: 0.85;
+  transition: opacity 400ms;
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.title {
+  margin: 4px 0 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-highlight);
+}
+
+.desc {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+/* 表单卡片 */
+.card {
+  padding: 20px;
+  border-radius: var(--border-radius);
+  background: var(--color-card);
+  border: 1px solid var(--color-card-border);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 协议 / 主机 / 端口一行，secret 独占一行 */
+.grid {
+  display: grid;
+  gap: 14px 12px;
+  grid-template-columns: minmax(140px, auto) minmax(0, 1fr) 88px;
+  grid-template-areas:
+    'protocol host port'
+    'secret secret secret';
+
+  @media screen and (max-width: 30em) {
+    grid-template-columns: minmax(0, 1fr) 88px;
+    grid-template-areas:
+      'protocol protocol'
+      'host port'
+      'secret secret';
+  }
+}
+
+.protocol {
+  grid-area: protocol;
+}
+.host {
+  grid-area: host;
+}
+.port {
+  grid-area: port;
+}
+.secret {
+  grid-area: secret;
+}
+
+.field {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.optional {
+  padding: 1px 6px;
+  border-radius: 100px;
+  background: var(--color-badge-bg);
+  color: var(--color-badge-fg);
+  font-size: 0.65rem;
+  font-weight: 400;
+  text-transform: lowercase;
+}
+
+.input {
+  -webkit-appearance: none;
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  box-sizing: border-box;
+  padding: 0 10px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--color-text);
+  background: var(--color-input-bg);
+  border: 1px solid var(--color-input-border);
+  border-radius: 10px;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &::placeholder {
+    color: var(--color-text-secondary);
+    opacity: 0.6;
+  }
+
+  &:focus {
+    border-color: var(--color-focus-blue);
+    box-shadow: 0 0 0 3px var(--color-accent-soft-bg);
+  }
+}
+
+/* 协议分段器与输入框对齐高度 */
+.protocolControl {
+  height: 38px;
+}
+
+.inputWithAction {
+  position: relative;
+  display: flex;
   align-items: center;
 
-  .icon {
-    --stroke: #f3f3f3;
-    color: #20497e;
-    opacity: 0.7;
-    transition: opacity 400ms;
-    &:hover {
-      opacity: 1;
-    }
+  .input {
+    padding-right: 40px;
   }
 }
 
-.body {
-  padding: 15px 0 0;
+.iconBtn {
+  position: absolute;
+  right: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  appearance: none;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-icon);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-text);
+    background: var(--color-hover-soft);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-blue);
+    outline-offset: -2px;
+  }
 }
 
-.hostnamePort {
+.actions {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
 
-  div {
-    flex: 1 1 auto;
-  }
+.status {
+  min-width: 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
 
-  div:nth-child(2) {
-    flex-grow: 0;
-    flex-basis: 120px;
-    margin-left: 10px;
-  }
+.preview {
+  display: block;
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .error {
-  height: 20px;
-  font-size: 0.8em;
-  color: #ff8b8b;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-danger);
+
+  svg {
+    flex-shrink: 0;
+  }
 }
 
-.footer {
-  padding: 5px 0 10px;
+/* 已保存后端 */
+.saved {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.savedHeader {
+  display: flex;
   align-items: center;
+  gap: 8px;
+  padding: 0 4px;
+}
+
+.savedTitle {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.count {
+  padding: 1px 8px;
+  border-radius: 100px;
+  background: var(--color-badge-bg);
+  color: var(--color-badge-fg);
+  font-size: 0.7rem;
+}
+
+.empty {
+  margin: 0;
+  padding: 20px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  border: 1px dashed var(--color-card-border);
+  border-radius: var(--border-radius);
 }

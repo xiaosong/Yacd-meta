@@ -63,9 +63,7 @@ export default function Connections({ apiConfig }: Props) {
   const setSort = useCallback((key: string) => {
     setSortState((prev) => {
       const next: SortState =
-        prev.key === key
-          ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
-          : { key, dir: 'asc' };
+        prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' };
       saveSort(next);
       return next;
     });
@@ -81,7 +79,7 @@ export default function Connections({ apiConfig }: Props) {
     (id: string) => {
       connAPI.closeConnById(apiConfig, id);
     },
-    [apiConfig]
+    [apiConfig],
   );
 
   const [isCloseAllModalOpen, setIsCloseAllModalOpen] = useState(false);
@@ -94,7 +92,7 @@ export default function Connections({ apiConfig }: Props) {
 
   const handleCloseFiltered = useCallback(async () => {
     await Promise.allSettled(
-      filteredConns.map((connection) => connAPI.closeConnById(apiConfig, connection.id))
+      filteredConns.map((connection) => connAPI.closeConnById(apiConfig, connection.id)),
     );
     setIsCloseFilteredModalOpen(false);
   }, [apiConfig, filteredConns]);

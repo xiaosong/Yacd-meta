@@ -3,7 +3,6 @@ import React from 'react';
 import Loading from '~/components/Loading';
 import { Zap } from '~/components/shared/FeatherIcons';
 
-
 import Button from './Button';
 import Input from './Input';
 import SwitchThemed from './SwitchThemed';

@@ -1,13 +1,9 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { List as VirtualList, RowComponentProps } from 'react-window';
+import { RowComponentProps, List as VirtualList } from 'react-window';
 
 import { useRulesPage, useUpdateAllRuleProviderItems } from '~/modules/rules/hooks';
-import {
-  PROVIDER_ROW_HEIGHT,
-  RULE_ROW_HEIGHT,
-  type RulesRowProps,
-} from '~/modules/rules/utils';
+import { PROVIDER_ROW_HEIGHT, RULE_ROW_HEIGHT, type RulesRowProps } from '~/modules/rules/utils';
 import { ClashAPIConfig } from '~/types';
 
 import Rule from './Rule';

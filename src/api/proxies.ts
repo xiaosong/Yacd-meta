@@ -46,7 +46,7 @@ export async function requestDelayForProxy(
   name,
   latencyTestUrl = DEFAULT_LATENCY_TEST_URL,
   timeout = 5000,
-  expected?: string
+  expected?: string,
 ) {
   const { url, init } = getURLAndInit(apiConfig);
   const qs = buildDelayQuery(latencyTestUrl, timeout, expected);
@@ -59,7 +59,7 @@ export async function requestDelayForProxyGroup(
   name,
   latencyTestUrl = DEFAULT_LATENCY_TEST_URL,
   timeout = 5000,
-  expected?: string
+  expected?: string,
 ) {
   const { url, init } = getURLAndInit(apiConfig);
   const qs = buildDelayQuery(latencyTestUrl, timeout, expected);
@@ -87,7 +87,7 @@ export async function healthcheckProviderByName(config, name, signal?: AbortSign
   const options = { ...init, method: 'GET', signal };
   return await fetch(
     url + '/providers/proxies/' + encodeURIComponent(name) + '/healthcheck',
-    options
+    options,
   );
 }
 
@@ -97,15 +97,15 @@ export async function healthcheckProviderProxy(
   proxyName: string,
   latencyTestUrl = DEFAULT_LATENCY_TEST_URL,
   timeout = 5000,
-  expected?: string
+  expected?: string,
 ) {
   const { url, init } = getURLAndInit(config);
   const qs = buildDelayQuery(latencyTestUrl, timeout, expected);
   const options = { ...init, method: 'GET' };
   return await fetch(
     `${url}/providers/proxies/${encodeURIComponent(providerName)}/${encodeURIComponent(
-      proxyName
+      proxyName,
     )}/healthcheck?${qs}`,
-    options
+    options,
   );
 }

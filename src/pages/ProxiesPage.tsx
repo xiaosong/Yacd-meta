@@ -7,14 +7,14 @@ import {
   getClashAPIConfig,
   getCollapsibleIsOpen,
   getHideUnavailableProxies,
-  getLatencyTestUrl,
-  getLatencyTestTimeout,
   getLatencyTestExpectedStatus,
+  getLatencyTestTimeout,
+  getLatencyTestUrl,
   getPreferBackendLatencyTestUrl,
   getProviderHealthcheckTimeout,
   getProxiesLayout,
-  getProxySortBy,
   getProxyGroupByProvider,
+  getProxySortBy,
 } from '~/store/app';
 import {
   getDelay,

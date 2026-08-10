@@ -330,7 +330,6 @@ async function switchProxyImpl(
       throw new Error(`failed to switch proxy: res.statusText`);
     }
   } catch (err) {
-     
     console.log(err, 'failed to swith proxy');
     throw err;
   }
@@ -414,7 +413,13 @@ function requestDelayForProxyOnce(apiConfig: ClashAPIConfig, name: string) {
       const latencyTestUrl = getLatencyTestUrl(getState());
       const latencyTestTimeout = getLatencyTestTimeout(getState());
       const expected = getLatencyTestExpectedStatus(getState());
-      const res = await proxiesAPI.requestDelayForProxy(apiConfig, name, latencyTestUrl, latencyTestTimeout, expected);
+      const res = await proxiesAPI.requestDelayForProxy(
+        apiConfig,
+        name,
+        latencyTestUrl,
+        latencyTestTimeout,
+        expected,
+      );
       if (res.ok === false) {
         error = res.statusText;
       }
@@ -515,8 +520,21 @@ export function healthcheckProxy(apiConfig: ClashAPIConfig, name: string) {
       const latencyTestTimeout = getLatencyTestTimeout(getState());
       const expected = getLatencyTestExpectedStatus(getState());
       const res = providerName
-        ? await proxiesAPI.healthcheckProviderProxy(apiConfig, providerName, name, latencyTestUrl, latencyTestTimeout, expected)
-        : await proxiesAPI.requestDelayForProxy(apiConfig, name, latencyTestUrl, latencyTestTimeout, expected);
+        ? await proxiesAPI.healthcheckProviderProxy(
+            apiConfig,
+            providerName,
+            name,
+            latencyTestUrl,
+            latencyTestTimeout,
+            expected,
+          )
+        : await proxiesAPI.requestDelayForProxy(
+            apiConfig,
+            name,
+            latencyTestUrl,
+            latencyTestTimeout,
+            expected,
+          );
       if (res.ok === false) {
         error = res.statusText;
       }

@@ -1,4 +1,4 @@
-import { LazyMotion, domAnimation, m } from 'framer-motion';
+import { domAnimation, LazyMotion, m } from 'framer-motion';
 import React from 'react';
 
 const { memo } = React;

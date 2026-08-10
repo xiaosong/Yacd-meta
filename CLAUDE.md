@@ -15,7 +15,8 @@ bun install      # install deps (bun is required, see packageManager in package.
 bun start        # dev server at http://127.0.0.1:3000 (alias: bun dev)
 bun run build    # production build, output goes to ./public (not ./dist, see vite.config.mts)
 bun serve        # preview a production build
-bun lint         # eslint src
+bun lint         # oxlint src (bun lint:fix to autofix)
+bun format       # prettier --write (bun format:check to verify)
 bun typecheck    # tsc --noEmit
 ```
 
@@ -28,6 +29,27 @@ repo does not use.
 
 `bun run build` writes to `public/` intentionally (not the Vite default `dist/`) so it can be served
 directly as static assets/gh-pages; don't "fix" this.
+
+### Linting: oxlint, not ESLint — don't try to bring ESLint back
+
+This repo is on TypeScript 7, which is the Go rewrite: the `typescript` package no longer ships the
+old JS compiler API (only `./unstable/*`). typescript-eslint is built entirely on that old API and
+every published version — including canary — still declares `peerDependencies.typescript
+">=4.8.4 <6.1.0"`, so ESLint simply cannot parse this codebase. Installing `eslint` +
+`typescript-eslint` again will fail at startup with `Cannot read properties of undefined (reading
+'Cjs')`.
+
+`.oxlintrc.json` mirrors the old `eslint.config.mjs` rule-for-rule. Two deltas worth knowing:
+
+- oxlint has no `import/order`. Import grouping/ordering moved into Prettier via
+  `@ianvs/prettier-plugin-sort-imports` (`importOrder` in `.prettierrc`) — it is a *formatting*
+  concern now, fixed by `bun format`, not reported by `bun lint`.
+- oxlint enables `jsx-a11y/prefer-tag-over-role` and `jsx-a11y/control-has-associated-label` by
+  default; both were off/absent in eslint-plugin-jsx-a11y's `recommended`, so `.oxlintrc.json`
+  turns them off to keep parity. oxlint is also stricter than ESLint about `role={cond ? … : …}`
+  expressions under `no-static-element-interactions`; those sites carry
+  `// oxlint-disable-next-line`. oxlint honours `eslint-disable*` comments too, but new
+  suppressions should use the `oxlint-` prefix.
 
 Dependency pins that used to live in `pnpm-workspace.yaml` now live in `package.json`:
 `overrides` (replaces pnpm `overrides`) and `trustedDependencies` (replaces pnpm `allowBuilds` —

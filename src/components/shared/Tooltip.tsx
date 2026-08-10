@@ -16,11 +16,7 @@ export function Tooltip({
     <RadixTooltip.Root>
       <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>
       <RadixTooltip.Portal>
-        <RadixTooltip.Content
-          className="tooltip-content"
-          sideOffset={5}
-          aria-label={ariaLabel}
-        >
+        <RadixTooltip.Content className="tooltip-content" sideOffset={5} aria-label={ariaLabel}>
           {label}
         </RadixTooltip.Content>
       </RadixTooltip.Portal>

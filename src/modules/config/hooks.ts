@@ -117,14 +117,14 @@ export function useConfigPage({
           return;
       }
     },
-    [apiConfig, dispatch, setConfigState, setTunConfigState]
+    [apiConfig, dispatch, setConfigState, setTunConfigState],
   );
 
   const handleInputOnBlur = useCallback(
     (
       e:
         | React.FocusEvent<HTMLSelectElement | HTMLInputElement>
-        | React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
+        | React.ChangeEvent<HTMLSelectElement | HTMLInputElement>,
     ) => {
       const { name, value } = e.target;
 
@@ -149,7 +149,7 @@ export function useConfigPage({
           throw new Error(`unknown input name ${name}`);
       }
     },
-    [apiConfig, dispatch, updateAppConfig]
+    [apiConfig, dispatch, updateAppConfig],
   );
 
   const handleReloadConfigFile = useCallback(() => {
@@ -175,7 +175,7 @@ export function useConfigPage({
         toast('error', t('upgrade_core_failed', { message: result.message }));
       }
     },
-    [apiConfig, dispatch, t, upgradingChannel]
+    [apiConfig, dispatch, t, upgradingChannel],
   );
 
   const handleUpgradeGeo = useCallback(() => {

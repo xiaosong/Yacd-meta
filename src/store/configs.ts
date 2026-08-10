@@ -24,9 +24,7 @@ export function fetchConfigs(apiConfig: ClashAPIConfig) {
     let res: Response;
     const haveFetched = getHaveFetched(getState());
     const controller = new AbortController();
-    const timeoutId = haveFetched
-      ? null
-      : setTimeout(() => controller.abort(), STARTUP_TIMEOUT_MS);
+    const timeoutId = haveFetched ? null : setTimeout(() => controller.abort(), STARTUP_TIMEOUT_MS);
     try {
       res = await configsAPI.fetchConfigs(apiConfig, haveFetched ? undefined : controller.signal);
     } catch (err) {
@@ -74,7 +72,7 @@ type generalConfig = Omit<ClashGeneralConfig, 'tun'>;
 
 export function updateConfigs(
   apiConfig: ClashAPIConfig,
-  partialConfg: TunPartial<ClashGeneralConfig>
+  partialConfg: TunPartial<ClashGeneralConfig>,
 ) {
   return async (dispatch: DispatchFn) => {
     configsAPI
@@ -82,15 +80,13 @@ export function updateConfigs(
       .then(
         (res) => {
           if (res.ok === false) {
-             
             console.log('Error update configs', res.statusText);
           }
         },
         (err) => {
-           
           console.log('Error update configs', err);
           throw err;
-        }
+        },
       )
       .then(() => {
         dispatch(fetchConfigs(apiConfig));
@@ -109,15 +105,13 @@ export function reloadConfigFile(apiConfig: ClashAPIConfig) {
       .then(
         (res) => {
           if (res.ok === false) {
-             
             console.log('Error reload config file', res.statusText);
           }
         },
         (err) => {
-           
           console.log('Error reload config file', err);
           throw err;
-        }
+        },
       )
       .then(() => {
         dispatch(fetchConfigs(apiConfig));
@@ -132,15 +126,13 @@ export function restartCore(apiConfig: ClashAPIConfig) {
       .then(
         (res) => {
           if (res.ok === false) {
-             
             console.log('Error restart core', res.statusText);
           }
         },
         (err) => {
-           
           console.log('Error restart core', err);
           throw err;
-        }
+        },
       )
       .then(() => {
         dispatch(fetchConfigs(apiConfig));
@@ -187,15 +179,13 @@ export function upgradeGeo(apiConfig: ClashAPIConfig) {
       .then(
         (res) => {
           if (res.ok === false) {
-             
             console.log('Error upgrade geo', res.statusText);
           }
         },
         (err) => {
-           
           console.log('Error upgrade geo', err);
           throw err;
-        }
+        },
       )
       .then(() => {
         dispatch(fetchConfigs(apiConfig));
@@ -210,15 +200,13 @@ export function upgradeUI(apiConfig: ClashAPIConfig) {
       .then(
         (res) => {
           if (res.ok === false) {
-             
             console.log('Error upgrade ui', res.statusText);
           }
         },
         (err) => {
-           
           console.log('Error upgrade ui', err);
           throw err;
-        }
+        },
       )
       .then(() => {
         dispatch(fetchConfigs(apiConfig));
@@ -233,15 +221,13 @@ export function flushFakeIPPool(apiConfig: ClashAPIConfig) {
       .then(
         (res) => {
           if (res.ok === false) {
-             
             console.log('Error flush FakeIP pool', res.statusText);
           }
         },
         (err) => {
-           
           console.log('Error flush FakeIP pool', err);
           throw err;
-        }
+        },
       )
       .then(() => {
         dispatch(fetchConfigs(apiConfig));

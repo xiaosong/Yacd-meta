@@ -58,7 +58,9 @@
   font-family: inherit;
   font-size: 0.78rem;
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 
   &::placeholder {
     color: var(--color-text-secondary);

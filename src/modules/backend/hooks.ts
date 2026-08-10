@@ -12,9 +12,9 @@ import {
   splitAPIBaseURL,
   splitPastedHost,
   verifyAPIConfig,
+  type BackendFields,
+  type Protocol,
 } from './utils';
-
-import type { BackendFields, Protocol } from './utils';
 
 const { useCallback, useEffect, useMemo, useState } = React;
 
@@ -93,7 +93,7 @@ export function useBackendConfigForm({
 
       onConfirm();
     },
-    [onConfirm]
+    [onConfirm],
   );
 
   useEffect(() => {

@@ -16,12 +16,7 @@ import { ClashAPIConfig } from '~/types';
 import Collapsible from '../Collapsible';
 import { useStoreActions } from '../StateProvider';
 
-import {
-  getLatencyColor,
-  ProxyCard,
-  ProxyCardHeader,
-  ProxyCardStatusRow,
-} from './ProxyCard';
+import { getLatencyColor, ProxyCard, ProxyCardHeader, ProxyCardStatusRow } from './ProxyCard';
 import s0 from './ProxyCard.module.scss';
 import { ProxyList, ProxyListGroupedByProvider, ProxyListSummaryView } from './ProxyList';
 

@@ -85,7 +85,7 @@ export function getProxyLatency(
   proxies: ProxiesMapping,
   delay: DelayMapping,
   name: string,
-  visited = new Set<string>()
+  visited = new Set<string>(),
 ) {
   if (visited.has(name)) return undefined;
   visited.add(name);

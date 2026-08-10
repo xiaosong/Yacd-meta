@@ -1,6 +1,7 @@
 import { createAsset } from 'use-asset';
 
 import prettyBytes from './pretty-bytes';
+
 export const chartJSResource = createAsset(() => {
   return import('~/misc/chart-lib');
 });

@@ -25,21 +25,21 @@ function BackendPage({ dispatch, apiConfigs, selectedClashAPIConfigIndex }: Prop
     (config: ClashAPIConfig) => {
       dispatch(addClashAPIConfig(config));
     },
-    [dispatch]
+    [dispatch],
   );
 
   const handleRemoveConfig = useCallback(
     (config: ClashAPIConfig) => {
       dispatch(removeClashAPIConfig(config));
     },
-    [dispatch]
+    [dispatch],
   );
 
   const handleSelectConfig = useCallback(
     (config: ClashAPIConfig) => {
       dispatch(selectClashAPIConfig(config));
     },
-    [dispatch]
+    [dispatch],
   );
 
   return (

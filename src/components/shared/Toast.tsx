@@ -3,7 +3,7 @@ import { useAtomValue } from 'jotai';
 import { createPortal } from 'react-dom';
 
 import { AlertCircle, CheckCircle, Info, X } from '~/components/shared/FeatherIcons';
-import { dismissToast, type ToastKind, toastsAtom } from '~/store/toast';
+import { dismissToast, toastsAtom, type ToastKind } from '~/store/toast';
 
 import s from './Toast.module.scss';
 
@@ -35,6 +35,6 @@ export function Toaster() {
         );
       })}
     </div>,
-    document.body
+    document.body,
   );
 }

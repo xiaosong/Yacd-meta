@@ -40,12 +40,7 @@ type Props = {
   apiConfig: ClashAPIConfig;
 };
 
-export default function Config({
-  dispatch,
-  configs,
-  selectedChartStyleIndex,
-  apiConfig,
-}: Props) {
+export default function Config({ dispatch, configs, selectedChartStyleIndex, apiConfig }: Props) {
   const { t, i18n } = useTranslation();
 
   const { selectChartStyleIndex, updateAppConfig } = useStoreActions();
@@ -92,7 +87,7 @@ export default function Config({
                       onBlur={handleInputOnBlur}
                     />
                   </div>
-                ) : null
+                ) : null,
               )}
 
             <div>

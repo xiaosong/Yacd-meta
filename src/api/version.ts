@@ -9,7 +9,7 @@ type VersionData = {
 
 export async function fetchVersion(
   endpoint: string,
-  apiConfig: ClashAPIConfig
+  apiConfig: ClashAPIConfig,
 ): Promise<VersionData> {
   let json = {};
   try {
@@ -20,7 +20,7 @@ export async function fetchVersion(
     }
   } catch (err) {
     // log and ignore
-     
+
     console.log(`failed to fetch ${endpoint}`, err);
   }
   return json;

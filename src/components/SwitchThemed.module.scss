@@ -49,6 +49,8 @@
   will-change: transform;
 
   &[data-state='checked'] {
-    transform: translateX(calc(var(--switch-w) - var(--switch-thumb) - (var(--switch-h) - var(--switch-thumb)) / 2));
+    transform: translateX(
+      calc(var(--switch-w) - var(--switch-thumb) - (var(--switch-h) - var(--switch-thumb)) / 2)
+    );
   }
 }

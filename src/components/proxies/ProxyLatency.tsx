@@ -64,7 +64,7 @@ export function ProxyLatency({ number, color, isTesting, error, onClick }: Proxy
       e.stopPropagation();
       onClick();
     },
-    [isTesting, onClick]
+    [isTesting, onClick],
   );
 
   const handleKeyDown = React.useCallback(
@@ -76,10 +76,12 @@ export function ProxyLatency({ number, color, isTesting, error, onClick }: Proxy
         onClick();
       }
     },
-    [isTesting, onClick]
+    [isTesting, onClick],
   );
 
   return (
+    // role 是条件表达式，oxlint 静态分析不出来
+    // oxlint-disable-next-line jsx-a11y/no-static-element-interactions
     <span
       className={className}
       style={{ color: hasNumber ? color : undefined }}

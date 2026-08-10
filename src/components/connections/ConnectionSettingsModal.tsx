@@ -6,11 +6,7 @@ import { useTranslation } from 'react-i18next';
 import Modal from '~/components/Modal';
 import { Menu, Trash2, X } from '~/components/shared/FeatherIcons';
 import Switch from '~/components/SwitchThemed';
-import {
-  ConnectionColumn,
-  ConnectionSettings,
-  SourceMapItem,
-} from '~/modules/connections/utils';
+import { ConnectionColumn, ConnectionSettings, SourceMapItem } from '~/modules/connections/utils';
 
 import s from './ConnectionSettingsModal.module.scss';
 
@@ -68,9 +64,7 @@ export default function ConnectionSettingsModal({
   const { t } = useTranslation();
 
   const setSource = (key: keyof SourceMapItem, index: number, value: string) => {
-    setSourceMap((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, [key]: value } : item))
-    );
+    setSourceMap((prev) => prev.map((item, i) => (i === index ? { ...item, [key]: value } : item)));
   };
 
   const onDragEnd = (result: DropResult) => {

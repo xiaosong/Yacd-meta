@@ -5,27 +5,47 @@ import { closeModal } from '~/store/modals';
 import type { DispatchFn } from '~/store/types';
 import type { ClashAPIConfig } from '~/types';
 
-import { detectEmbeddedAPIBaseURL, normalizeAPIBaseURL, verifyAPIConfig } from './utils';
+import {
+  buildAPIBaseURL,
+  DEFAULT_BACKEND_FIELDS,
+  detectEmbeddedAPIBaseURL,
+  splitAPIBaseURL,
+  splitPastedHost,
+  verifyAPIConfig,
+} from './utils';
 
-const { useCallback, useEffect, useState } = React;
+import type { BackendFields, Protocol } from './utils';
+
+const { useCallback, useEffect, useMemo, useState } = React;
 
 export function useBackendConfigForm({
   onAddConfig,
 }: {
   onAddConfig: (config: ClashAPIConfig) => void;
 }) {
-  const [baseURL, setBaseURL] = useState('');
+  const [fields, setFields] = useState<BackendFields>(DEFAULT_BACKEND_FIELDS);
   const [secret, setSecret] = useState('');
   const [errMsg, setErrMsg] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleProtocolOnChange = useCallback((protocol: Protocol) => {
+    setErrMsg('');
+    setFields((prev) => ({ ...prev, protocol }));
+  }, []);
 
   const handleInputOnChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setErrMsg('');
-    const target = e.target;
-    const { name, value } = target;
+    const { name, value } = e.target;
 
     switch (name) {
-      case 'baseURL':
-        setBaseURL(value);
+      case 'host': {
+        // 整条地址粘进来时自动拆分，省得用户手动删协议和端口
+        const pasted = splitPastedHost(value);
+        setFields((prev) => (pasted ? { ...prev, ...pasted } : { ...prev, host: value }));
+        break;
+      }
+      case 'port':
+        setFields((prev) => ({ ...prev, port: value }));
         break;
       case 'secret':
         setSecret(value);
@@ -35,15 +55,22 @@ export function useBackendConfigForm({
     }
   }, []);
 
+  const baseURLPreview = useMemo(() => {
+    const built = buildAPIBaseURL(fields);
+    return 'baseURL' in built ? built.baseURL : '';
+  }, [fields]);
+
   const onConfirm = useCallback(() => {
-    const normalizedResult = normalizeAPIBaseURL(baseURL, window.location.protocol);
-    if ('error' in normalizedResult) {
-      setErrMsg(normalizedResult.error);
+    const built = buildAPIBaseURL(fields);
+    if ('error' in built) {
+      setErrMsg(built.error);
       return;
     }
 
-    const nextConfig = { baseURL: normalizedResult.baseURL, secret };
+    const nextConfig = { baseURL: built.baseURL, secret };
+    setIsSubmitting(true);
     verifyAPIConfig(nextConfig).then(([status, message]) => {
+      setIsSubmitting(false);
       if (status !== 0) {
         setErrMsg(message ?? 'Failed to connect');
         return;
@@ -51,7 +78,7 @@ export function useBackendConfigForm({
 
       onAddConfig(nextConfig);
     });
-  }, [baseURL, onAddConfig, secret]);
+  }, [fields, onAddConfig, secret]);
 
   const handleContentOnKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -73,9 +100,9 @@ export function useBackendConfigForm({
     let isCancelled = false;
 
     detectEmbeddedAPIBaseURL().then((detectedBaseURL) => {
-      if (!isCancelled && detectedBaseURL) {
-        setBaseURL(detectedBaseURL);
-      }
+      if (isCancelled || !detectedBaseURL) return;
+      const detected = splitAPIBaseURL(detectedBaseURL);
+      if (detected) setFields(detected);
     });
 
     return () => {
@@ -84,9 +111,12 @@ export function useBackendConfigForm({
   }, []);
 
   return {
-    baseURL,
+    ...fields,
     secret,
     errMsg,
+    baseURLPreview,
+    isSubmitting,
+    handleProtocolOnChange,
     handleInputOnChange,
     handleContentOnKeyDown,
     onConfirm,

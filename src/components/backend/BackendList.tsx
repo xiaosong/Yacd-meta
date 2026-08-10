@@ -1,7 +1,8 @@
 import cx from 'clsx';
 import * as React from 'react';
+import { useTranslation } from 'react-i18next';
 
-import { Eye, EyeOff, X as Close } from '~/components/shared/FeatherIcons';
+import { Eye, EyeOff, Trash2 } from '~/components/shared/FeatherIcons';
 import { useToggle } from '~/hooks/basic';
 import type { ClashAPIConfigWithAddedAt } from '~/store/types';
 import type { ClashAPIConfig } from '~/types';
@@ -22,99 +23,79 @@ export function BackendList({
   onSelect,
 }: Props) {
   return (
-    <>
-      <ul className={s.ul}>
-        {apiConfigs.map((item, idx) => {
-          return (
-            <li
-              className={cx(s.li, {
-                [s.hasSecret]: item.secret,
-                [s.isSelected]: idx === selectedClashAPIConfigIndex,
-              })}
-              key={item.baseURL + item.secret}
-            >
-              <Item
-                disableRemove={idx === selectedClashAPIConfigIndex}
-                baseURL={item.baseURL}
-                secret={item.secret}
-                onRemove={onRemove}
-                onSelect={onSelect}
-              />
-            </li>
-          );
-        })}
-      </ul>
-    </>
+    <ul className={s.ul}>
+      {apiConfigs.map((item, idx) => (
+        <Item
+          key={item.baseURL + item.secret}
+          baseURL={item.baseURL}
+          secret={item.secret}
+          isSelected={idx === selectedClashAPIConfigIndex}
+          onRemove={onRemove}
+          onSelect={onSelect}
+        />
+      ))}
+    </ul>
   );
 }
 
 function Item({
   baseURL,
   secret,
-  disableRemove,
+  isSelected,
   onRemove,
   onSelect,
 }: {
   baseURL: string;
   secret?: string;
-  disableRemove: boolean;
+  isSelected: boolean;
   onRemove: (x: ClashAPIConfig) => void;
   onSelect: (x: ClashAPIConfig) => void;
 }) {
+  const { t } = useTranslation();
   const [show, toggle] = useToggle();
-  const Icon = show ? EyeOff : Eye;
-
-  const handleTap = React.useCallback((e: React.KeyboardEvent) => {
-    e.stopPropagation();
-  }, []);
+  const SecretIcon = show ? EyeOff : Eye;
 
   return (
-    <>
-      <Button
-        disabled={disableRemove}
-        onClick={() => onRemove({ baseURL, secret })}
-        className={s.close}
-      >
-        <Close size={20} />
-      </Button>
-      <span
-        className={s.url}
-        tabIndex={0}
-        role="button"
+    <li className={cx(s.li, { [s.selected]: isSelected })}>
+      <button
+        type="button"
+        className={s.main}
+        title={isSelected ? undefined : t('use_this_backend')}
         onClick={() => onSelect({ baseURL, secret })}
-        onKeyUp={handleTap}
       >
-        {baseURL}
-      </span>
-      <span />
-      {secret ? (
-        <>
-          <span className={s.secret}>{show ? secret : '***'}</span>
+        <span className={s.dot} />
+        <span className={s.body}>
+          <span className={s.url}>{baseURL}</span>
+          <span className={s.secret}>
+            {secret ? (show ? secret : '••••••••') : t('backend_no_secret')}
+          </span>
+        </span>
+      </button>
 
-          <Button onClick={toggle} className={s.eye}>
-            <Icon size={20} />
-          </Button>
-        </>
-      ) : null}
-    </>
-  );
-}
-
-function Button({
-  children,
-  onClick,
-  className,
-  disabled,
-}: {
-  children: React.ReactNode;
-
-  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => unknown;
-  className: string;
-  disabled?: boolean;
-}) {
-  return (
-    <button disabled={disabled} className={cx(className, s.btn)} onClick={onClick}>
-      {children}
-    </button>
+      <div className={s.tools}>
+        {isSelected ? <span className={s.badge}>{t('backend_in_use')}</span> : null}
+        {secret ? (
+          <button
+            type="button"
+            className={s.iconBtn}
+            onClick={toggle}
+            title={show ? t('hide_secret') : t('show_secret')}
+            aria-label={show ? t('hide_secret') : t('show_secret')}
+          >
+            <SecretIcon size={16} />
+          </button>
+        ) : null}
+        <button
+          type="button"
+          className={cx(s.iconBtn, s.remove)}
+          disabled={isSelected}
+          onClick={() => onRemove({ baseURL, secret })}
+          title={t('remove_backend')}
+          aria-label={t('remove_backend')}
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
+    </li>
   );
 }

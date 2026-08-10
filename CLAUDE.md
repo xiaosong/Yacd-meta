@@ -13,7 +13,7 @@ own — it only talks to a Clash-compatible API server.
 ```sh
 bun install      # install deps (bun is required, see packageManager in package.json)
 bun start        # dev server at http://127.0.0.1:3000 (alias: bun dev)
-bun run build    # production build, output goes to ./public (not ./dist, see vite.config.ts)
+bun run build    # production build, output goes to ./public (not ./dist, see vite.config.mts)
 bun serve        # preview a production build
 bun lint         # eslint src
 bun typecheck    # tsc --noEmit
@@ -83,7 +83,7 @@ components.
 
 ### Path alias
 
-`~/*` maps to `src/*` (configured in both `tsconfig.json` and `vite.config.ts`) — use `~/...`
+`~/*` maps to `src/*` (configured in both `tsconfig.json` and `vite.config.mts`) — use `~/...`
 imports for anything outside the current directory rather than long relative paths.
 
 ### TypeScript strictness

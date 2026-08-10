@@ -3,7 +3,7 @@ import * as path from 'path';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-import pkg from './package.json';
+import pkg from './package.json' with { type: 'json' };
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
   },
   resolve: {
     alias: {
-      '~': path.resolve(__dirname, './src'),
+      '~': path.resolve(import.meta.dirname, './src'),
     },
   },
   publicDir: 'assets',

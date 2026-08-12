@@ -214,30 +214,79 @@ function parseConfigQueryString() {
   return collector;
 }
 
+const backendQueryKeys = ['hostname', 'port', 'secret'];
+
+/**
+ * 后端相关的 URL 参数只在本次加载生效一次，用完就从地址栏抹掉。
+ * 切换后端是靠整页 reload 实现的（见 selectClashAPIConfig），参数留在地址栏
+ * 会让每次 reload 都把刚选中的后端改写回参数指定的地址。
+ */
+function consumeBackendQueryString() {
+  try {
+    const url = new URL(window.location.href);
+    for (const key of backendQueryKeys) url.searchParams.delete(key);
+    window.history.replaceState(null, '', url.href);
+  } catch (err) {
+    // ignore
+  }
+}
+
+/**
+ * 把 URL 参数指定的后端选中：已存在就选它，不存在就新增一条。
+ * 不能就地改写当前选中的那条 —— 那会把用户存下来的后端地址覆盖掉。
+ */
+function applyBackendQueryString(s: StateApp, query: Record<string, string>, isFirstRun: boolean) {
+  const curr = s.clashAPIConfigs[s.selectedClashAPIConfigIndex] ?? defaultClashAPIConfig;
+
+  let url: URL;
+  try {
+    url = new URL(curr.baseURL);
+  } catch (err) {
+    url = new URL(defaultClashAPIConfig.baseURL);
+  }
+
+  if (query.hostname) {
+    if (query.hostname.indexOf('http') === 0) {
+      url.href = query.hostname;
+    } else {
+      url.hostname = query.hostname;
+    }
+  }
+  if (query.port) {
+    url.port = query.port;
+  }
+
+  // url.href is a stringifier and it appends a trailing slash
+  // that is not we want
+  const baseURL = trimTrailingSlash(url.href);
+  // 没给 secret 时只有地址没变才沿用当前的，别把 A 后端的密钥带到 B 后端上
+  const secret = query.secret ?? (baseURL === curr.baseURL ? curr.secret : '');
+
+  // 首次访问时列表里只有一条占位的默认后端，直接顶掉，不要留个连不上的空壳
+  if (isFirstRun) {
+    s.clashAPIConfigs = [{ baseURL, secret, addedAt: Date.now() }];
+    s.selectedClashAPIConfigIndex = 0;
+  } else {
+    const idx = s.clashAPIConfigs.findIndex((x) => x.baseURL === baseURL && x.secret === secret);
+    if (idx >= 0) {
+      s.selectedClashAPIConfigIndex = idx;
+    } else {
+      s.clashAPIConfigs.push({ baseURL, secret, addedAt: Date.now() });
+      s.selectedClashAPIConfigIndex = s.clashAPIConfigs.length - 1;
+    }
+  }
+
+  saveState(s);
+  consumeBackendQueryString();
+}
+
 export function initialState() {
-  let s = loadState();
-  s = { ...defaultState, ...s };
+  const persisted = loadState();
+  const s: StateApp = { ...defaultState, ...persisted };
   const query = parseConfigQueryString();
 
-  const conf = s.clashAPIConfigs[s.selectedClashAPIConfigIndex];
-  if (conf) {
-    const url = new URL(conf.baseURL);
-    if (query.hostname) {
-      if (query.hostname.indexOf('http') === 0) {
-        url.href = decodeURIComponent(query.hostname);
-      } else {
-        url.hostname = query.hostname;
-      }
-    }
-    if (query.port) {
-      url.port = query.port;
-    }
-    // url.href is a stringifier and it appends a trailing slash
-    // that is not we want
-    conf.baseURL = trimTrailingSlash(url.href);
-    if (query.secret) {
-      conf.secret = query.secret;
-    }
+  if (backendQueryKeys.some((key) => query[key])) {
+    applyBackendQueryString(s, query, !persisted);
   }
 
   if (query.theme === 'dark' || query.theme === 'light') {
@@ -247,6 +296,6 @@ export function initialState() {
     document.title = decodeURIComponent(query.title);
   }
   // set initial theme
-  setTheme(s.theme);
+  setTheme(s.theme as ThemeType);
   return s;
 }

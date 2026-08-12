@@ -29,6 +29,12 @@
   background: var(--color-node-active-bg);
 }
 
+/* 上方表单正绑着这一条 */
+.editing {
+  border-color: var(--color-focus-blue);
+  box-shadow: 0 0 0 3px var(--color-accent-soft-bg);
+}
+
 /* 整行左侧是切换后端的点击区 */
 .main {
   flex: 1;
@@ -137,6 +143,11 @@
     opacity: 0.35;
     cursor: default;
   }
+}
+
+.active {
+  color: var(--color-accent-soft-fg);
+  background: var(--color-accent-soft-bg);
 }
 
 .remove:hover:enabled {

@@ -2,7 +2,7 @@ import cx from 'clsx';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Eye, EyeOff, Trash2 } from '~/components/shared/FeatherIcons';
+import { Edit3, Eye, EyeOff, Trash2 } from '~/components/shared/FeatherIcons';
 import { useToggle } from '~/hooks/basic';
 import type { ClashAPIConfigWithAddedAt } from '~/store/types';
 import type { ClashAPIConfig } from '~/types';
@@ -12,15 +12,19 @@ import s from './BackendList.module.scss';
 type Props = {
   apiConfigs: ClashAPIConfigWithAddedAt[];
   selectedClashAPIConfigIndex: number;
+  editing: ClashAPIConfig | null;
   onRemove: (x: ClashAPIConfig) => void;
   onSelect: (x: ClashAPIConfig) => void;
+  onEdit: (x: ClashAPIConfig) => void;
 };
 
 export function BackendList({
   apiConfigs,
   selectedClashAPIConfigIndex,
+  editing,
   onRemove,
   onSelect,
+  onEdit,
 }: Props) {
   return (
     <ul className={s.ul}>
@@ -30,8 +34,12 @@ export function BackendList({
           baseURL={item.baseURL}
           secret={item.secret}
           isSelected={idx === selectedClashAPIConfigIndex}
+          isEditing={
+            editing != null && editing.baseURL === item.baseURL && editing.secret === item.secret
+          }
           onRemove={onRemove}
           onSelect={onSelect}
+          onEdit={onEdit}
         />
       ))}
     </ul>
@@ -42,21 +50,25 @@ function Item({
   baseURL,
   secret,
   isSelected,
+  isEditing,
   onRemove,
   onSelect,
+  onEdit,
 }: {
   baseURL: string;
   secret?: string;
   isSelected: boolean;
+  isEditing: boolean;
   onRemove: (x: ClashAPIConfig) => void;
   onSelect: (x: ClashAPIConfig) => void;
+  onEdit: (x: ClashAPIConfig) => void;
 }) {
   const { t } = useTranslation();
   const [show, toggle] = useToggle();
   const SecretIcon = show ? EyeOff : Eye;
 
   return (
-    <li className={cx(s.li, { [s.selected]: isSelected })}>
+    <li className={cx(s.li, { [s.selected]: isSelected, [s.editing]: isEditing })}>
       <button
         type="button"
         className={s.main}
@@ -85,6 +97,15 @@ function Item({
             <SecretIcon size={16} />
           </button>
         ) : null}
+        <button
+          type="button"
+          className={cx(s.iconBtn, { [s.active]: isEditing })}
+          onClick={() => onEdit({ baseURL, secret })}
+          title={t('edit_backend')}
+          aria-label={t('edit_backend')}
+        >
+          <Edit3 size={16} />
+        </button>
         <button
           type="button"
           className={cx(s.iconBtn, s.remove)}

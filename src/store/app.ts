@@ -5,9 +5,6 @@ import { DEFAULT_LATENCY_TEST_URL, PROVIDER_HEALTHCHECK_TIMEOUT } from '../misc/
 import { loadState, saveState } from '../misc/storage';
 import { debounce, trimTrailingSlash } from '../misc/utils';
 
-import { fetchConfigs } from './configs';
-import { closeModal } from './modals';
-
 export const getClashAPIConfig = (s: State) => {
   const idx = s.app.selectedClashAPIConfigIndex;
   return s.app.clashAPIConfigs[idx];
@@ -60,6 +57,10 @@ export function removeClashAPIConfig({ baseURL, secret }: ClashAPIConfig) {
     if (idx === undefined) return;
     dispatch('removeClashAPIConfig', (s) => {
       s.app.clashAPIConfigs.splice(idx, 1);
+      // 删掉的是选中项前面的条目时，选中项会左移一位，索引得跟着挪
+      if (s.app.selectedClashAPIConfigIndex > idx) {
+        s.app.selectedClashAPIConfigIndex -= 1;
+      }
     });
     // side effect
     saveState(getState().app);
@@ -89,17 +90,51 @@ export function selectClashAPIConfig({ baseURL, secret }: ClashAPIConfig) {
   };
 }
 
-// unused
-export function updateClashAPIConfig({ baseURL, secret }: ClashAPIConfig) {
+/**
+ * 就地修改一条已保存的后端。改的是当前选中的那条时整页 reload —— 和
+ * selectClashAPIConfig 同理由：地址或密钥变了，在途的请求和 WebSocket
+ * 还连着旧后端，手动清理这些状态太复杂。
+ */
+export function updateClashAPIConfig(prev: ClashAPIConfig, next: ClashAPIConfig) {
   return async (dispatch: DispatchFn, getState: GetStateFn) => {
-    const clashAPIConfig = { baseURL, secret };
-    dispatch('appUpdateClashAPIConfig', (s) => {
-      s.app.clashAPIConfigs[0] = clashAPIConfig;
-    });
+    const idx = findClashAPIConfigIndex(getState, prev);
+    if (idx === undefined) return;
+
+    const wasSelected = getSelectedClashAPIConfigIndex(getState()) === idx;
+    const duplicateIdx = findClashAPIConfigIndex(getState, next);
+
+    if (duplicateIdx !== undefined) {
+      // 改回了原样，什么都不用做
+      if (duplicateIdx === idx) return;
+      // 改成了另一条已存在的配置，去重：删掉正在编辑的这条，选中留下的那条
+      dispatch('mergeClashAPIConfig', (s) => {
+        s.app.clashAPIConfigs.splice(idx, 1);
+        const survivor = duplicateIdx > idx ? duplicateIdx - 1 : duplicateIdx;
+        if (wasSelected) {
+          s.app.selectedClashAPIConfigIndex = survivor;
+        } else if (s.app.selectedClashAPIConfigIndex > idx) {
+          s.app.selectedClashAPIConfigIndex -= 1;
+        }
+      });
+    } else {
+      dispatch('appUpdateClashAPIConfig', (s) => {
+        s.app.clashAPIConfigs[idx] = {
+          baseURL: next.baseURL,
+          secret: next.secret,
+          addedAt: s.app.clashAPIConfigs[idx].addedAt,
+        };
+      });
+    }
+
     // side effect
     saveState(getState().app);
-    dispatch(closeModal('apiConfig'));
-    dispatch(fetchConfigs(clashAPIConfig));
+
+    if (!wasSelected) return;
+    try {
+      window.location.reload();
+    } catch (err) {
+      // ignore
+    }
   };
 }
 

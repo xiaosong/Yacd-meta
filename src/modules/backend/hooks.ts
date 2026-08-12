@@ -16,25 +16,33 @@ import {
   type Protocol,
 } from './utils';
 
-const { useCallback, useEffect, useMemo, useState } = React;
+const { useCallback, useEffect, useMemo, useRef, useState } = React;
 
 export function useBackendConfigForm({
   onAddConfig,
+  onUpdateConfig,
 }: {
   onAddConfig: (config: ClashAPIConfig) => void;
+  onUpdateConfig: (prev: ClashAPIConfig, next: ClashAPIConfig) => void;
 }) {
   const [fields, setFields] = useState<BackendFields>(DEFAULT_BACKEND_FIELDS);
   const [secret, setSecret] = useState('');
   const [errMsg, setErrMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // 非 null 时表单是在改这一条已保存的配置，而不是新增
+  const [editing, setEditing] = useState<ClashAPIConfig | null>(null);
+  // 用户已经动过表单后，自动探测的结果不能再覆盖回去
+  const isFormDirty = useRef(false);
 
   const handleProtocolOnChange = useCallback((protocol: Protocol) => {
     setErrMsg('');
+    isFormDirty.current = true;
     setFields((prev) => ({ ...prev, protocol }));
   }, []);
 
   const handleInputOnChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setErrMsg('');
+    isFormDirty.current = true;
     const { name, value } = e.target;
 
     switch (name) {
@@ -60,6 +68,24 @@ export function useBackendConfigForm({
     return 'baseURL' in built ? built.baseURL : '';
   }, [fields]);
 
+  const resetForm = useCallback(() => {
+    isFormDirty.current = true;
+    setEditing(null);
+    setFields(DEFAULT_BACKEND_FIELDS);
+    setSecret('');
+    setErrMsg('');
+  }, []);
+
+  const startEdit = useCallback((config: ClashAPIConfig) => {
+    const parsed = splitAPIBaseURL(config.baseURL);
+    if (!parsed) return;
+    isFormDirty.current = true;
+    setEditing(config);
+    setFields(parsed);
+    setSecret(config.secret ?? '');
+    setErrMsg('');
+  }, []);
+
   const onConfirm = useCallback(() => {
     const built = buildAPIBaseURL(fields);
     if ('error' in built) {
@@ -76,9 +102,14 @@ export function useBackendConfigForm({
         return;
       }
 
-      onAddConfig(nextConfig);
+      if (editing) {
+        onUpdateConfig(editing, nextConfig);
+        resetForm();
+      } else {
+        onAddConfig(nextConfig);
+      }
     });
-  }, [fields, onAddConfig, secret]);
+  }, [editing, fields, onAddConfig, onUpdateConfig, resetForm, secret]);
 
   const handleContentOnKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -100,7 +131,7 @@ export function useBackendConfigForm({
     let isCancelled = false;
 
     detectEmbeddedAPIBaseURL().then((detectedBaseURL) => {
-      if (isCancelled || !detectedBaseURL) return;
+      if (isCancelled || isFormDirty.current || !detectedBaseURL) return;
       const detected = splitAPIBaseURL(detectedBaseURL);
       if (detected) setFields(detected);
     });
@@ -116,6 +147,9 @@ export function useBackendConfigForm({
     errMsg,
     baseURLPreview,
     isSubmitting,
+    editing,
+    startEdit,
+    cancelEdit: resetForm,
     handleProtocolOnChange,
     handleInputOnChange,
     handleContentOnKeyDown,

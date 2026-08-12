@@ -21,6 +21,7 @@ type Props = {
   onAddConfig: (config: ClashAPIConfig) => void;
   onRemoveConfig: (config: ClashAPIConfig) => void;
   onSelectConfig: (config: ClashAPIConfig) => void;
+  onUpdateConfig: (prev: ClashAPIConfig, next: ClashAPIConfig) => void;
 };
 
 const protocolOptions: { value: Protocol; label: string }[] = [
@@ -34,6 +35,7 @@ export default function APIConfig({
   onAddConfig,
   onRemoveConfig,
   onSelectConfig,
+  onUpdateConfig,
 }: Props) {
   const { t } = useTranslation();
   const [showSecret, toggleSecret] = useToggle();
@@ -45,11 +47,14 @@ export default function APIConfig({
     errMsg,
     baseURLPreview,
     isSubmitting,
+    editing,
+    startEdit,
+    cancelEdit,
     handleProtocolOnChange,
     handleInputOnChange,
     handleContentOnKeyDown,
     onConfirm,
-  } = useBackendConfigForm({ onAddConfig });
+  } = useBackendConfigForm({ onAddConfig, onUpdateConfig });
 
   const SecretIcon = showSecret ? EyeOff : Eye;
 
@@ -60,8 +65,10 @@ export default function APIConfig({
         <div className={s.logo}>
           <SvgYacd width={96} height={96} stroke="var(--stroke)" />
         </div>
-        <h1 className={s.title}>{t('backend_form_title')}</h1>
-        <p className={s.desc}>{t('backend_form_desc')}</p>
+        <h1 className={s.title}>
+          {editing ? t('backend_form_title_edit') : t('backend_form_title')}
+        </h1>
+        <p className={s.desc}>{editing ? editing.baseURL : t('backend_form_desc')}</p>
       </header>
 
       <section className={s.card}>
@@ -153,7 +160,16 @@ export default function APIConfig({
               <span className={s.preview}>{baseURLPreview}</span>
             ) : null}
           </div>
-          <Button label={t('add_backend')} onClick={onConfirm} isLoading={isSubmitting} />
+          <div className={s.buttons}>
+            {editing ? (
+              <Button kind="minimal" label={t('cancel_edit')} onClick={cancelEdit} />
+            ) : null}
+            <Button
+              label={editing ? t('save_backend') : t('add_backend')}
+              onClick={onConfirm}
+              isLoading={isSubmitting}
+            />
+          </div>
         </div>
       </section>
 
@@ -166,8 +182,10 @@ export default function APIConfig({
           <BackendList
             apiConfigs={apiConfigs}
             selectedClashAPIConfigIndex={selectedClashAPIConfigIndex}
+            editing={editing}
             onRemove={onRemoveConfig}
             onSelect={onSelectConfig}
+            onEdit={startEdit}
           />
         ) : (
           <p className={s.empty}>{t('no_saved_backends')}</p>

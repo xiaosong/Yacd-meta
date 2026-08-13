@@ -11,6 +11,7 @@ export {
   Database,
   Download,
   DownloadCloud,
+  Edit3,
   Eye,
   EyeOff,
   FileText,

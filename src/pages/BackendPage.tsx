@@ -8,6 +8,7 @@ import {
   getSelectedClashAPIConfigIndex,
   removeClashAPIConfig,
   selectClashAPIConfig,
+  updateClashAPIConfig,
 } from '~/store/app';
 import type { ClashAPIConfigWithAddedAt, DispatchFn, State } from '~/store/types';
 import type { ClashAPIConfig } from '~/types';
@@ -42,6 +43,13 @@ function BackendPage({ dispatch, apiConfigs, selectedClashAPIConfigIndex }: Prop
     [dispatch],
   );
 
+  const handleUpdateConfig = useCallback(
+    (prev: ClashAPIConfig, next: ClashAPIConfig) => {
+      dispatch(updateClashAPIConfig(prev, next));
+    },
+    [dispatch],
+  );
+
   return (
     <APIConfig
       apiConfigs={apiConfigs}
@@ -49,6 +57,7 @@ function BackendPage({ dispatch, apiConfigs, selectedClashAPIConfigIndex }: Prop
       onAddConfig={handleAddConfig}
       onRemoveConfig={handleRemoveConfig}
       onSelectConfig={handleSelectConfig}
+      onUpdateConfig={handleUpdateConfig}
     />
   );
 }

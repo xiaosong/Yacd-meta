@@ -1,19 +1,27 @@
 import { produce, setAutoFreeze } from 'immer';
 import React from 'react';
 
-// in logs store we update logs in place
-// outside of immer produce
-// this is just workaround
+import type { DispatchFn, State } from './types';
+
+// autofreeze 会在每次 dispatch 后深冻结整棵 state，代价压在最大的那块
+// （s.proxies.proxies 是几百个对象）。这里保持关闭，代价是 produce 外改写
+// state 不会当场报错，见 TODO.md
 setAutoFreeze(false);
 
 const { createContext, memo, useMemo, useRef, useEffect, useCallback, useContext, useState } =
   React;
 
-export const immer = { produce, setAutoFreeze };
+/**
+ * 绑定后的 action 树，形状由 store/index.ts 的 actions 决定，深度不定。
+ * 这套自研 store 正在被 jotai 取代（见 TODO.md），不为它补精确类型。
+ */
+type BoundActions = Record<string, any>;
 
-const StateContext = createContext(null);
-const DispatchContext = createContext(null);
-const ActionsContext = createContext(null);
+// AppProviders 保证 Provider 一定在树上，这三个默认值取不到，
+// 用 null! 断言掉，免得每个消费点都要判一次空
+const StateContext = createContext<State>(null!);
+const DispatchContext = createContext<DispatchFn>(null!);
+const ActionsContext = createContext<BoundActions>(null!);
 
 export function useStoreState() {
   return useContext(StateContext);
@@ -27,8 +35,14 @@ export function useStoreActions() {
   return useContext(ActionsContext);
 }
 
+type ProviderProps = {
+  initialState: State;
+  actions?: Record<string, unknown>;
+  children: React.ReactNode;
+};
+
 // boundActionCreators
-export default function Provider({ initialState, actions = {}, children }) {
+export default function Provider({ initialState, actions = {}, children }: ProviderProps) {
   const stateRef = useRef(initialState);
   const [state, setState] = useState(initialState);
   const getState = useCallback(() => stateRef.current, []);
@@ -38,8 +52,9 @@ export default function Provider({ initialState, actions = {}, children }) {
     }
   }, [getState]);
   const dispatch = useCallback(
-    (actionId: string | ((a: any, b: any) => any), fn: (s: any) => void) => {
+    (actionId: string | ((a: any, b: any) => any), fn?: (s: any) => void) => {
       if (typeof actionId === 'function') return actionId(dispatch, getState);
+      if (!fn) return;
 
       const stateNext = produce(getState(), fn);
       if (stateNext !== stateRef.current) {
@@ -85,7 +100,7 @@ function bindAction(action: any, dispatch: any) {
 }
 
 function bindActions(actions: any, dispatch: any) {
-  const boundActions = {};
+  const boundActions: Record<string, unknown> = {};
   for (const key in actions) {
     const action = actions[key];
     if (typeof action === 'function') {

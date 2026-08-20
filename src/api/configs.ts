@@ -19,17 +19,10 @@ export async function fetchConfigs(apiConfig: ClashAPIConfig, signal?: AbortSign
 // { Path: string }
 
 type ClashConfigPartial = TunPartial<ClashGeneralConfig>;
-function configsPatchWorkaround(o: ClashConfigPartial) {
-  // backward compatibility for older clash  using `socket-port`
-  if ('socks-port' in o) {
-    o['socket-port'] = o['socks-port'];
-  }
-  return o;
-}
 
 export async function updateConfigs(apiConfig: ClashAPIConfig, o: ClashConfigPartial) {
   const { url, init } = getURLAndInit(apiConfig);
-  const body = JSON.stringify(configsPatchWorkaround(o));
+  const body = JSON.stringify(o);
   return await fetch(url + endpoint, { ...init, body, method: 'PATCH' });
 }
 

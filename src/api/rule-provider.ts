@@ -57,7 +57,7 @@ export async function refreshRuleProviderByName({
 }) {
   const { url, init } = getURLAndInit(apiConfig);
   try {
-    const res = await fetch(url + `/providers/rules/${name}`, {
+    const res = await fetch(url + `/providers/rules/${encodeURIComponent(name)}`, {
       method: 'PUT',
       ...init,
     });

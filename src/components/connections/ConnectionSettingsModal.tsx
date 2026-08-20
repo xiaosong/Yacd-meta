@@ -3,9 +3,9 @@ import cx from 'clsx';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import Modal from '~/components/Modal';
 import { Menu, Trash2, X } from '~/components/shared/FeatherIcons';
-import Switch from '~/components/SwitchThemed';
+import Modal from '~/components/shared/Modal';
+import Switch from '~/components/shared/SwitchThemed';
 import { ConnectionColumn, ConnectionSettings, SourceMapItem } from '~/modules/connections/utils';
 
 import s from './ConnectionSettingsModal.module.scss';

@@ -24,16 +24,20 @@ $ curl "http://127.0.0.1:8080/proxies/GLOBAL" -XPUT -d '{ "name": "Proxy" }' -i
 HTTP/1.1 204 No Content
 */
 
-export async function fetchProxies(config) {
+export async function fetchProxies(config: ClashAPIConfig) {
   const { url, init } = getURLAndInit(config);
   const res = await fetch(url + endpoint, init);
   return await res.json();
 }
 
-export async function requestToSwitchProxy(apiConfig, name1, name2) {
+export async function requestToSwitchProxy(
+  apiConfig: ClashAPIConfig,
+  name1: string,
+  name2: string,
+) {
   const body = { name: name2 };
   const { url, init } = getURLAndInit(apiConfig);
-  const fullURL = `${url}${endpoint}/${name1}`;
+  const fullURL = `${url}${endpoint}/${encodeURIComponent(name1)}`;
   return await fetch(fullURL, {
     ...init,
     method: 'PUT',
@@ -42,8 +46,8 @@ export async function requestToSwitchProxy(apiConfig, name1, name2) {
 }
 
 export async function requestDelayForProxy(
-  apiConfig,
-  name,
+  apiConfig: ClashAPIConfig,
+  name: string,
   latencyTestUrl = DEFAULT_LATENCY_TEST_URL,
   timeout = 5000,
   expected?: string,
@@ -55,8 +59,8 @@ export async function requestDelayForProxy(
 }
 
 export async function requestDelayForProxyGroup(
-  apiConfig,
-  name,
+  apiConfig: ClashAPIConfig,
+  name: string,
   latencyTestUrl = DEFAULT_LATENCY_TEST_URL,
   timeout = 5000,
   expected?: string,
@@ -67,7 +71,7 @@ export async function requestDelayForProxyGroup(
   return await fetch(fullUrl, init);
 }
 
-export async function fetchProviderProxies(config) {
+export async function fetchProviderProxies(config: ClashAPIConfig) {
   const { url, init } = getURLAndInit(config);
   const res = await fetch(url + '/providers/proxies', init);
   if (res.status === 404) {
@@ -76,13 +80,17 @@ export async function fetchProviderProxies(config) {
   return await res.json();
 }
 
-export async function updateProviderByName(config, name) {
+export async function updateProviderByName(config: ClashAPIConfig, name: string) {
   const { url, init } = getURLAndInit(config);
   const options = { ...init, method: 'PUT' };
   return await fetch(url + '/providers/proxies/' + encodeURIComponent(name), options);
 }
 
-export async function healthcheckProviderByName(config, name, signal?: AbortSignal) {
+export async function healthcheckProviderByName(
+  config: ClashAPIConfig,
+  name: string,
+  signal?: AbortSignal,
+) {
   const { url, init } = getURLAndInit(config);
   const options = { ...init, method: 'GET', signal };
   return await fetch(

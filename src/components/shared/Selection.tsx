@@ -4,10 +4,10 @@ import React from 'react';
 import s from './Selection.module.scss';
 
 type SelectionProps = {
-  OptionComponent?: (...args: any[]) => any;
-  optionPropsList?: any[];
-  selectedIndex?: number;
-  onChange?: (...args: any[]) => any;
+  OptionComponent: (...args: any[]) => any;
+  optionPropsList: any[];
+  selectedIndex: number;
+  onChange: (value: string) => void;
 };
 
 export function Selection2({

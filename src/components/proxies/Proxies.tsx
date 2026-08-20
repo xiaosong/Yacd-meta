@@ -6,7 +6,6 @@ import { ProxiesHeader } from '~/components/proxies/ProxiesHeader';
 import { ProxyGroup } from '~/components/proxies/ProxyGroup';
 import { ProxyProvider } from '~/components/proxies/ProxyProvider';
 import BaseModal from '~/components/shared/BaseModal';
-import { useStoreActions } from '~/components/StateProvider';
 import {
   useCollapseAll,
   useProxiesPage,
@@ -15,6 +14,7 @@ import {
   useVisibleGroupNames,
   useVisibleProviders,
 } from '~/modules/proxies/hooks';
+import { useStoreActions } from '~/store/StateProvider';
 import { DelayMapping, DispatchFn, FormattedProxyProvider, ProxiesMapping } from '~/store/types';
 import { ClashAPIConfig } from '~/types';
 

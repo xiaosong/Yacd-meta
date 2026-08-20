@@ -38,7 +38,7 @@ function normalizeAPIResponse(json: { rules: Array<RuleAPIItem> }): Array<RuleIt
 }
 
 export async function fetchRules(endpoint: string, apiConfig: ClashAPIConfig) {
-  let json = { rules: [] };
+  let json: { rules: Array<RuleAPIItem> } = { rules: [] };
   try {
     const { url, init } = getURLAndInit(apiConfig);
     const res = await fetch(url + endpoint, init);

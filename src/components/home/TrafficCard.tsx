@@ -2,9 +2,8 @@ import cx from 'clsx';
 import { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import useTraffic from '~/hooks/useTraffic';
 import { chartStyles } from '~/misc/chart';
-import { CHART_WINDOW } from '~/modules/home/hooks';
+import { CHART_WINDOW, useTraffic } from '~/modules/home/hooks';
 import { splitTrafficRate } from '~/modules/home/utils';
 import { ClashAPIConfig } from '~/types';
 

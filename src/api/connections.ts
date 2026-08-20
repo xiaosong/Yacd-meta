@@ -7,11 +7,11 @@ const endpoint = '/connections';
 const fetched = false;
 
 interface Subscriber {
-  listner: unknown; // on data received, listener will be called with data
+  listner: ConnectionsListener; // on data received, listener will be called with data
   onClose: () => void; // on stream closed, onClose will be called
 }
 
-const subscribers = [];
+const subscribers: Subscriber[] = [];
 
 // see also https://github.com/Dreamacro/clash/blob/dev/constant/metadata.go#L41
 type UUID = string;
@@ -41,11 +41,12 @@ export type ConnectionItem = {
   rule: string;
   rulePayload?: string;
 };
-type ConnectionsData = {
+export type ConnectionsData = {
   downloadTotal: number;
   uploadTotal: number;
   connections: Array<ConnectionItem>;
 };
+type ConnectionsListener = (data: ConnectionsData) => void;
 
 function appendData(s: string) {
   let o: ConnectionsData;
@@ -70,7 +71,7 @@ type UnsubscribeFn = () => void;
 let wsState: number;
 export function fetchData(
   apiConfig: ClashAPIConfig,
-  listener: unknown,
+  listener: ConnectionsListener,
   onClose: () => void,
 ): UnsubscribeFn | void {
   if (fetched || wsState === 1) {

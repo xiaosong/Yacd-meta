@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import * as connAPI from '~/api/connections';
 import {
+  useCloseConnections,
   useConnectionColumns,
   useConnectionFilters,
   useConnectionSettings,
@@ -75,12 +75,7 @@ export default function Connections({ apiConfig }: Props) {
 
   const sortedRows = React.useMemo(() => sortConns(rows, sort), [rows, sort]);
 
-  const closeConn = useCallback(
-    (id: string) => {
-      connAPI.closeConnById(apiConfig, id);
-    },
-    [apiConfig],
-  );
+  const { closeConn, closeConns } = useCloseConnections(apiConfig);
 
   const [isCloseAllModalOpen, setIsCloseAllModalOpen] = useState(false);
   const [isCloseFilteredModalOpen, setIsCloseFilteredModalOpen] = useState(false);
@@ -91,11 +86,9 @@ export default function Connections({ apiConfig }: Props) {
   }, [closeAllConnections]);
 
   const handleCloseFiltered = useCallback(async () => {
-    await Promise.allSettled(
-      filteredConns.map((connection) => connAPI.closeConnById(apiConfig, connection.id)),
-    );
+    await closeConns(filteredConns);
     setIsCloseFilteredModalOpen(false);
-  }, [apiConfig, filteredConns]);
+  }, [closeConns, filteredConns]);
 
   return (
     <div className={s.page}>

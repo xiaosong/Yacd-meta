@@ -1,3 +1,4 @@
+import type { TooltipItem } from 'chart.js';
 import { createAsset } from 'use-asset';
 
 import prettyBytes from './pretty-bytes';
@@ -70,7 +71,7 @@ export const commonChartOptions: any = {
       borderColor: 'rgba(255, 255, 255, 0.1)',
       borderWidth: 1,
       callbacks: {
-        label(context) {
+        label(context: TooltipItem<'line'>) {
           let label = context.dataset.label || '';
           if (label) {
             label += ': ';

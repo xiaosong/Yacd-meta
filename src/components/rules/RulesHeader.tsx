@@ -10,7 +10,7 @@ import {
   PageHeader,
 } from '~/components/shared/PageHeader';
 import { RotateIcon } from '~/components/shared/RotateIcon';
-import { TextFilter } from '~/components/shared/TextFitler';
+import { TextFilter } from '~/components/shared/TextFilter';
 import type { RulesTabKey } from '~/modules/rules/utils';
 import { ruleFilterText } from '~/store/rules';
 

@@ -33,7 +33,7 @@ export function withAlpha(color: string, alpha: number) {
 
 /** 自上而下渐隐的填充色，渐变对象按绘图区尺寸缓存，避免逐帧重建 */
 export function gradientFill(color: string) {
-  let cached: { top: number; bottom: number; value: CanvasGradient } = null;
+  let cached: { top: number; bottom: number; value: CanvasGradient } | null = null;
   return (context: any) => {
     const { ctx, chartArea } = context.chart;
     if (!chartArea) return withAlpha(color, 0.18);

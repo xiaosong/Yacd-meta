@@ -3,13 +3,13 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Tooltip } from '~/components/shared/Tooltip';
-import { connect } from '~/components/StateProvider';
 import { getTheme, switchTheme } from '~/store/app';
-import { State } from '~/store/types';
+import { connect } from '~/store/StateProvider';
+import { DispatchFn, State } from '~/store/types';
 
 import s from './ThemeSwitcher.module.scss';
 
-export function ThemeSwitcherImpl({ theme, dispatch }) {
+export function ThemeSwitcherImpl({ theme, dispatch }: { theme: string; dispatch: DispatchFn }) {
   const { t } = useTranslation();
 
   const themeIcon = React.useMemo(() => {

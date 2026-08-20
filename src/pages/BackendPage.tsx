@@ -1,7 +1,6 @@
 import * as React from 'react';
 
 import APIConfig from '~/components/backend/APIConfig';
-import { connect } from '~/components/StateProvider';
 import {
   addClashAPIConfig,
   getClashAPIConfigs,
@@ -10,6 +9,7 @@ import {
   selectClashAPIConfig,
   updateClashAPIConfig,
 } from '~/store/app';
+import { connect } from '~/store/StateProvider';
 import type { ClashAPIConfigWithAddedAt, DispatchFn, State } from '~/store/types';
 import type { ClashAPIConfig } from '~/types';
 

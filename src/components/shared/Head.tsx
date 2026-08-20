@@ -1,9 +1,10 @@
 import * as React from 'react';
 
-import { connect } from '~/components/StateProvider';
 import { getClashAPIConfig, getClashAPIConfigs } from '~/store/app';
+import { connect } from '~/store/StateProvider';
+import type { State } from '~/store/types';
 
-const mapState = (s) => ({
+const mapState = (s: State) => ({
   apiConfig: getClashAPIConfig(s),
   apiConfigs: getClashAPIConfigs(s),
 });

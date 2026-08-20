@@ -1,8 +1,9 @@
 import React from 'react';
 
+import SvgGithub from '~/components/shared/SvgGithub';
+import SvgYacd from '~/components/shared/SvgYacd';
+
 import s0 from './ErrorBoundaryFallback.module.scss';
-import SvgGithub from './SvgGithub';
-import SvgYacd from './SvgYacd';
 
 const yacdRepoIssueUrl = 'https://github.com/metacubex/yacd';
 

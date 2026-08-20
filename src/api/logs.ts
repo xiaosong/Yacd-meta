@@ -1,6 +1,5 @@
 import { pad0 } from '~/misc/utils';
-import { Log } from '~/store/types';
-import { LogsAPIConfig } from '~/types';
+import { Log, LogsAPIConfig } from '~/types';
 
 import { buildLogsWebSocketURL, getURLAndInit } from '../misc/request-helper';
 
@@ -21,8 +20,8 @@ const getRandomStr = () => {
 
 let even = false;
 let decoded = '';
-let ws: WebSocket;
-let controller: AbortController;
+let ws: WebSocket | undefined;
+let controller: AbortController | undefined;
 let usingFetchFallback = false;
 let currentConnStr: string;
 
@@ -64,7 +63,7 @@ function formatDate(d: Date) {
   return `${YY}-${MM}-${dd} ${HH}:${mm}:${ss}`;
 }
 
-function pump(reader: ReadableStreamDefaultReader) {
+function pump(reader: ReadableStreamDefaultReader): Promise<void> {
   return reader.read().then(({ done, value }) => {
     const str = textDecoder.decode(value, { stream: !done });
     decoded += str;
@@ -95,7 +94,7 @@ function pump(reader: ReadableStreamDefaultReader) {
 function makeConnStr(c: LogsAPIConfig) {
   const keys = Object.keys(c);
   keys.sort();
-  return keys.map((k) => c[k]).join('|');
+  return keys.map((k) => c[k as keyof LogsAPIConfig]).join('|');
 }
 
 function isConnectionLive() {
@@ -177,8 +176,11 @@ function fetchLogsWithFetch(apiConfig: LogsAPIConfig) {
     signal,
   }).then(
     (response) => {
-      const reader = response.body.getReader();
-      pump(reader);
+      if (!response.body) {
+        usingFetchFallback = false;
+        return;
+      }
+      pump(response.body.getReader());
     },
     (err) => {
       usingFetchFallback = false;

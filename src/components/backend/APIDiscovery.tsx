@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import Modal from '~/components/Modal';
+import Modal from '~/components/shared/Modal';
 import { ThemeSwitcher } from '~/components/shared/ThemeSwitcher';
 import { DOES_NOT_SUPPORT_FETCH, errors } from '~/misc/errors';
 

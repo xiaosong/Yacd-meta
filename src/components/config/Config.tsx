@@ -1,9 +1,7 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import Button from '~/components/Button';
-import Input from '~/components/Input';
-import { Selection2 } from '~/components/Selection';
+import Button from '~/components/shared/Button';
 import {
   Cpu,
   DownloadCloud,
@@ -14,10 +12,11 @@ import {
   Tool,
   Trash2,
 } from '~/components/shared/FeatherIcons';
+import Input from '~/components/shared/Input';
 import Select from '~/components/shared/Select';
+import { Selection2 } from '~/components/shared/Selection';
+import Switch from '~/components/shared/SwitchThemed';
 import TrafficChartSample from '~/components/shared/TrafficChartSample';
-import { useStoreActions } from '~/components/StateProvider';
-import Switch from '~/components/SwitchThemed';
 import { useConfigPage } from '~/modules/config/hooks';
 import {
   CONFIG_CHART_STYLE_PROPS,
@@ -28,6 +27,7 @@ import {
   PORT_FIELDS,
   TUN_STACK_OPTIONS,
 } from '~/modules/config/utils';
+import { useStoreActions } from '~/store/StateProvider';
 import { ClashGeneralConfig, DispatchFn } from '~/store/types';
 import { ClashAPIConfig } from '~/types';
 

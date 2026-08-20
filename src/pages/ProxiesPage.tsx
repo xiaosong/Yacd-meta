@@ -1,7 +1,6 @@
 import { createSelector } from 'reselect';
 
 import Proxies from '~/components/proxies/Proxies';
-import { connect } from '~/components/StateProvider';
 import {
   getAutoCloseOldConns,
   getClashAPIConfig,
@@ -23,6 +22,7 @@ import {
   getProxyProviders,
   getShowModalClosePrevConns,
 } from '~/store/proxies';
+import { connect } from '~/store/StateProvider';
 import { State } from '~/store/types';
 
 const getAppConfig = createSelector(

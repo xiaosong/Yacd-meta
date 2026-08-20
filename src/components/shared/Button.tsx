@@ -1,8 +1,8 @@
 import cx from 'clsx';
 import * as React from 'react';
 
+import { LoadingDot } from './Basic';
 import s0 from './Button.module.scss';
-import { LoadingDot } from './shared/Basic';
 
 const { forwardRef, useCallback } = React;
 
@@ -37,7 +37,7 @@ function Button(props: ButtonProps, ref: React.Ref<HTMLButtonElement>) {
   } = props;
   const internalProps = { children, label, text, start };
   const internalOnClick = useCallback(
-    (e) => {
+    (e: React.MouseEvent<HTMLButtonElement>) => {
       if (isLoading) return;
       onClick && onClick(e);
     },

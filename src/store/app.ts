@@ -138,7 +138,7 @@ export function updateClashAPIConfig(prev: ClashAPIConfig, next: ClashAPIConfig)
   };
 }
 
-const rootEl = document.querySelector('html');
+const rootEl = document.documentElement;
 type ThemeType = 'dark' | 'light' | 'auto';
 
 function setTheme(theme: ThemeType = 'light') {
@@ -175,7 +175,7 @@ export function selectChartStyleIndex(selectedChartStyleIndex: number | string) 
   };
 }
 
-export function updateAppConfig(name: string, value: unknown) {
+export function updateAppConfig<K extends keyof StateApp>(name: K, value: StateApp[K]) {
   return (dispatch: DispatchFn, getState: GetStateFn) => {
     dispatch('appUpdateAppConfig', (s) => {
       s.app[name] = value;

@@ -1,10 +1,9 @@
-import { useAtom } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
 import * as React from 'react';
 
 import { fetchLogs, reconnect as reconnectLogs, stop as stopLogs } from '~/api/logs';
-import { appendLog, logFilterText } from '~/store/logs';
-import { DispatchFn, Log } from '~/store/types';
-import { ClashAPIConfig } from '~/types';
+import { appendLogAtom, logFilterText } from '~/store/logs';
+import { ClashAPIConfig, Log } from '~/types';
 
 import { LOGS_SCROLL_BOTTOM_THRESHOLD } from './utils';
 
@@ -23,14 +22,12 @@ export function useFilteredLogs(logs: Log[]) {
 }
 
 export function useLogsPage({
-  dispatch,
   logLevel,
   apiConfig,
   logs,
   logStreamingPaused,
   updateAppConfig,
 }: {
-  dispatch: DispatchFn;
   logLevel: string;
   apiConfig: ClashAPIConfig;
   logs: Log[];
@@ -42,14 +39,15 @@ export function useLogsPage({
     updateAppConfig('logStreamingPaused', !logStreamingPaused);
   }, [apiConfig, logLevel, logStreamingPaused, updateAppConfig]);
 
-  const appendLogInternal = useCallback((log) => dispatch(appendLog(log)), [dispatch]);
+  // useSetAtom 返回的 setter 引用稳定，可以直接当 effect 依赖
+  const appendLog = useSetAtom(appendLogAtom);
 
   useEffect(() => {
-    const unsubscribe = fetchLogs({ ...apiConfig, logLevel }, appendLogInternal);
+    const unsubscribe = fetchLogs({ ...apiConfig, logLevel }, appendLog);
     return () => {
       unsubscribe?.();
     };
-  }, [apiConfig, logLevel, appendLogInternal]);
+  }, [apiConfig, logLevel, appendLog]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);

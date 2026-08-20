@@ -14,7 +14,7 @@ import {
 } from '~/components/shared/PageHeader';
 import { Popover } from '~/components/shared/Popover';
 import { RotateIcon } from '~/components/shared/RotateIcon';
-import { TextFilter } from '~/components/shared/TextFitler';
+import { TextFilter } from '~/components/shared/TextFilter';
 import { proxyFilterText } from '~/store/proxies';
 
 import s from './ProxiesHeader.module.scss';

@@ -1,5 +1,8 @@
 import { atom } from 'jotai';
 
+import i18n from '~/misc/i18n';
+import { readErrorMessage } from '~/misc/request-helper';
+import { toast } from '~/store/toast';
 /* import { ProxyItem, ProxiesMapping, DelayMapping } from '~/store/types'; */
 import {
   DispatchFn,
@@ -33,7 +36,7 @@ export const initialState: StateProxies = {
   showModalClosePrevConns: false,
 };
 
-const noop = () => null;
+const noop = (): null => null;
 
 // see all types:
 // https://github.com/Dreamacro/clash/blob/master/constant/adapters.go
@@ -57,7 +60,7 @@ export const getProxies = (s: State) => s.proxies.proxies;
 export const getDelay = (s: State) => s.proxies.delay;
 export const getProxyGroupNames = (s: State) => s.proxies.groupNames;
 export const getProxyProviders = (s: State) => s.proxies.proxyProviders || [];
-export const getDangleProxyNames = (s: State) => s.proxies.dangleProxyNames;
+export const getDangleProxyNames = (s: State) => s.proxies.dangleProxyNames || [];
 export const getShowModalClosePrevConns = (s: State) => s.proxies.showModalClosePrevConns;
 
 // The URL the backend is configured to test a group against: its `testUrl`,
@@ -144,7 +147,7 @@ export function fetchProxies(apiConfig: ClashAPIConfig) {
     }
 
     // proxies that are not from a provider
-    const dangleProxyNames = [];
+    const dangleProxyNames: string[] = [];
     for (const v of proxyNames) {
       if (!providerProxies[v]) dangleProxyNames.push(v);
     }
@@ -317,6 +320,17 @@ function resolveChain(proxies: ProxiesMapping, groupName: string, itemName: stri
   return chain;
 }
 
+// 切换失败时把乐观更新回滚成后端的真实状态，并让用户看见失败原因
+function onSwitchProxyFailed(
+  dispatch: DispatchFn,
+  apiConfig: ClashAPIConfig,
+  groupName: string,
+  message: string,
+) {
+  dispatch(fetchProxies(apiConfig));
+  toast('error', i18n.t('switch_proxy_failed', { group: groupName, message }));
+}
+
 async function switchProxyImpl(
   dispatch: DispatchFn,
   getState: GetStateFn,
@@ -324,14 +338,17 @@ async function switchProxyImpl(
   groupName: string,
   itemName: string,
 ) {
+  let res: Response;
   try {
-    const res = await proxiesAPI.requestToSwitchProxy(apiConfig, groupName, itemName);
-    if (res.ok === false) {
-      throw new Error(`failed to switch proxy: res.statusText`);
-    }
+    res = await proxiesAPI.requestToSwitchProxy(apiConfig, groupName, itemName);
   } catch (err) {
-    console.log(err, 'failed to swith proxy');
-    throw err;
+    const message = err instanceof Error ? err.message : String(err);
+    onSwitchProxyFailed(dispatch, apiConfig, groupName, message);
+    return;
+  }
+  if (!res.ok) {
+    onSwitchProxyFailed(dispatch, apiConfig, groupName, await readErrorMessage(res));
+    return;
   }
 
   dispatch(fetchProxies(apiConfig));
@@ -538,7 +555,7 @@ export function healthcheckProxy(apiConfig: ClashAPIConfig, name: string) {
       if (res.ok === false) {
         error = res.statusText;
       }
-      const body = await res.json().catch(() => undefined);
+      const body = await res.json().catch((): undefined => undefined);
       delayNumber = body?.delay;
     } catch (err) {
       error = (err as Error).message || 'Request failed';
@@ -559,7 +576,7 @@ export function healthcheckProxy(apiConfig: ClashAPIConfig, name: string) {
 
 function retrieveGroupNamesFrom(proxies: Record<string, ProxyItem>) {
   let groupNames = [];
-  let globalAll: string[];
+  let globalAll: string[] | undefined;
   const proxyNames = [];
   for (const prop in proxies) {
     const p = proxies[prop];
@@ -579,9 +596,9 @@ function retrieveGroupNamesFrom(proxies: Record<string, ProxyItem>) {
     globalAll.push('GLOBAL');
     // Sort groups according to its index in GLOBAL group
     groupNames = groupNames
-      .map((name) => [globalAll.indexOf(name), name])
+      .map((name): [number, string] => [globalAll.indexOf(name), name])
       .sort((a, b) => a[0] - b[0])
-      .map((group) => group[1]);
+      .map(([, name]) => name);
   }
   return [groupNames, proxyNames];
 }
@@ -596,7 +613,7 @@ function formatProxyProviders(providersInput: ProvidersRaw): {
 } {
   const keys = Object.keys(providersInput);
   const providers = [];
-  const proxies = {};
+  const proxies: { [key: string]: ProxyItem } = {};
   for (let i = 0; i < keys.length; i++) {
     const provider: ProxyProvider = providersInput[keys[i]];
     if (provider.name === 'default' || provider.vehicleType === 'Compatible') {

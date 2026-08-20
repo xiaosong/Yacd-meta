@@ -12,7 +12,11 @@ export default function Input({
   return <input className={cx(s0.input, className)} {...props} />;
 }
 
-export function SelfControlledInput({ value, className, ...restProps }) {
+export function SelfControlledInput({
+  value,
+  className,
+  ...restProps
+}: React.InputHTMLAttributes<HTMLInputElement>) {
   const [internalValue, setInternalValue] = useState(value);
   const refValue = useRef(value);
   useEffect(() => {
@@ -22,7 +26,10 @@ export function SelfControlledInput({ value, className, ...restProps }) {
     }
     refValue.current = value;
   }, [value]);
-  const onChange = useCallback((e) => setInternalValue(e.target.value), [setInternalValue]);
+  const onChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => setInternalValue(e.target.value),
+    [setInternalValue],
+  );
 
   return (
     <input

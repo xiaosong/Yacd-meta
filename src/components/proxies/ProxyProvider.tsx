@@ -2,9 +2,8 @@ import { formatDistance } from 'date-fns';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import Collapsible from '~/components/Collapsible';
+import Collapsible from '~/components/shared/Collapsible';
 import { RotateIcon } from '~/components/shared/RotateIcon';
-import { useStoreActions } from '~/components/StateProvider';
 import {
   useFilterAwareCollapse,
   useFilteredAndSorted,
@@ -13,6 +12,7 @@ import {
 } from '~/modules/proxies/hooks';
 import { matchesFilter } from '~/modules/proxies/utils';
 import { healthcheckProviderByName } from '~/store/proxies';
+import { useStoreActions } from '~/store/StateProvider';
 import { DelayMapping, DispatchFn, ProxiesMapping, SubscriptionInfo } from '~/store/types';
 import { ClashAPIConfig } from '~/types';
 

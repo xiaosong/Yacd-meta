@@ -1,15 +1,13 @@
 import { produce, setAutoFreeze } from 'immer';
 import React from 'react';
 
-// in logs store we update logs in place
-// outside of immer produce
-// this is just workaround
+// autofreeze 会在每次 dispatch 后深冻结整棵 state，代价压在最大的那块
+// （s.proxies.proxies 是几百个对象）。这里保持关闭，代价是 produce 外改写
+// state 不会当场报错，见 TODO.md
 setAutoFreeze(false);
 
 const { createContext, memo, useMemo, useRef, useEffect, useCallback, useContext, useState } =
   React;
-
-export const immer = { produce, setAutoFreeze };
 
 const StateContext = createContext(null);
 const DispatchContext = createContext(null);

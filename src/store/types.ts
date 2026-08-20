@@ -119,21 +119,6 @@ export type StateProxies = {
   switchProxyCtx?: SwitchProxyCtx;
 };
 
-///// store.logs
-
-export type Log = {
-  time: string;
-  even: boolean;
-  payload: string;
-  type: string;
-  id: string;
-};
-
-export type StateLogs = {
-  logs: Log[];
-  tail: number;
-};
-
 ///// store.configs
 
 export type StateConfigs = {
@@ -153,7 +138,6 @@ export type State = {
   app: StateApp;
   configs: StateConfigs;
   proxies: StateProxies;
-  logs: StateLogs;
   modals: StateModals;
 };
 

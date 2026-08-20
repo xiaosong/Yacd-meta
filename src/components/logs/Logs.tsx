@@ -1,3 +1,4 @@
+import { useAtomValue, useSetAtom } from 'jotai';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -5,10 +6,10 @@ import { ArrowDown } from '~/components/shared/FeatherIcons';
 import { useFilteredLogs, useLogsPage } from '~/modules/logs/hooks';
 import { LOG_TYPES } from '~/modules/logs/utils';
 import { updateConfigs } from '~/store/configs';
-import { clearLogs } from '~/store/logs';
+import { clearLogsAtom, logsForDisplayAtom } from '~/store/logs';
 import { useStoreActions } from '~/store/StateProvider';
-import { DispatchFn, Log } from '~/store/types';
-import { ClashAPIConfig } from '~/types';
+import { DispatchFn } from '~/store/types';
+import { ClashAPIConfig, Log } from '~/types';
 
 import s from './Logs.module.scss';
 import { LogsHeader } from './LogsHeader';
@@ -30,15 +31,14 @@ type Props = {
   dispatch: DispatchFn;
   logLevel: string;
   apiConfig: ClashAPIConfig;
-  logs: Log[];
   logStreamingPaused: boolean;
 };
 
-export default function Logs({ dispatch, logLevel, apiConfig, logs, logStreamingPaused }: Props) {
+export default function Logs({ dispatch, logLevel, apiConfig, logStreamingPaused }: Props) {
   const { t } = useTranslation();
   const actions = useStoreActions();
+  const logs = useAtomValue(logsForDisplayAtom);
   const { toggleIsRefreshPaused, scrollRef, isAtBottom, scrollToBottom, onScroll } = useLogsPage({
-    dispatch,
     logLevel,
     apiConfig,
     logs,
@@ -52,7 +52,7 @@ export default function Logs({ dispatch, logLevel, apiConfig, logs, logStreaming
     (level: string) => dispatch(updateConfigs(apiConfig, { 'log-level': level })),
     [dispatch, apiConfig],
   );
-  const onClear = React.useCallback(() => dispatch(clearLogs()), [dispatch]);
+  const onClear = useSetAtom(clearLogsAtom);
 
   return (
     <div className={s.page}>

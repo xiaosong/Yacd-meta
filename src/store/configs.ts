@@ -1,3 +1,4 @@
+import { readErrorMessage } from '~/misc/request-helper';
 import {
   ClashGeneralConfig,
   DispatchFn,
@@ -141,17 +142,6 @@ export function restartCore(apiConfig: ClashAPIConfig) {
 }
 
 export type UpgradeResult = { ok: boolean; message?: string };
-
-// mihomo 出错时返回 { "message": "..." }
-async function readErrorMessage(res: Response) {
-  try {
-    const payload = await res.json();
-    if (payload && typeof payload.message === 'string') return payload.message;
-  } catch {
-    // 不是 JSON，退回状态行
-  }
-  return res.statusText || String(res.status);
-}
 
 // 把 upgrade 类接口的响应收敛成 { ok, message }，交给调用方决定怎么提示
 async function toUpgradeResult(request: Promise<Response>, logLabel: string) {

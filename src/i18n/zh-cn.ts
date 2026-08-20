@@ -162,6 +162,7 @@ export const data = {
   close: '关闭',
   internel: '内部链接',
   Clear: '清空',
+  switch_proxy_failed: '切换 {{group}} 失败：{{message}}',
   group_fixed_tip: '该组已手动固定选择，点击测速可解除固定',
   rule_entry_count: '{{count}} 条规则',
   rule_hit_tip: '已命中 {{count}} 次，最近一次{{time}}',

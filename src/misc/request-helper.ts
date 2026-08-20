@@ -25,6 +25,17 @@ export function getURLAndInit({ baseURL, secret }: ClashAPIConfig) {
   };
 }
 
+// mihomo 出错时返回 { "message": "..." }
+export async function readErrorMessage(res: Response) {
+  try {
+    const payload = await res.json();
+    if (payload && typeof payload.message === 'string') return payload.message;
+  } catch {
+    // 不是 JSON，退回状态行
+  }
+  return res.statusText || String(res.status);
+}
+
 export function buildWebSocketURL(apiConfig: ClashAPIConfig, endpoint: string) {
   const { baseURL, secret } = apiConfig;
   const params = new URLSearchParams({

@@ -39,6 +39,7 @@ export const data = {
   settings_display: 'Hiển thị',
   settings_behavior: 'Hành vi',
   group_fixed: 'Đã ghim',
+  switch_proxy_failed: 'Không thể chuyển {{group}}: {{message}}',
   group_fixed_tip: 'Nhóm này đang ghim lựa chọn thủ công; chạy kiểm tra độ trễ để bỏ ghim',
   expire_at: 'Hết hạn {{date}}',
   updated_ago: 'Cập nhật {{time}} trước',

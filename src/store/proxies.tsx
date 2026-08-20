@@ -1,5 +1,8 @@
 import { atom } from 'jotai';
 
+import i18n from '~/misc/i18n';
+import { readErrorMessage } from '~/misc/request-helper';
+import { toast } from '~/store/toast';
 /* import { ProxyItem, ProxiesMapping, DelayMapping } from '~/store/types'; */
 import {
   DispatchFn,
@@ -317,6 +320,17 @@ function resolveChain(proxies: ProxiesMapping, groupName: string, itemName: stri
   return chain;
 }
 
+// 切换失败时把乐观更新回滚成后端的真实状态，并让用户看见失败原因
+function onSwitchProxyFailed(
+  dispatch: DispatchFn,
+  apiConfig: ClashAPIConfig,
+  groupName: string,
+  message: string,
+) {
+  dispatch(fetchProxies(apiConfig));
+  toast('error', i18n.t('switch_proxy_failed', { group: groupName, message }));
+}
+
 async function switchProxyImpl(
   dispatch: DispatchFn,
   getState: GetStateFn,
@@ -324,14 +338,17 @@ async function switchProxyImpl(
   groupName: string,
   itemName: string,
 ) {
+  let res: Response;
   try {
-    const res = await proxiesAPI.requestToSwitchProxy(apiConfig, groupName, itemName);
-    if (res.ok === false) {
-      throw new Error(`failed to switch proxy: res.statusText`);
-    }
+    res = await proxiesAPI.requestToSwitchProxy(apiConfig, groupName, itemName);
   } catch (err) {
-    console.log(err, 'failed to swith proxy');
-    throw err;
+    const message = err instanceof Error ? err.message : String(err);
+    onSwitchProxyFailed(dispatch, apiConfig, groupName, message);
+    return;
+  }
+  if (!res.ok) {
+    onSwitchProxyFailed(dispatch, apiConfig, groupName, await readErrorMessage(res));
+    return;
   }
 
   dispatch(fetchProxies(apiConfig));

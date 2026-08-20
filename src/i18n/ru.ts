@@ -43,6 +43,7 @@ export const data = {
   settings_display: 'Отображение',
   settings_behavior: 'Поведение',
   group_fixed: 'Закреплено',
+  switch_proxy_failed: 'Не удалось переключить {{group}}: {{message}}',
   group_fixed_tip:
     'В этой группе выбор закреплён вручную; запустите проверку задержки, чтобы снять закрепление',
   expire_at: 'Истекает {{date}}',

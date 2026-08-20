@@ -1,6 +1,8 @@
 import { produce, setAutoFreeze } from 'immer';
 import React from 'react';
 
+import type { State } from './types';
+
 // autofreeze 会在每次 dispatch 后深冻结整棵 state，代价压在最大的那块
 // （s.proxies.proxies 是几百个对象）。这里保持关闭，代价是 produce 外改写
 // state 不会当场报错，见 TODO.md
@@ -25,8 +27,14 @@ export function useStoreActions() {
   return useContext(ActionsContext);
 }
 
+type ProviderProps = {
+  initialState: State;
+  actions?: Record<string, unknown>;
+  children: React.ReactNode;
+};
+
 // boundActionCreators
-export default function Provider({ initialState, actions = {}, children }) {
+export default function Provider({ initialState, actions = {}, children }: ProviderProps) {
   const stateRef = useRef(initialState);
   const [state, setState] = useState(initialState);
   const getState = useCallback(() => stateRef.current, []);
@@ -83,7 +91,7 @@ function bindAction(action: any, dispatch: any) {
 }
 
 function bindActions(actions: any, dispatch: any) {
-  const boundActions = {};
+  const boundActions: Record<string, unknown> = {};
   for (const key in actions) {
     const action = actions[key];
     if (typeof action === 'function') {

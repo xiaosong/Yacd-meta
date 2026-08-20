@@ -63,7 +63,7 @@ function formatDate(d: Date) {
   return `${YY}-${MM}-${dd} ${HH}:${mm}:${ss}`;
 }
 
-function pump(reader: ReadableStreamDefaultReader) {
+function pump(reader: ReadableStreamDefaultReader): Promise<void> {
   return reader.read().then(({ done, value }) => {
     const str = textDecoder.decode(value, { stream: !done });
     decoded += str;
@@ -94,7 +94,7 @@ function pump(reader: ReadableStreamDefaultReader) {
 function makeConnStr(c: LogsAPIConfig) {
   const keys = Object.keys(c);
   keys.sort();
-  return keys.map((k) => c[k]).join('|');
+  return keys.map((k) => c[k as keyof LogsAPIConfig]).join('|');
 }
 
 function isConnectionLive() {

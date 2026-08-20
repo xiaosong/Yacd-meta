@@ -19,10 +19,11 @@ export async function fetchConfigs(apiConfig: ClashAPIConfig, signal?: AbortSign
 // { Path: string }
 
 type ClashConfigPartial = TunPartial<ClashGeneralConfig>;
-function configsPatchWorkaround(o: ClashConfigPartial) {
-  // backward compatibility for older clash  using `socket-port`
+/** 老版 clash 认的是拼错的 `socket-port`，两个键都发过去 */
+type ClashConfigPatch = ClashConfigPartial & { 'socket-port'?: number };
+function configsPatchWorkaround(o: ClashConfigPartial): ClashConfigPatch {
   if ('socks-port' in o) {
-    o['socket-port'] = o['socks-port'];
+    return { ...o, 'socket-port': o['socks-port'] };
   }
   return o;
 }

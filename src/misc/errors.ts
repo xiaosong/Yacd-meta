@@ -1,6 +1,8 @@
 export const DOES_NOT_SUPPORT_FETCH = 0;
 
-export const errors = {
+type ErrorInfo = { message: string; detail?: string };
+
+export const errors: { default: ErrorInfo; [code: number]: ErrorInfo } = {
   [DOES_NOT_SUPPORT_FETCH]: {
     message: 'Browser not supported!',
     detail: 'This browser does not support "fetch", please choose another one.',

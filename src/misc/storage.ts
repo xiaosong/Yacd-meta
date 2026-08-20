@@ -12,7 +12,7 @@ function loadState() {
   }
 }
 
-function saveState(state) {
+function saveState(state: unknown) {
   try {
     const serialized = JSON.stringify(state);
     localStorage.setItem(StorageKey, serialized);

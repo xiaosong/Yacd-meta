@@ -82,6 +82,8 @@ const ProxySortingFns = {
   },
 };
 
+type ProxySortBy = keyof typeof ProxySortingFns;
+
 function filterAvailableProxiesAndSort(
   all: string[],
   delay: DelayMapping,
@@ -98,7 +100,9 @@ function filterAvailableProxiesAndSort(
   if (segments.length > 0) {
     filtered = filtered.filter((name) => matchesFilter(name, segments));
   }
-  return ProxySortingFns[proxySortBy](filtered, delay, proxies);
+  // proxySortBy 来自 localStorage，可能是旧版本留下的、已经不存在的排序名
+  const sortFn = ProxySortingFns[proxySortBy as ProxySortBy] ?? ProxySortingFns.Natural;
+  return sortFn(filtered, delay, proxies);
 }
 
 const EMPTY_SEGMENTS: string[] = [];

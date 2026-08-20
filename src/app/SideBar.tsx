@@ -10,6 +10,7 @@ import { Tooltip } from '~/components/shared/Tooltip';
 import { useVersion } from '~/hooks/useVersion';
 import { getClashAPIConfig } from '~/store/app';
 import { connect } from '~/store/StateProvider';
+import type { State } from '~/store/types';
 import { ClashAPIConfig } from '~/types';
 
 import s from './SideBar.module.scss';
@@ -44,11 +45,11 @@ const SideBarRow = React.memo(function SideBarRow({
 interface SideBarRowProps {
   isActive: boolean;
   to: string;
-  iconId?: string;
+  iconId?: keyof typeof icons;
   labelText?: string;
 }
 
-const pages = [
+const pages: Array<Omit<SideBarRowProps, 'isActive'>> = [
   {
     to: '/home',
     iconId: 'activity',
@@ -81,7 +82,7 @@ const pages = [
   },
 ];
 
-const mapState = (s) => ({
+const mapState = (s: State) => ({
   apiConfig: getClashAPIConfig(s),
 });
 

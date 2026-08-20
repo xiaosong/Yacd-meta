@@ -14,7 +14,7 @@ type State = {
 };
 
 class ErrorBoundary extends React.Component<Props, State> {
-  state = { error: null };
+  state: State = { error: null };
 
   static getDerivedStateFromError(error: Err) {
     return { error };

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import * as React from 'react';
 
 import * as connAPI from '~/api/connections';
+import type { ConnectionsData } from '~/api/connections';
 import { fetchData as fetchMemory } from '~/api/memory';
 import { fetchRules } from '~/api/rules';
 import { fetchData as fetchTraffic } from '~/api/traffic';
@@ -88,7 +89,7 @@ const initialSummary: ConnectionSummary = {
 export function useConnectionSummary(apiConfig: ClashAPIConfig): ConnectionSummary {
   const [state, setState] = useState(initialSummary);
 
-  const read = useCallback(({ downloadTotal, uploadTotal, connections }) => {
+  const read = useCallback(({ downloadTotal, uploadTotal, connections }: ConnectionsData) => {
     let tcpNumber = 0;
     let udpNumber = 0;
     for (const conn of connections || []) {

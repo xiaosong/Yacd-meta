@@ -1,6 +1,6 @@
-import { DispatchFn } from './types';
+import { DispatchFn, StateModals } from './types';
 
-export function openModal(modalName: string) {
+export function openModal(modalName: keyof StateModals) {
   return (dispatch: DispatchFn) => {
     dispatch(`openModal:${modalName}`, (s) => {
       s.modals[modalName] = true;
@@ -8,7 +8,7 @@ export function openModal(modalName: string) {
   };
 }
 
-export function closeModal(modalName: string) {
+export function closeModal(modalName: keyof StateModals) {
   return (dispatch: DispatchFn) => {
     dispatch(`closeModal:${modalName}`, (s) => {
       s.modals[modalName] = false;

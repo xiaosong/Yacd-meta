@@ -4,7 +4,7 @@ import { ClashAPIConfig, LogsAPIConfig } from '~/types';
 const headersCommon = { 'Content-Type': 'application/json' };
 
 function genCommonHeaders({ secret }: { secret?: string }) {
-  const h = { ...headersCommon };
+  const h: Record<string, string> = { ...headersCommon };
   if (secret) {
     h['Authorization'] = `Bearer ${secret}`;
   }

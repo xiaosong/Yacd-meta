@@ -175,7 +175,7 @@ export function selectChartStyleIndex(selectedChartStyleIndex: number | string) 
   };
 }
 
-export function updateAppConfig(name: string, value: unknown) {
+export function updateAppConfig<K extends keyof StateApp>(name: K, value: StateApp[K]) {
   return (dispatch: DispatchFn, getState: GetStateFn) => {
     dispatch('appUpdateAppConfig', (s) => {
       s.app[name] = value;

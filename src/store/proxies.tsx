@@ -36,7 +36,7 @@ export const initialState: StateProxies = {
   showModalClosePrevConns: false,
 };
 
-const noop = () => null;
+const noop = (): null => null;
 
 // see all types:
 // https://github.com/Dreamacro/clash/blob/master/constant/adapters.go
@@ -147,7 +147,7 @@ export function fetchProxies(apiConfig: ClashAPIConfig) {
     }
 
     // proxies that are not from a provider
-    const dangleProxyNames = [];
+    const dangleProxyNames: string[] = [];
     for (const v of proxyNames) {
       if (!providerProxies[v]) dangleProxyNames.push(v);
     }
@@ -555,7 +555,7 @@ export function healthcheckProxy(apiConfig: ClashAPIConfig, name: string) {
       if (res.ok === false) {
         error = res.statusText;
       }
-      const body = await res.json().catch(() => undefined);
+      const body = await res.json().catch((): undefined => undefined);
       delayNumber = body?.delay;
     } catch (err) {
       error = (err as Error).message || 'Request failed';
@@ -596,9 +596,9 @@ function retrieveGroupNamesFrom(proxies: Record<string, ProxyItem>) {
     globalAll.push('GLOBAL');
     // Sort groups according to its index in GLOBAL group
     groupNames = groupNames
-      .map((name) => [globalAll.indexOf(name), name])
+      .map((name): [number, string] => [globalAll.indexOf(name), name])
       .sort((a, b) => a[0] - b[0])
-      .map((group) => group[1]);
+      .map(([, name]) => name);
   }
   return [groupNames, proxyNames];
 }
@@ -613,7 +613,7 @@ function formatProxyProviders(providersInput: ProvidersRaw): {
 } {
   const keys = Object.keys(providersInput);
   const providers = [];
-  const proxies = {};
+  const proxies: { [key: string]: ProxyItem } = {};
   for (let i = 0; i < keys.length; i++) {
     const provider: ProxyProvider = providersInput[keys[i]];
     if (provider.name === 'default' || provider.vehicleType === 'Compatible') {

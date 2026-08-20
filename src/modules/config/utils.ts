@@ -1,6 +1,8 @@
 export type SelectOption = [string, string];
+/** 只有这几个端口字段会被渲染成输入框，故意收窄成字面量联合，好让 configState[key] 能推出 number */
+export type PortFieldKey = 'port' | 'socks-port' | 'mixed-port' | 'redir-port' | 'mitm-port';
 export type PortField = {
-  key: string;
+  key: PortFieldKey;
   label: string;
 };
 

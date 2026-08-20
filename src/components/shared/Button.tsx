@@ -37,7 +37,7 @@ function Button(props: ButtonProps, ref: React.Ref<HTMLButtonElement>) {
   } = props;
   const internalProps = { children, label, text, start };
   const internalOnClick = useCallback(
-    (e) => {
+    (e: React.MouseEvent<HTMLButtonElement>) => {
       if (isLoading) return;
       onClick && onClick(e);
     },

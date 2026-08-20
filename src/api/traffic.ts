@@ -15,7 +15,7 @@ const traffic = {
   down: Array(Size).fill(null),
 
   size: Size,
-  subscribers: [],
+  subscribers: [] as Array<(o: { up: number; down: number }) => void>,
   appendData(o: { up: number; down: number }) {
     this.up.shift();
     this.down.shift();
@@ -45,7 +45,7 @@ function parseAndAppend(x: string) {
   traffic.appendData(JSON.parse(x));
 }
 
-function pump(reader: ReadableStreamDefaultReader) {
+function pump(reader: ReadableStreamDefaultReader): Promise<void> {
   return reader.read().then(({ done, value }) => {
     const str = textDecoder.decode(value, { stream: !done });
     decoded += str;

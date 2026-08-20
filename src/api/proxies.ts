@@ -33,7 +33,7 @@ export async function fetchProxies(config) {
 export async function requestToSwitchProxy(apiConfig, name1, name2) {
   const body = { name: name2 };
   const { url, init } = getURLAndInit(apiConfig);
-  const fullURL = `${url}${endpoint}/${name1}`;
+  const fullURL = `${url}${endpoint}/${encodeURIComponent(name1)}`;
   return await fetch(fullURL, {
     ...init,
     method: 'PUT',

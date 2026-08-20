@@ -19,18 +19,10 @@ export async function fetchConfigs(apiConfig: ClashAPIConfig, signal?: AbortSign
 // { Path: string }
 
 type ClashConfigPartial = TunPartial<ClashGeneralConfig>;
-/** 老版 clash 认的是拼错的 `socket-port`，两个键都发过去 */
-type ClashConfigPatch = ClashConfigPartial & { 'socket-port'?: number };
-function configsPatchWorkaround(o: ClashConfigPartial): ClashConfigPatch {
-  if ('socks-port' in o) {
-    return { ...o, 'socket-port': o['socks-port'] };
-  }
-  return o;
-}
 
 export async function updateConfigs(apiConfig: ClashAPIConfig, o: ClashConfigPartial) {
   const { url, init } = getURLAndInit(apiConfig);
-  const body = JSON.stringify(configsPatchWorkaround(o));
+  const body = JSON.stringify(o);
   return await fetch(url + endpoint, { ...init, body, method: 'PATCH' });
 }
 

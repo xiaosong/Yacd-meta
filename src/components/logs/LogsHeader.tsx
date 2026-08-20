@@ -12,7 +12,7 @@ import {
   PageHeader,
 } from '~/components/shared/PageHeader';
 import Select from '~/components/shared/Select';
-import { TextFilter } from '~/components/shared/TextFitler';
+import { TextFilter } from '~/components/shared/TextFilter';
 import { LOG_LEVEL_OPTIONS } from '~/modules/config/utils';
 import { logFilterText } from '~/store/logs';
 

@@ -4,7 +4,7 @@ import * as React from 'react';
 
 const { useCallback, useState, useMemo } = React;
 
-export function useTextInut(
+export function useTextInput(
   x: PrimitiveAtom<string>,
 ): [(e: React.ChangeEvent<HTMLInputElement>) => void, string] {
   const [, setTextGlobal] = useAtom(x);

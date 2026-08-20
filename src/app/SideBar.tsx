@@ -45,8 +45,8 @@ const SideBarRow = React.memo(function SideBarRow({
 interface SideBarRowProps {
   isActive: boolean;
   to: string;
-  iconId?: keyof typeof icons;
-  labelText?: string;
+  iconId: keyof typeof icons;
+  labelText: string;
 }
 
 const pages: Array<Omit<SideBarRowProps, 'isActive'>> = [

@@ -44,12 +44,12 @@ function computeWidths(columns: ConnectionColumn[], containerWidth: number) {
   const pool = new Set(columns.map((c, i) => i).filter((i) => (columns[i].grow ?? 0) > 0));
 
   while (extra > 0.5 && pool.size > 0) {
-    const growTotal = [...pool].reduce((sum, i) => sum + columns[i].grow, 0);
+    const growTotal = [...pool].reduce((sum, i) => sum + (columns[i].grow ?? 0), 0);
     const saturated: number[] = [];
     let consumed = 0;
 
     for (const i of pool) {
-      const share = (extra * columns[i].grow) / growTotal;
+      const share = (extra * (columns[i].grow ?? 0)) / growTotal;
       const room = (columns[i].max ?? Infinity) - widths[i];
       const add = Math.min(share, room);
       widths[i] += add;

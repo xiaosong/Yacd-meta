@@ -17,7 +17,7 @@ import {
 } from '~/store/configs';
 import { openModal } from '~/store/modals';
 import { toast } from '~/store/toast';
-import { ClashGeneralConfig, DispatchFn } from '~/store/types';
+import { ClashGeneralConfig, ClashTunConfig, DispatchFn } from '~/store/types';
 import { unregisterAndReload } from '~/swRegistration';
 import { ClashAPIConfig } from '~/types';
 
@@ -53,7 +53,7 @@ export function useConfigState(configs: ClashGeneralConfig) {
   const setTunConfigState = useCallback((name: string, value: any) => {
     setConfigStateInternal((prev) => ({
       ...prev,
-      tun: { ...prev.tun, [name]: value },
+      tun: { ...prev.tun, [name]: value } as ClashTunConfig,
     }));
   }, []);
 

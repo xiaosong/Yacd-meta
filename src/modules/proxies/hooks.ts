@@ -42,7 +42,7 @@ const getSortDelay = (
     | {
         number?: number;
       },
-  proxyInfo: ProxyItem,
+  proxyInfo?: ProxyItem,
 ) => {
   if (d && typeof d.number === 'number' && d.number > 0) {
     return d.number;

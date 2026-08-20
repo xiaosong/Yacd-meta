@@ -175,8 +175,8 @@ export function arrayToIdKv<T extends { id: string }>(items: T[]) {
   return result;
 }
 
-function hasSubstring(value: string, pattern: string) {
-  return value.toLowerCase().includes(pattern.toLowerCase());
+function hasSubstring(value: string | undefined, pattern: string) {
+  return (value ?? '').toLowerCase().includes(pattern.toLowerCase());
 }
 
 /**

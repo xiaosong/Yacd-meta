@@ -34,23 +34,24 @@ function getLabelColor(
     good: httpsTest ? 800 : 200,
     normal: httpsTest ? 1500 : 500,
   };
-  if (number === 0) {
+  // 没测过（undefined）和测出 0 都算不可用；原本靠 undefined 参与比较恒为 false 落到最后一行
+  if (typeof number !== 'number' || number === 0) {
     return colorMap.na;
-  } else if (number < delayMap.good) {
-    return colorMap.good;
-  } else if (number < delayMap.normal) {
-    return colorMap.normal;
-  } else if (typeof number === 'number') {
-    return colorMap.bad;
   }
-  return colorMap.na;
+  if (number < delayMap.good) {
+    return colorMap.good;
+  }
+  if (number < delayMap.normal) {
+    return colorMap.normal;
+  }
+  return colorMap.bad;
 }
 
 type ProxyProps = {
   name: string;
   now?: boolean;
   proxy: ProxyItem;
-  latency: { number?: number; error?: string; testing?: boolean };
+  latency?: { number?: number; error?: string; testing?: boolean };
   httpsLatencyTest: boolean;
   isSelectable?: boolean;
   onClick?: (proxyName: string) => unknown;

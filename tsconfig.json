@@ -15,8 +15,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "strict": true,
-    // 渐进开启 strict：strict 家族中只剩这一项没开，约 70 处待修。
-    "strictNullChecks": false,
     "noUncheckedSideEffectImports": false,
     "noEmit": true,
     "jsx": "react-jsx"

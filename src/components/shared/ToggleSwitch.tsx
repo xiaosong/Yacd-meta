@@ -3,10 +3,10 @@ import React, { useCallback, useMemo } from 'react';
 import s0 from './ToggleSwitch.module.scss';
 
 type Props = {
-  options?: any[];
-  value?: string;
-  name?: string;
-  onChange?: (...args: any[]) => any;
+  options: Array<{ label: string; value: string }>;
+  value: string;
+  name: string;
+  onChange: React.ChangeEventHandler<HTMLInputElement>;
 };
 
 function ToggleSwitch({ options, value, name, onChange }: Props) {
@@ -20,6 +20,8 @@ function ToggleSwitch({ options, value, name, onChange }: Props) {
       } else if (idx > -1) {
         return w;
       }
+      // value 对不上任何一项时 idxSelected 是 -1，滑块宽度按 0 算
+      return 0;
     },
     [options],
   );

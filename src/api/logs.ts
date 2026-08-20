@@ -20,8 +20,8 @@ const getRandomStr = () => {
 
 let even = false;
 let decoded = '';
-let ws: WebSocket;
-let controller: AbortController;
+let ws: WebSocket | undefined;
+let controller: AbortController | undefined;
 let usingFetchFallback = false;
 let currentConnStr: string;
 
@@ -176,8 +176,11 @@ function fetchLogsWithFetch(apiConfig: LogsAPIConfig) {
     signal,
   }).then(
     (response) => {
-      const reader = response.body.getReader();
-      pump(reader);
+      if (!response.body) {
+        usingFetchFallback = false;
+        return;
+      }
+      pump(response.body.getReader());
     },
     (err) => {
       usingFetchFallback = false;

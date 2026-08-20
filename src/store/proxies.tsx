@@ -60,7 +60,7 @@ export const getProxies = (s: State) => s.proxies.proxies;
 export const getDelay = (s: State) => s.proxies.delay;
 export const getProxyGroupNames = (s: State) => s.proxies.groupNames;
 export const getProxyProviders = (s: State) => s.proxies.proxyProviders || [];
-export const getDangleProxyNames = (s: State) => s.proxies.dangleProxyNames;
+export const getDangleProxyNames = (s: State) => s.proxies.dangleProxyNames || [];
 export const getShowModalClosePrevConns = (s: State) => s.proxies.showModalClosePrevConns;
 
 // The URL the backend is configured to test a group against: its `testUrl`,
@@ -576,7 +576,7 @@ export function healthcheckProxy(apiConfig: ClashAPIConfig, name: string) {
 
 function retrieveGroupNamesFrom(proxies: Record<string, ProxyItem>) {
   let groupNames = [];
-  let globalAll: string[];
+  let globalAll: string[] | undefined;
   const proxyNames = [];
   for (const prop in proxies) {
     const p = proxies[prop];

@@ -15,7 +15,7 @@ import s from './Logs.module.scss';
 import { LogsHeader } from './LogsHeader';
 
 // 一屏最多几十行，但列表整体可以有几百行；memo 之后新日志进来只渲染新增的那一条
-const LogLine = React.memo(function LogLine({ time, payload, type }: Partial<Log>) {
+const LogLine = React.memo(function LogLine({ time, payload, type }: Log) {
   return (
     <div className={s.line}>
       <span className={s.time}>{time}</span>

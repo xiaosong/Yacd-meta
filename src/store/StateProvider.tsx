@@ -1,7 +1,7 @@
 import { produce, setAutoFreeze } from 'immer';
 import React from 'react';
 
-import type { State } from './types';
+import type { DispatchFn, State } from './types';
 
 // autofreeze 会在每次 dispatch 后深冻结整棵 state，代价压在最大的那块
 // （s.proxies.proxies 是几百个对象）。这里保持关闭，代价是 produce 外改写
@@ -11,9 +11,17 @@ setAutoFreeze(false);
 const { createContext, memo, useMemo, useRef, useEffect, useCallback, useContext, useState } =
   React;
 
-const StateContext = createContext(null);
-const DispatchContext = createContext(null);
-const ActionsContext = createContext(null);
+/**
+ * 绑定后的 action 树，形状由 store/index.ts 的 actions 决定，深度不定。
+ * 这套自研 store 正在被 jotai 取代（见 TODO.md），不为它补精确类型。
+ */
+type BoundActions = Record<string, any>;
+
+// AppProviders 保证 Provider 一定在树上，这三个默认值取不到，
+// 用 null! 断言掉，免得每个消费点都要判一次空
+const StateContext = createContext<State>(null!);
+const DispatchContext = createContext<DispatchFn>(null!);
+const ActionsContext = createContext<BoundActions>(null!);
 
 export function useStoreState() {
   return useContext(StateContext);
@@ -44,8 +52,9 @@ export default function Provider({ initialState, actions = {}, children }: Provi
     }
   }, [getState]);
   const dispatch = useCallback(
-    (actionId: string | ((a: any, b: any) => any), fn: (s: any) => void) => {
+    (actionId: string | ((a: any, b: any) => any), fn?: (s: any) => void) => {
       if (typeof actionId === 'function') return actionId(dispatch, getState);
+      if (!fn) return;
 
       const stateNext = produce(getState(), fn);
       if (stateNext !== stateRef.current) {

@@ -38,19 +38,17 @@ export async function readErrorMessage(res: Response) {
 
 export function buildWebSocketURL(apiConfig: ClashAPIConfig, endpoint: string) {
   const { baseURL, secret } = apiConfig;
-  const params = new URLSearchParams({
-    token: secret,
-  });
+  // 没有 secret 时不能带 token，URLSearchParams 会把 undefined 变成字面量 "undefined"
+  const params = new URLSearchParams(secret ? { token: secret } : {});
 
   return buildWebSocketURLBase(baseURL, params, endpoint);
 }
 
 export function buildLogsWebSocketURL(apiConfig: LogsAPIConfig, endpoint: string) {
   const { baseURL, secret, logLevel } = apiConfig;
-  const params = new URLSearchParams({
-    token: secret,
-    level: logLevel,
-  });
+  const params = new URLSearchParams(
+    secret ? { token: secret, level: logLevel } : { level: logLevel },
+  );
 
   return buildWebSocketURLBase(baseURL, params, endpoint);
 }

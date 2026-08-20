@@ -38,7 +38,7 @@ export function useScrollingChart(chartRef: React.RefObject<any>, getRange: () =
 
   useEffect(() => {
     let raf = 0;
-    let shown: Range = null;
+    let shown: Range | null = null;
 
     const frame = () => {
       raf = requestAnimationFrame(frame);

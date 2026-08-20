@@ -47,13 +47,13 @@ function getIconFor(type: string) {
 }
 
 type Props = {
-  id?: number;
-  type?: string;
-  payload?: string;
-  proxy?: string;
-  size?: number;
+  id: number;
+  type: string;
+  payload: string;
+  proxy: string;
+  size: number;
   extra?: RuleExtra;
-  apiConfig?: ClashAPIConfig;
+  apiConfig: ClashAPIConfig;
   provider?: RuleProviderIndex;
 };
 

@@ -51,7 +51,7 @@ export type ClashGeneralConfig = {
 };
 
 export type TunPartial<T> = {
-  [P in keyof T]?: T[P] extends ClashTunConfig ? TunPartial<T[P]> : T[P];
+  [P in keyof T]?: NonNullable<T[P]> extends ClashTunConfig ? TunPartial<NonNullable<T[P]>> : T[P];
 };
 
 ///// store.proxies
@@ -59,11 +59,12 @@ export type TunPartial<T> = {
 type LatencyHistory = Array<{ time: string; delay: number }>;
 type PrimitiveProxyType = 'Shadowsocks' | 'Snell' | 'Socks5' | 'Http' | 'Vmess';
 
+/** 后端要么整个不给（provider 上是可选的），要么四个字段一起给 */
 export type SubscriptionInfo = {
-  Download?: number;
-  Upload?: number;
-  Total?: number;
-  Expire?: number;
+  Download: number;
+  Upload: number;
+  Total: number;
+  Expire: number;
 };
 export type ProxyItem = {
   name: string;

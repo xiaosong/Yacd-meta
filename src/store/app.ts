@@ -138,7 +138,7 @@ export function updateClashAPIConfig(prev: ClashAPIConfig, next: ClashAPIConfig)
   };
 }
 
-const rootEl = document.querySelector('html');
+const rootEl = document.documentElement;
 type ThemeType = 'dark' | 'light' | 'auto';
 
 function setTheme(theme: ThemeType = 'light') {

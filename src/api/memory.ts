@@ -101,7 +101,7 @@ function fetchDataWithFetch(apiConfig: ClashAPIConfig) {
   const { url, init } = getURLAndInit(apiConfig);
   fetch(url + endpoint, init).then(
     (response) => {
-      if (response.ok) {
+      if (response.ok && response.body) {
         const reader = response.body.getReader();
         pump(reader);
       } else {

@@ -5,7 +5,7 @@ export type FormattedConn = {
   upload: number;
   download: number;
   start: number;
-  startTime?: number;
+  startTime: number;
   /** 简写代理链：「策略组 -> 末端节点」 */
   chains: string;
   /** 末端出站节点 */
@@ -28,8 +28,8 @@ export type FormattedConn = {
   type: string;
   network: string;
   process?: string;
-  downloadSpeedCurr?: number;
-  uploadSpeedCurr?: number;
+  downloadSpeedCurr: number;
+  uploadSpeedCurr: number;
 };
 
 // 当前活跃连接

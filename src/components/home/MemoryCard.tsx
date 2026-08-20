@@ -1,9 +1,8 @@
 import { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import useMemory from '~/hooks/useMemory';
 import prettyBytes from '~/misc/pretty-bytes';
-import { CHART_WINDOW, useRulesCount } from '~/modules/home/hooks';
+import { CHART_WINDOW, useMemory, useRulesCount } from '~/modules/home/hooks';
 import { formatCount, latestOf, peakOf, splitBytes } from '~/modules/home/utils';
 import { ClashAPIConfig } from '~/types';
 

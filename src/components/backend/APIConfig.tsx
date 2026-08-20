@@ -2,10 +2,10 @@ import cx from 'clsx';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import Button from '~/components/Button';
+import Button from '~/components/shared/Button';
 import { AlertCircle, Eye, EyeOff } from '~/components/shared/FeatherIcons';
 import { SegmentedControl } from '~/components/shared/SegmentedControl';
-import SvgYacd from '~/components/SvgYacd';
+import SvgYacd from '~/components/shared/SvgYacd';
 import { useToggle } from '~/hooks/basic';
 import { useBackendConfigForm } from '~/modules/backend/hooks';
 import type { Protocol } from '~/modules/backend/utils';

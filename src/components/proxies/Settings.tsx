@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { SegmentedControl } from '~/components/shared/SegmentedControl';
+import Switch from '~/components/shared/SwitchThemed';
 import {
   getProxySortDirection,
   getProxySortKey,
@@ -11,9 +12,7 @@ import {
   ProxySortKey,
   withCurrentTimeout,
 } from '~/modules/proxies/utils';
-
-import { useStoreActions } from '../StateProvider';
-import Switch from '../SwitchThemed';
+import { useStoreActions } from '~/store/StateProvider';
 
 import s from './Settings.module.scss';
 

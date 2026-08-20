@@ -1,6 +1,7 @@
 import * as React from 'react';
 
-import Button from '../Button';
+import Button from '~/components/shared/Button';
+
 import { FlexCenter } from '../shared/Styled';
 
 const { useRef, useEffect } = React;

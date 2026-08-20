@@ -1,9 +1,9 @@
 import { Suspense } from 'react';
 import { HashRouter, Navigate, Route, RouteObject, Routes, useRoutes } from 'react-router-dom';
 
-import Loading from '~/components/Loading';
+import SideBar from '~/app/SideBar';
 import { Head } from '~/components/shared/Head';
-import SideBar from '~/components/SideBar';
+import Loading from '~/components/shared/Loading';
 
 import styles from '../App.module.scss';
 import AboutPage from '../pages/AboutPage';

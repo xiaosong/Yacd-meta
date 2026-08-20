@@ -1,7 +1,6 @@
 import { useAtom } from 'jotai';
 import * as React from 'react';
 
-import { useStoreActions } from '~/components/StateProvider';
 import {
   fetchProxies,
   NonProxyTypes,
@@ -10,6 +9,7 @@ import {
   updateProviderByName,
   updateProviders,
 } from '~/store/proxies';
+import { useStoreActions } from '~/store/StateProvider';
 import {
   DelayMapping,
   DispatchFn,

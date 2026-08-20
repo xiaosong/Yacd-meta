@@ -1,6 +1,6 @@
 import { About } from '~/components/about/About';
-import { connect } from '~/components/StateProvider';
 import { getClashAPIConfig } from '~/store/app';
+import { connect } from '~/store/StateProvider';
 import { State } from '~/store/types';
 
 const mapState = (state: State) => ({

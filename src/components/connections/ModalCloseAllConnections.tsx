@@ -1,8 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import Button from '~/components/Button';
-import Modal from '~/components/Modal';
+import Button from '~/components/shared/Button';
+import Modal from '~/components/shared/Modal';
 
 import s from './ModalCloseAllConnections.module.scss';
 

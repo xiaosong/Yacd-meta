@@ -1,12 +1,11 @@
 import React from 'react';
 
-import Loading from '~/components/Loading';
+import Button from '~/components/shared/Button';
 import { Zap } from '~/components/shared/FeatherIcons';
-
-import Button from './Button';
-import Input from './Input';
-import SwitchThemed from './SwitchThemed';
-import ToggleSwitch from './ToggleSwitch';
+import Input from '~/components/shared/Input';
+import Loading from '~/components/shared/Loading';
+import SwitchThemed from '~/components/shared/SwitchThemed';
+import ToggleSwitch from '~/components/shared/ToggleSwitch';
 
 const noop = () => {
   /* empty */

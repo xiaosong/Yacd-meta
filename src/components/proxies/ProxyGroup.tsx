@@ -1,8 +1,8 @@
-import { useSuspenseQuery } from '@tanstack/react-query';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { fetchVersion } from '~/api/version';
+import Collapsible from '~/components/shared/Collapsible';
+import { useVersion } from '~/hooks/useVersion';
 import {
   useFilterAwareCollapse,
   useFilteredAndSorted,
@@ -10,11 +10,9 @@ import {
 } from '~/modules/proxies/hooks';
 import { getProxyLatency, matchesFilter } from '~/modules/proxies/utils';
 import { switchProxy } from '~/store/proxies';
+import { useStoreActions } from '~/store/StateProvider';
 import { DelayMapping, DispatchFn, ProxiesMapping, ProxyItem } from '~/store/types';
 import { ClashAPIConfig } from '~/types';
-
-import Collapsible from '../Collapsible';
-import { useStoreActions } from '../StateProvider';
 
 import { getLatencyColor, ProxyCard, ProxyCardHeader, ProxyCardStatusRow } from './ProxyCard';
 import s0 from './ProxyCard.module.scss';
@@ -88,10 +86,7 @@ export const ProxyGroup = memo(function ProxyGroup({
   );
   const nowLatencyColor = getLatencyColor(nowLatency?.number, httpsLatencyTest);
 
-  const { data: version } = useSuspenseQuery({
-    queryKey: ['/version', apiConfig],
-    queryFn: () => fetchVersion('/version', apiConfig),
-  });
+  const version = useVersion(apiConfig);
 
   const isSelectable = useMemo(
     () => ['Selector', version.meta && 'Fallback', version.meta && 'URLTest'].includes(type),

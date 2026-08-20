@@ -287,6 +287,24 @@ export function useConnectionStats(
   }, [conns, total]);
 }
 
+/** 关闭连接：单条与按当前筛选批量关闭 */
+export function useCloseConnections(apiConfig: ClashAPIConfig) {
+  const closeConn = useCallback(
+    (id: string) => {
+      connAPI.closeConnById(apiConfig, id);
+    },
+    [apiConfig],
+  );
+
+  const closeConns = useCallback(
+    (conns: FormattedConn[]) =>
+      Promise.allSettled(conns.map((conn) => connAPI.closeConnById(apiConfig, conn.id))),
+    [apiConfig],
+  );
+
+  return { closeConn, closeConns };
+}
+
 /** 容器宽度：列宽按它分配剩余空间 */
 export function useElementWidth<T extends HTMLElement>() {
   const ref = useRef<T>(null);

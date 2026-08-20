@@ -1,9 +1,8 @@
 import cx from 'clsx';
 import * as React from 'react';
 
-import Modal from '../Modal';
-
 import s from './BaseModal.module.scss';
+import Modal from './Modal';
 
 type BaseModalProps = {
   isOpen: boolean;

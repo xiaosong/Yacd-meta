@@ -2,7 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import * as React from 'react';
 
 import * as connAPI from '~/api/connections';
+import { fetchData as fetchMemory } from '~/api/memory';
 import { fetchRules } from '~/api/rules';
+import { fetchData as fetchTraffic } from '~/api/traffic';
 import { ClashAPIConfig } from '~/types';
 
 const { useCallback, useEffect, useRef, useState } = React;
@@ -121,4 +123,48 @@ export function useRulesCount(apiConfig: ClashAPIConfig) {
     queryFn: () => fetchRules('/rules', apiConfig),
   });
   return data ? data.length : 0;
+}
+
+/** 流量曲线：订阅 /traffic 的共享数据源，每次推送把窗口内的数组复制出来触发渲染 */
+export function useTraffic(apiConfig: ClashAPIConfig) {
+  const traffic = fetchTraffic(apiConfig);
+  const [data, setData] = useState({
+    up: [...traffic.up],
+    down: [...traffic.down],
+    labels: [...traffic.labels],
+  });
+
+  useEffect(() => {
+    return traffic.subscribe(() => {
+      setData({
+        up: [...traffic.up],
+        down: [...traffic.down],
+        labels: [...traffic.labels],
+      });
+    });
+  }, [traffic]);
+
+  return data;
+}
+
+/** 内存曲线，同 useTraffic */
+export function useMemory(apiConfig: ClashAPIConfig) {
+  const memory = fetchMemory(apiConfig);
+  const [data, setData] = useState({
+    inuse: [...memory.inuse],
+    oslimit: [...memory.oslimit],
+    labels: [...memory.labels],
+  });
+
+  useEffect(() => {
+    return memory.subscribe(() => {
+      setData({
+        inuse: [...memory.inuse],
+        oslimit: [...memory.oslimit],
+        labels: [...memory.labels],
+      });
+    });
+  }, [memory]);
+
+  return data;
 }

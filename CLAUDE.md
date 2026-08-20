@@ -78,7 +78,7 @@ changing an endpoint wrapper.
 
 ### State management — two systems coexist, don't mix them up
 
-1. **Custom Redux-like store** (`src/components/StateProvider.tsx` + `src/store/*`): a hand-rolled
+1. **Custom Redux-like store** (`src/store/StateProvider.tsx` + `src/store/*`): a hand-rolled
    context/reducer store using `immer.produce` for updates, not Redux. Actions are plain functions
    dispatched via `dispatch(actionCreator(...))`; an action creator can itself be a thunk
    `(dispatch, getState) => {...}` for async/side-effecting work (see `src/store/app.ts`,
@@ -91,17 +91,48 @@ changing an endpoint wrapper.
    server-state fetching/caching. Prefer this pattern for *new* data-fetching code; the legacy
    store is being incrementally migrated away from, not extended.
 
-### Feature module layout
+### Layered layout — top-level dirs are layers, feature names repeat across them
 
-Each feature has a consistent split:
-- `src/modules/<feature>/hooks.ts` — the feature's logic (data fetching, filtering/sorting,
-  derived state) as hooks, kept separate from rendering.
-- `src/modules/<feature>/utils.ts` — pure helpers used by the hooks/components.
-- `src/components/<feature>/*.tsx` or `src/components/<Feature>.tsx` — presentational components.
-- `src/pages/<Feature>Page.tsx` — route-level composition, wired up in the router.
+The first level under `src/` is a *layer*; the level below it is a *feature slice*. The same feature
+name therefore appears once per layer, which is the intended shape and not duplication. One feature
+end to end (`proxies`):
 
-When adding a feature, follow this split rather than putting fetch/business logic directly in
-components.
+    app/router.tsx -> pages/ProxiesPage.tsx -> components/proxies/*
+      -> modules/proxies/{hooks,utils}.ts -> store/proxies.tsx -> api/proxies.ts
+
+- `src/api/<resource>.ts` — thin fetch wrappers. No React, no state.
+- `src/store/*` — legacy global store slices plus `StateProvider.tsx` (see *State management*).
+- `src/modules/<feature>/hooks.ts` — the feature's logic as hooks: fetching, filtering/sorting,
+  derived state.
+- `src/modules/<feature>/utils.ts` — pure helpers, no React import.
+- `src/components/<feature>/*.tsx` — rendering only: props in, DOM out.
+- `src/components/shared/*` — presentational pieces used by more than one feature.
+- `src/app/*` — the application shell: router, providers, bootstrap, `SideBar`, `ErrorBoundary`.
+- `src/hooks/*` — hooks used by more than one feature (`useVersion`). A hook with a single consumer
+  belongs in that feature's `modules/<feature>/hooks.ts` instead.
+- `src/pages/<Feature>Page.tsx` — **not a page**. It is the `connect(mapStateToProps)` adapter that
+  binds the legacy store to a component, which is why most of them are ~10 lines
+  (`pages/RulesPage.tsx` is the canonical shape). Keeping `connect` here is what lets the component
+  under `components/<feature>/` stay prop-driven and store-agnostic. `pages/ProxiesPage.tsx` is
+  longer only because it uses `createSelector` to collapse ten `app` prefs into one memoized
+  `appConfig`; without that, `connect`'s shallow compare re-renders the whole page on every change.
+
+Dependencies run one way: `app → pages → components → modules → store → api`. Two rules follow from
+that, both of which had been violated before, so check them when adding code:
+
+- a component must not import from `src/api/*` except with `import type` — put the call in the
+  feature's `hooks.ts` (`useCloseConnections` in `src/modules/connections/hooks.ts` is the pattern);
+- a module must not import a component.
+
+`src/components/` itself holds only directories; don't add loose `.tsx` files back to it.
+
+### Surfacing errors to the user
+
+`src/store/toast.ts` exposes `toast(kind, message)` and writes to jotai's default store, so it works
+outside React and store thunks can call it directly. mihomo answers failures with
+`{ "message": "..." }` — parse it with `readErrorMessage` from `src/misc/request-helper.ts` rather
+than falling back to `res.statusText`. When an optimistic UI update fails, re-fetch to roll it back
+*and* toast; `onSwitchProxyFailed` in `src/store/proxies.tsx` is the reference.
 
 ### Path alias
 

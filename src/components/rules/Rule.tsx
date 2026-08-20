@@ -3,7 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { RuleExtra } from '~/api/rules';
+import type { RuleExtra } from '~/api/rules';
 import {
   Activity,
   FileText,
@@ -13,7 +13,7 @@ import {
   Shield,
   Zap,
 } from '~/components/shared/FeatherIcons';
-import SwitchThemed from '~/components/SwitchThemed';
+import SwitchThemed from '~/components/shared/SwitchThemed';
 import { useToggleRuleDisabled } from '~/modules/rules/hooks';
 import type { RuleProviderIndex } from '~/modules/rules/utils';
 import { ClashAPIConfig } from '~/types';

@@ -1,10 +1,10 @@
 import * as React from 'react';
 
 import APIDiscovery from '~/components/backend/APIDiscovery';
-import { connect } from '~/components/StateProvider';
 import { useBackendDiscovery } from '~/modules/backend/hooks';
 import BackendPage from '~/pages/BackendPage';
 import { getClashAPIConfig } from '~/store/app';
+import { connect } from '~/store/StateProvider';
 import type { DispatchFn, State } from '~/store/types';
 import type { ClashAPIConfig } from '~/types';
 

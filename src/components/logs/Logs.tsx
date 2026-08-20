@@ -2,11 +2,11 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ArrowDown } from '~/components/shared/FeatherIcons';
-import { useStoreActions } from '~/components/StateProvider';
 import { useFilteredLogs, useLogsPage } from '~/modules/logs/hooks';
 import { LOG_TYPES } from '~/modules/logs/utils';
 import { updateConfigs } from '~/store/configs';
 import { clearLogs } from '~/store/logs';
+import { useStoreActions } from '~/store/StateProvider';
 import { DispatchFn, Log } from '~/store/types';
 import { ClashAPIConfig } from '~/types';
 

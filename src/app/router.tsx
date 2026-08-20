@@ -16,7 +16,7 @@ import ProxiesPage from '../pages/ProxiesPage';
 import RulesPage from '../pages/RulesPage';
 import StyleGuidePage from '../pages/StyleGuidePage';
 
-import APIDiscovery from './APIDiscovery';
+import APIDiscoveryContainer from './APIDiscoveryContainer';
 
 const routes = [
   { path: '/', element: <Navigate to="/proxies" replace /> },
@@ -33,7 +33,7 @@ const routes = [
 function DashboardRouter() {
   return (
     <>
-      <APIDiscovery />
+      <APIDiscoveryContainer />
       <SideBar />
       <div className={styles.content}>{useRoutes(routes)}</div>
     </>

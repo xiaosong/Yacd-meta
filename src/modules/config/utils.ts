@@ -40,9 +40,10 @@ export const MODE_OPTIONS: SelectOption[] = [
 ];
 
 export const TUN_STACK_OPTIONS: SelectOption[] = [
-  ['gvisor', 'gVisor'],
-  ['mixed', 'Mixed'],
   ['system', 'System'],
+  ['gvisor', 'gVisor'],
+  ['mips', 'mips'],
+  ['mixed', 'Mixed'],
 ];
 
 export function getBackendContent(version: { meta?: boolean; premium?: boolean } | undefined) {

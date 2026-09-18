@@ -67,10 +67,7 @@ export const ProxyProvider = memo(function ProxyProvider({
   const [updateProviderItem, isUpdating] = useUpdateProviderItem(apiConfig);
   const updateProvider = useCallback(() => updateProviderItem(name), [updateProviderItem, name]);
 
-  const [healthcheck, isHealthcheckLoading] = useHealthcheckProvider(
-    apiConfig,
-    appConfig.providerHealthcheckTimeout,
-  );
+  const [healthcheck, isHealthcheckLoading] = useHealthcheckProvider(apiConfig, appConfig);
   const healthcheckProvider = useCallback(() => healthcheck(name), [healthcheck, name]);
 
   const {

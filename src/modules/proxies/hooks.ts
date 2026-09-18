@@ -13,7 +13,9 @@ import { DelayMapping, FormattedProxyProvider, ProxiesMapping, ProxyItem } from 
 import { ClashAPIConfig } from '~/types';
 
 import {
+  findReselectedGroups,
   formatProxyProviders,
+  GroupNows,
   matchesFilter,
   mergeDelayMapping,
   NonProxyTypes,
@@ -22,6 +24,7 @@ import {
   resolveChain,
   resolveGroupTestUrl,
   retrieveGroupNamesFrom,
+  snapshotGroupNows,
   splitItemsByLayout,
   withTimeout,
 } from './utils';
@@ -122,29 +125,58 @@ export function useDelayMapping(proxies: ProxiesMapping, dataUpdatedAt: number):
 
 const noop = (): null => null;
 
-/** 关掉走 groupName、但没走 exceptionItemName 的那些连接 */
-async function closeGroupConns(
-  apiConfig: ClashAPIConfig,
-  groupName: string,
-  exceptionItemName: string,
-) {
+// mihomo 的 URLTest 组把选中结果缓存 10s（adapter/outboundgroup/urltest.go 的 fastSingle），
+// 测速刚结束时读到的 now 可能还是旧节点
+const RECHECK_AFTER_TEST_MS = 11_000;
+
+async function closeConnsOffLeaf(apiConfig: ClashAPIConfig, targets: [string, string][]) {
+  if (targets.length === 0) return;
   const res = await connAPI.fetchConns(apiConfig);
   if (!res.ok) {
     console.log('unable to fetch all connections', res.statusText);
+    return;
   }
-  const json = await res.json();
-  const idsToClose = [];
-  for (const conn of json.connections) {
-    if (conn.chains.indexOf(groupName) > -1 && conn.chains.indexOf(exceptionItemName) < 0) {
-      idsToClose.push(conn.id);
-    }
-  }
-  await Promise.all(idsToClose.map((id) => connAPI.closeConnById(apiConfig, id).catch(noop)));
+  const { connections }: connAPI.ConnectionsData = await res.json();
+  // 没有连接时 mihomo 返回 "connections": null
+  const ids = (connections ?? [])
+    // chains 逐层带上组名，嵌套了 group 的连接同样命中
+    .filter(({ chains }) =>
+      targets.some(([group, leaf]) => chains.includes(group) && !chains.includes(leaf)),
+    )
+    .map(({ id }) => id);
+  await Promise.all(ids.map((id) => connAPI.closeConnById(apiConfig, id).catch(noop)));
 }
 
 function closePrevConns(apiConfig: ClashAPIConfig, proxies: ProxiesMapping, switchTo: SwitchTo) {
-  const chain = resolveChain(proxies, switchTo.groupName, switchTo.itemName);
-  closeGroupConns(apiConfig, switchTo.groupName, chain[0]);
+  const leaf = resolveChain(proxies, switchTo.groupName, switchTo.itemName)[0];
+  closeConnsOffLeaf(apiConfig, [[switchTo.groupName, leaf]]).catch(noop);
+}
+
+function useRefreshAfterLatencyTest(apiConfig: ClashAPIConfig, autoCloseOldConns: boolean) {
+  const { queryClient, queryKey, getData } = useProxiesCache(apiConfig);
+
+  const snapshot = useCallback(() => snapshotGroupNows(getData()?.proxies ?? {}), [getData]);
+
+  const refresh = useCallback(
+    (before: GroupNows | undefined) => {
+      const round = async () => {
+        const data = await queryClient.fetchQuery({
+          queryKey,
+          queryFn: () => fetchProxiesData(apiConfig),
+          staleTime: 0,
+        });
+        if (autoCloseOldConns && before) {
+          await closeConnsOffLeaf(apiConfig, findReselectedGroups(before, data.proxies));
+        }
+      };
+      // 不随组件卸载取消：测完立刻切走页面时，旧连接也要断
+      setTimeout(() => round().catch(noop), RECHECK_AFTER_TEST_MS);
+      return round().catch(noop);
+    },
+    [queryClient, queryKey, apiConfig, autoCloseOldConns],
+  );
+
+  return { snapshot, refresh };
 }
 
 /** 切换节点：先乐观改缓存，失败回滚并弹出后端给的原因 */
@@ -256,7 +288,8 @@ export function useTestGroupLatency(
   apiConfig: ClashAPIConfig,
   appConfig: ProxiesAppConfig,
 ): [(opts: { groupName: string; isMeta: boolean; memberNames: string[] }) => void, boolean] {
-  const { getData, invalidate } = useProxiesCache(apiConfig);
+  const { getData } = useProxiesCache(apiConfig);
+  const { snapshot, refresh } = useRefreshAfterLatencyTest(apiConfig, appConfig.autoCloseOldConns);
   const testProxy = useTestProxyLatency(apiConfig, appConfig);
   const { latencyTestTimeout, latencyTestExpectedStatus } = appConfig;
 
@@ -288,7 +321,8 @@ export function useTestGroupLatency(
           .map((name) => testProxy(name, undefined, { silent: true })),
       );
     },
-    onSettled: () => invalidate(),
+    onMutate: snapshot,
+    onSettled: (_data, _err, _vars, before) => refresh(before),
   });
 
   return [mutate, isPending];
@@ -299,7 +333,8 @@ export function useTestAllLatency(
   apiConfig: ClashAPIConfig,
   appConfig: ProxiesAppConfig,
 ): [() => void, boolean] {
-  const { getData, invalidate } = useProxiesCache(apiConfig);
+  const { getData } = useProxiesCache(apiConfig);
+  const { snapshot, refresh } = useRefreshAfterLatencyTest(apiConfig, appConfig.autoCloseOldConns);
   const testProxy = useTestProxyLatency(apiConfig, appConfig);
   const { providerHealthcheckTimeout } = appConfig;
 
@@ -315,7 +350,8 @@ export function useTestAllLatency(
         await healthcheckProvider(apiConfig, provider.name, providerHealthcheckTimeout);
       }
     },
-    onSettled: () => invalidate(),
+    onMutate: snapshot,
+    onSettled: (_data, _err, _vars, before) => refresh(before),
   });
 
   return [mutate, isPending];
@@ -323,12 +359,14 @@ export function useTestAllLatency(
 
 export function useHealthcheckProvider(
   apiConfig: ClashAPIConfig,
-  timeout: number,
+  appConfig: ProxiesAppConfig,
 ): [(name: string) => void, boolean] {
-  const { invalidate } = useProxiesCache(apiConfig);
+  const { snapshot, refresh } = useRefreshAfterLatencyTest(apiConfig, appConfig.autoCloseOldConns);
   const { mutate, isPending } = useMutation({
-    mutationFn: (name: string) => healthcheckProvider(apiConfig, name, timeout),
-    onSettled: () => invalidate(),
+    mutationFn: (name: string) =>
+      healthcheckProvider(apiConfig, name, appConfig.providerHealthcheckTimeout),
+    onMutate: snapshot,
+    onSettled: (_data, _err, _name, before) => refresh(before),
   });
   return [mutate, isPending];
 }

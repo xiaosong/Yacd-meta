@@ -283,3 +283,28 @@ export function resolveChain(proxies: ProxiesMapping, groupName: string, itemNam
   }
   return chain;
 }
+
+/** 组名到该组当前选中成员（now）的映射 */
+export type GroupNows = Record<string, string>;
+
+/** 记下所有组当前选中的成员，作为 findReselectedGroups 的比对基准 */
+export function snapshotGroupNows(proxies: ProxiesMapping): GroupNows {
+  const nows: GroupNows = {};
+  for (const [name, proxy] of Object.entries(proxies)) {
+    if (proxy.now) nows[name] = proxy.now;
+  }
+  return nows;
+}
+
+/** 相对 before 换了选中成员的组，每项是 [组名, 新链路末端的节点名] */
+export function findReselectedGroups(
+  before: GroupNows,
+  proxies: ProxiesMapping,
+): [string, string][] {
+  const reselected: [string, string][] = [];
+  for (const [group, prevNow] of Object.entries(before)) {
+    const now = proxies[group]?.now;
+    if (now && now !== prevNow) reselected.push([group, resolveChain(proxies, group, now)[0]]);
+  }
+  return reselected;
+}

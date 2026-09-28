@@ -1,4 +1,5 @@
-import { fetchConfigs } from '~/api/configs';
+import { requestVersion } from '~/api/version';
+import { readErrorMessage } from '~/misc/request-helper';
 import type { ClashAPIConfig } from '~/types';
 
 export type Protocol = 'http' | 'https';
@@ -15,8 +16,6 @@ export const DEFAULT_BACKEND_FIELDS: BackendFields = {
   host: '127.0.0.1',
   port: '9090',
 };
-
-const Ok = 0;
 
 /** IPv6 在 URL 里带方括号，表单里只展示裸地址 */
 function stripBrackets(host: string) {
@@ -82,15 +81,29 @@ export function buildAPIBaseURL({
   return { baseURL: `${protocol}://${hostname}:${trimmedPort}` };
 }
 
-export async function verifyAPIConfig(apiConfig: ClashAPIConfig): Promise<[number, string?]> {
+// 连不上的地址（被防火墙丢包）fetch 会一直挂着，测试按钮不能无限转圈
+const TEST_TIMEOUT_MS = 5000;
+
+export type ConnectionTestResult =
+  | { ok: true; version: string }
+  // unreachable 涵盖超时；not_clash 是地址能通但回的不是 JSON（填成了别的网页服务）
+  | { ok: false; reason: 'unreachable' | 'not_clash' }
+  | { ok: false; reason: 'http'; message: string };
+
+/** 用 /version 测试后端是否可用。这个接口同样要求鉴权，所以 secret 错误也能测出来 */
+export async function testAPIConfig(apiConfig: ClashAPIConfig): Promise<ConnectionTestResult> {
+  let res: Response;
   try {
-    const res = await fetchConfigs(apiConfig);
-    if (res.status > 399) {
-      return [1, res.statusText];
-    }
-    return [Ok];
-  } catch (e) {
-    return [1, 'Failed to connect'];
+    res = await requestVersion(apiConfig, AbortSignal.timeout(TEST_TIMEOUT_MS));
+  } catch {
+    return { ok: false, reason: 'unreachable' };
+  }
+  if (!res.ok) return { ok: false, reason: 'http', message: await readErrorMessage(res) };
+  try {
+    const data: { version?: unknown } = await res.json();
+    return { ok: true, version: typeof data.version === 'string' ? data.version : '' };
+  } catch {
+    return { ok: false, reason: 'not_clash' };
   }
 }
 

@@ -3,12 +3,12 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Button from '~/components/shared/Button';
-import { AlertCircle, Eye, EyeOff } from '~/components/shared/FeatherIcons';
+import { AlertCircle, CheckCircle, Eye, EyeOff } from '~/components/shared/FeatherIcons';
 import { SegmentedControl } from '~/components/shared/SegmentedControl';
 import SvgYacd from '~/components/shared/SvgYacd';
 import { useToggle } from '~/hooks/basic';
 import { useBackendConfigForm } from '~/modules/backend/hooks';
-import type { Protocol } from '~/modules/backend/utils';
+import type { ConnectionTestResult, Protocol } from '~/modules/backend/utils';
 import type { ClashAPIConfigWithAddedAt } from '~/store/types';
 import type { ClashAPIConfig } from '~/types';
 
@@ -23,6 +23,20 @@ type Props = {
   onSelectConfig: (config: ClashAPIConfig) => void;
   onUpdateConfig: (prev: ClashAPIConfig, next: ClashAPIConfig) => void;
 };
+
+function describeTestFailure(
+  result: Exclude<ConnectionTestResult, { ok: true }>,
+  t: (key: string, options?: Record<string, string>) => string,
+) {
+  switch (result.reason) {
+    case 'unreachable':
+      return t('backend_test_unreachable');
+    case 'not_clash':
+      return t('backend_test_not_clash');
+    case 'http':
+      return t('backend_test_failed', { message: result.message });
+  }
+}
 
 const protocolOptions: { value: Protocol; label: string }[] = [
   { value: 'http', label: 'HTTP' },
@@ -46,13 +60,15 @@ export default function APIConfig({
     secret,
     errMsg,
     baseURLPreview,
-    isSubmitting,
+    isTesting,
+    testResult,
     editing,
     startEdit,
     cancelEdit,
     handleProtocolOnChange,
     handleInputOnChange,
     handleContentOnKeyDown,
+    onTest,
     onConfirm,
   } = useBackendConfigForm({ onAddConfig, onUpdateConfig });
 
@@ -156,19 +172,33 @@ export default function APIConfig({
                 <AlertCircle size={14} />
                 {errMsg}
               </span>
+            ) : testResult?.ok ? (
+              <span className={s.success}>
+                <CheckCircle size={14} />
+                {testResult.version
+                  ? t('backend_test_ok_version', { version: testResult.version })
+                  : t('backend_test_ok')}
+              </span>
+            ) : testResult ? (
+              <span className={s.error}>
+                <AlertCircle size={14} />
+                {describeTestFailure(testResult, t)}
+              </span>
             ) : baseURLPreview ? (
               <span className={s.preview}>{baseURLPreview}</span>
             ) : null}
           </div>
           <div className={s.buttons}>
+            <Button
+              kind="minimal"
+              label={t('test_connection')}
+              onClick={onTest}
+              isLoading={isTesting}
+            />
             {editing ? (
               <Button kind="minimal" label={t('cancel_edit')} onClick={cancelEdit} />
             ) : null}
-            <Button
-              label={editing ? t('save_backend') : t('add_backend')}
-              onClick={onConfirm}
-              isLoading={isSubmitting}
-            />
+            <Button label={editing ? t('save_backend') : t('add_backend')} onClick={onConfirm} />
           </div>
         </div>
       </section>

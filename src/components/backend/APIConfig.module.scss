@@ -206,6 +206,16 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+
+  // 三个按钮在窄屏上会把状态文字挤没，拆成两行
+  @media screen and (max-width: 30em) {
+    flex-direction: column;
+    align-items: stretch;
+
+    .buttons {
+      justify-content: flex-end;
+    }
+  }
 }
 
 .status {
@@ -228,6 +238,17 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.success {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-success);
+
+  svg {
+    flex-shrink: 0;
+  }
 }
 
 .error {

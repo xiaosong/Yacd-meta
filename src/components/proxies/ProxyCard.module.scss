@@ -186,10 +186,12 @@
 }
 
 /* 圆点插槽靠右（左侧没有当前节点时改为靠左），宽度由 flex 决定而不是内容，
-   测量它来决定圆点还是进度条 */
+   测量它来决定圆点还是进度条。
+   flex-basis 必须是 0：用 auto 时宽度取决于里面放的是圆点还是进度条，而放哪个又取决于宽度，
+   当前节点名很长时两者会逐帧来回切换（#123）。min-width 保证长节点名下进度条仍然可见。 */
 .dotsSlot {
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: 1 1 0;
+  min-width: 48px;
   // 撑满状态行高度、右侧留出 padding，这样 hover 放大的圆点不会被 overflow 裁掉；
   // padding 不影响测量（用的是 content box 宽度）
   align-self: stretch;

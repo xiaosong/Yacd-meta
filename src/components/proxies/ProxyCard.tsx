@@ -178,7 +178,8 @@ export function ProxyCardStatusRow({
   renderDots: () => React.ReactNode;
 }) {
   const dotsSlotRef = useRef<HTMLDivElement>(null);
-  const [slotWidth, setSlotWidth] = useState(0);
+  // null = not measured yet; a measured 0 must not fall back to "fits everything"
+  const [slotWidth, setSlotWidth] = useState<number | null>(null);
 
   useLayoutEffect(() => {
     const el = dotsSlotRef.current;
@@ -186,8 +187,7 @@ export function ProxyCardStatusRow({
     // sync read before first paint to avoid flash — content box, to match
     // the ResizeObserver's contentRect below (the slot has horizontal padding)
     const cs = getComputedStyle(el);
-    const w = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-    if (w > 0) setSlotWidth(w);
+    setSlotWidth(el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
     const ro = new ResizeObserver((entries) => {
       setSlotWidth(entries[0].contentRect.width);
     });
@@ -195,7 +195,7 @@ export function ProxyCardStatusRow({
     return () => ro.disconnect();
   }, []);
 
-  const dotsPerRow = slotWidth > 0 ? Math.floor(slotWidth / DOT_PITCH) : Infinity;
+  const dotsPerRow = slotWidth === null ? Infinity : Math.floor(slotWidth / DOT_PITCH);
   const showBar = itemCount > dotsPerRow;
 
   return (

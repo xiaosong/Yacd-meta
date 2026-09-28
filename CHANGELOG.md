@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5.0](https://github.com/MetaCubeX/Yacd-meta/compare/v0.4.0...v0.5.0) (2026-09-28)
+
+
+### Features
+
+* `mips` stack ([e2a7bc6](https://github.com/MetaCubeX/Yacd-meta/commit/e2a7bc6c47b3c93bf0ba2de5461b8be0fd4110bb))
+* **app:** link to backend settings from the error fallback page ([0690e57](https://github.com/MetaCubeX/Yacd-meta/commit/0690e576cb1b2bd4a1d5982b04882af91fb61f1c))
+* **backend:** separate connection test from saving a backend ([6a4fe35](https://github.com/MetaCubeX/Yacd-meta/commit/6a4fe35d7ffaa362cd5370d7a341bd06db47f15f))
+
+
+### Bug Fixes
+
+* **backend:** adapt backend config modal to narrow screens ([ddd5065](https://github.com/MetaCubeX/Yacd-meta/commit/ddd50652b53223fcf261225f587723bae64a321c))
+* **proxies:** keep backend config modal usable on 401 or unreachable backend ([1877a55](https://github.com/MetaCubeX/Yacd-meta/commit/1877a55a70bcf1bdb75b60a784766afb0be2ae3d)), closes [#124](https://github.com/MetaCubeX/Yacd-meta/issues/124)
+* **proxies:** stop status row flickering with long current node names ([7fa13ad](https://github.com/MetaCubeX/Yacd-meta/commit/7fa13ad4debdaf1eb56c4ade5c63c6d2fb0edbc3)), closes [#123](https://github.com/MetaCubeX/Yacd-meta/issues/123)
+* urltest后连接未自动断开 ([590bd1c](https://github.com/MetaCubeX/Yacd-meta/commit/590bd1c4600d70cd7b1334d8c3a467da60515f5f))
+
 ## [0.4.0](https://github.com/MetaCubeX/Yacd-meta/compare/v0.3.8...v0.4.0) (2026-09-09)
 
 

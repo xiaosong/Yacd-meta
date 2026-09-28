@@ -24,10 +24,17 @@ $ curl "http://127.0.0.1:8080/proxies/GLOBAL" -XPUT -d '{ "name": "Proxy" }' -i
 HTTP/1.1 204 No Content
 */
 
+// 401 / unreachable backend must not throw: these feed a suspense query, and a throw there
+// unmounts the whole app (including the backend config modal that fetchConfigs opens).
 export async function fetchProxies(config: ClashAPIConfig) {
-  const { url, init } = getURLAndInit(config);
-  const res = await fetch(url + endpoint, init);
-  return await res.json();
+  try {
+    const { url, init } = getURLAndInit(config);
+    const res = await fetch(url + endpoint, init);
+    if (res.ok) return await res.json();
+  } catch (err) {
+    console.log('failed to fetch proxies', err);
+  }
+  return { proxies: {} };
 }
 
 export async function requestToSwitchProxy(
@@ -71,13 +78,16 @@ export async function requestDelayForProxyGroup(
   return await fetch(fullUrl, init);
 }
 
+// Same failure contract as fetchProxies; 404 comes from cores without provider support.
 export async function fetchProviderProxies(config: ClashAPIConfig) {
-  const { url, init } = getURLAndInit(config);
-  const res = await fetch(url + '/providers/proxies', init);
-  if (res.status === 404) {
-    return { providers: {} };
+  try {
+    const { url, init } = getURLAndInit(config);
+    const res = await fetch(url + '/providers/proxies', init);
+    if (res.ok) return await res.json();
+  } catch (err) {
+    console.log('failed to fetch provider proxies', err);
   }
-  return await res.json();
+  return { providers: {} };
 }
 
 export async function updateProviderByName(config: ClashAPIConfig, name: string) {

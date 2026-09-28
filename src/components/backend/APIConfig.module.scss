@@ -11,6 +11,12 @@
   &:focus {
     outline: none;
   }
+
+  @media screen and (max-width: 30em) {
+    gap: 20px;
+    // 底部多留出右下角固定的主题切换按钮的高度，免得挡住最后一条后端的操作按钮
+    padding: 24px 0 80px;
+  }
 }
 
 /* 顶部品牌区 */
@@ -56,6 +62,10 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+
+  @media screen and (max-width: 30em) {
+    padding: 16px;
+  }
 }
 
 /* 协议 / 主机 / 端口一行，secret 独占一行 */
@@ -142,6 +152,11 @@
     border-color: var(--color-focus-blue);
     box-shadow: 0 0 0 3px var(--color-accent-soft-bg);
   }
+
+  // iOS Safari 聚焦字号小于 16px 的输入框时会自动放大页面
+  @media screen and (max-width: 30em) {
+    font-size: 16px;
+  }
 }
 
 /* 协议分段器与输入框对齐高度 */
@@ -191,6 +206,16 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+
+  // 三个按钮在窄屏上会把状态文字挤没，拆成两行
+  @media screen and (max-width: 30em) {
+    flex-direction: column;
+    align-items: stretch;
+
+    .buttons {
+      justify-content: flex-end;
+    }
+  }
 }
 
 .status {
@@ -213,6 +238,17 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.success {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-success);
+
+  svg {
+    flex-shrink: 0;
+  }
 }
 
 .error {

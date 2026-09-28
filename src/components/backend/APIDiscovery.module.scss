@@ -20,8 +20,15 @@
 
 .container {
   position: relative;
-  margin-left: 20px;
-  margin-right: 20px;
+  // 必须撑满：flex item 默认按内容收缩，APIConfig 的 max-width: 100% 就参照不到视口，
+  // 窄屏上内容比视口宽，居中后左侧溢出到滚动不到的地方
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 20px;
+
+  @media screen and (max-width: 30em) {
+    padding: 0 16px;
+  }
 }
 
 .overlay.overlay {

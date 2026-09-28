@@ -7,6 +7,12 @@ type VersionData = {
   meta?: boolean;
 };
 
+/** Raw GET /version, for callers that need the status and error body rather than a fallback. */
+export function requestVersion(apiConfig: ClashAPIConfig, signal?: AbortSignal) {
+  const { url, init } = getURLAndInit(apiConfig);
+  return fetch(url + '/version', { ...init, signal });
+}
+
 export async function fetchVersion(
   endpoint: string,
   apiConfig: ClashAPIConfig,

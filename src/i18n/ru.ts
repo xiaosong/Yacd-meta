@@ -66,7 +66,7 @@ export const data = {
   Closed: 'Закрытые',
   switch_theme: 'Сменить тему',
   theme: 'тема',
-  about: 'о программе',
+  new_version_available: 'Доступна новая версия {{version}}',
   no_logs: 'Пока нет логов, подождите...',
   chart_style: 'Стиль графика',
   latency_test_url: 'URL для проверки задержки',

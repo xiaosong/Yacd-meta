@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import type { UpgradeChannel } from '~/api/configs';
 import * as logsApi from '~/api/logs';
 import { fetchVersion } from '~/api/version';
+import { useCoreUpdate } from '~/hooks/useCoreUpdate';
 import {
   fetchConfigs,
   flushFakeIPPool,
@@ -83,6 +84,7 @@ export function useConfigPage({
 
   const { configState, setConfigState, setTunConfigState } = useConfigState(configs);
   const versionQuery = useConfigVersionQuery(apiConfig);
+  const coreUpdate = useCoreUpdate(apiConfig);
 
   const openAPIConfigModal = useCallback(() => {
     dispatch(openModal('apiConfig'));
@@ -220,5 +222,6 @@ export function useConfigPage({
     isUpgradingUI,
     handleFlushFakeIPPool,
     versionQuery,
+    coreUpdate,
   };
 }

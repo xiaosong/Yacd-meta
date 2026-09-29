@@ -6,7 +6,6 @@ import { Head } from '~/components/shared/Head';
 import Loading from '~/components/shared/Loading';
 
 import styles from '../App.module.scss';
-import AboutPage from '../pages/AboutPage';
 import BackendPage from '../pages/BackendPage';
 import ConfigPage from '../pages/ConfigPage';
 import ConnectionsPage from '../pages/ConnectionsPage';
@@ -26,7 +25,6 @@ const routes = [
   { path: '/logs', element: <LogsPage /> },
   { path: '/proxies', element: <ProxiesPage /> },
   { path: '/rules', element: <RulesPage /> },
-  { path: '/about', element: <AboutPage /> },
   import.meta.env.DEV ? { path: '/style', element: <StyleGuidePage /> } : false,
 ].filter(Boolean) as RouteObject[];
 

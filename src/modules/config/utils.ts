@@ -55,3 +55,13 @@ export function getBackendContent(version: { meta?: boolean; premium?: boolean }
   }
   return 'Clash Premium';
 }
+
+export function getCoreVersionMeta(version: { meta?: boolean; premium?: boolean }) {
+  if (version.meta && version.premium) {
+    return { name: 'sing-box', link: 'https://github.com/SagerNet/sing-box' };
+  }
+  if (version.meta) {
+    return { name: 'Clash.Meta', link: 'https://github.com/MetaCubeX/mihomo' };
+  }
+  return { name: 'Clash', link: 'https://github.com/Dreamacro/clash' };
+}

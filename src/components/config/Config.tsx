@@ -5,6 +5,7 @@ import Button from '~/components/shared/Button';
 import {
   Cpu,
   DownloadCloud,
+  GitHub,
   LogOut,
   Monitor,
   RotateCw,
@@ -21,6 +22,7 @@ import { useConfigPage } from '~/modules/config/hooks';
 import {
   CONFIG_CHART_STYLE_PROPS,
   getBackendContent,
+  getCoreVersionMeta,
   LANGUAGE_OPTIONS,
   LOG_LEVEL_OPTIONS,
   MODE_OPTIONS,
@@ -32,6 +34,8 @@ import { ClashGeneralConfig, DispatchFn } from '~/store/types';
 import { ClashAPIConfig } from '~/types';
 
 import s0 from './Config.module.scss';
+
+const YACD_REPO_URL = 'https://github.com/metacubex/yacd';
 
 type Props = {
   dispatch: DispatchFn;
@@ -58,12 +62,16 @@ export default function Config({ dispatch, configs, selectedChartStyleIndex, api
     isUpgradingUI,
     handleFlushFakeIPPool,
     versionQuery: { data: version },
+    coreUpdate,
   } = useConfigPage({
     apiConfig,
     configs,
     dispatch,
     updateAppConfig,
   });
+  const coreMeta = getCoreVersionMeta(version);
+  // 只有 mihomo 支持在线升级内核和面板；版本号跟着升级按钮走，其它内核的版本号放在当前后端里
+  const canUpgrade = version.meta && !version.premium;
 
   return (
     <div>
@@ -203,6 +211,56 @@ export default function Config({ dispatch, configs, selectedChartStyleIndex, api
                 {t('management')}
               </div>
               <div className={s0.section}>
+                {canUpgrade && (
+                  <div>
+                    <div className={s0.label}>{coreMeta.name}</div>
+                    {version.version ? (
+                      <VersionLine version={version.version} link={coreMeta.link} />
+                    ) : null}
+                    {coreUpdate ? (
+                      <a
+                        className={s0.updateHint}
+                        href={coreUpdate.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <span className={s0.updateDot} />
+                        {t('new_version_available', { version: coreUpdate.version })}
+                      </a>
+                    ) : null}
+                    <div className={s0.buttonGroup}>
+                      <Button
+                        className={coreUpdate?.channel === 'release' ? s0.withUpdateDot : undefined}
+                        start={<DownloadCloud size={16} />}
+                        label={t('upgrade_core_release')}
+                        isLoading={upgradingChannel === 'release'}
+                        disabled={upgradingChannel !== null}
+                        onClick={() => handleUpgradeCore('release')}
+                      />
+                      <Button
+                        className={coreUpdate?.channel === 'alpha' ? s0.withUpdateDot : undefined}
+                        start={<DownloadCloud size={16} />}
+                        label={t('upgrade_core_alpha')}
+                        isLoading={upgradingChannel === 'alpha'}
+                        disabled={upgradingChannel !== null}
+                        onClick={() => handleUpgradeCore('alpha')}
+                      />
+                    </div>
+                  </div>
+                )}
+                {canUpgrade && (
+                  <div>
+                    <div className={s0.label}>Yacd</div>
+                    <VersionLine version={__VERSION__} link={YACD_REPO_URL} />
+                    <Button
+                      start={<DownloadCloud size={16} />}
+                      label={t('upgrade_ui')}
+                      isLoading={isUpgradingUI}
+                      disabled={isUpgradingUI}
+                      onClick={handleUpgradeUI}
+                    />
+                  </div>
+                )}
                 <div>
                   <div className={s0.label}>Reload</div>
                   <Button
@@ -218,18 +276,6 @@ export default function Config({ dispatch, configs, selectedChartStyleIndex, api
                       start={<DownloadCloud size={16} />}
                       label={t('upgrade_geo')}
                       onClick={handleUpgradeGeo}
-                    />
-                  </div>
-                )}
-                {version.meta && !version.premium && (
-                  <div>
-                    <div className={s0.label}>Dashboard UI</div>
-                    <Button
-                      start={<DownloadCloud size={16} />}
-                      label={t('upgrade_ui')}
-                      isLoading={isUpgradingUI}
-                      disabled={isUpgradingUI}
-                      onClick={handleUpgradeUI}
                     />
                   </div>
                 )}
@@ -249,27 +295,6 @@ export default function Config({ dispatch, configs, selectedChartStyleIndex, api
                       label={t('restart_core')}
                       onClick={handleRestartCore}
                     />
-                  </div>
-                )}
-                {version.meta && !version.premium && (
-                  <div>
-                    <div className={s0.label}> {t('upgrade_core')} </div>
-                    <div className={s0.buttonGroup}>
-                      <Button
-                        start={<DownloadCloud size={16} />}
-                        label={t('upgrade_core_release')}
-                        isLoading={upgradingChannel === 'release'}
-                        disabled={upgradingChannel !== null}
-                        onClick={() => handleUpgradeCore('release')}
-                      />
-                      <Button
-                        start={<DownloadCloud size={16} />}
-                        label={t('upgrade_core_alpha')}
-                        isLoading={upgradingChannel === 'alpha'}
-                        disabled={upgradingChannel !== null}
-                        onClick={() => handleUpgradeCore('alpha')}
-                      />
-                    </div>
                   </div>
                 )}
               </div>
@@ -304,11 +329,21 @@ export default function Config({ dispatch, configs, selectedChartStyleIndex, api
               />
             </div>
 
+            {canUpgrade ? null : (
+              <div>
+                <div className={s0.label}>Yacd</div>
+                <VersionLine version={__VERSION__} link={YACD_REPO_URL} />
+              </div>
+            )}
+
             <div>
               <div className={s0.label}>
                 {t('current_backend')}
                 <p>{getBackendContent(version) + apiConfig?.baseURL}</p>
               </div>
+              {!canUpgrade && version.version ? (
+                <VersionLine version={version.version} link={coreMeta.link} />
+              ) : null}
               <div className={s0.label}>Action</div>
               <Button
                 start={<LogOut size={16} />}
@@ -319,6 +354,23 @@ export default function Config({ dispatch, configs, selectedChartStyleIndex, api
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function VersionLine({ version, link }: { version: string; link: string }) {
+  return (
+    <div className={s0.versionLine}>
+      <span className={s0.mono}>{version}</span>
+      <a
+        className={s0.sourceLink}
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="GitHub"
+      >
+        <GitHub size={18} />
+      </a>
     </div>
   );
 }

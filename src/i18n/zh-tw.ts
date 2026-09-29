@@ -67,7 +67,7 @@ export const data = {
   Closed: '已斷線',
   switch_theme: '切換主題',
   theme: '主題',
-  about: '關於',
+  new_version_available: '有新版本 {{version}}',
   no_logs: '暫時沒有紀錄…',
   chart_style: '流量圖樣式',
   latency_test_url: '延遲測速 URL',

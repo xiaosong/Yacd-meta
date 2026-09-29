@@ -60,7 +60,7 @@ export const data = {
   Closed: 'Đã đóng',
   switch_theme: 'Chuyển đổi giao diện',
   theme: 'Giao diện',
-  about: 'Về chúng tôi',
+  new_version_available: 'Đã có phiên bản mới {{version}}',
   no_logs: 'Chưa có nhật ký, hãy kiên nhẫn...',
   chart_style: 'Kiểu biểu đồ',
   latency_test_url: 'URL kiểm tra độ trễ',

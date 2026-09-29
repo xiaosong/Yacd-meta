@@ -4,9 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { FcAreaChart, FcDocument, FcGlobe, FcLink, FcRuler, FcSettings } from 'react-icons/fc';
 import { Link, useLocation } from 'react-router-dom';
 
-import { Info } from '~/components/shared/FeatherIcons';
 import { ThemeSwitcher } from '~/components/shared/ThemeSwitcher';
-import { Tooltip } from '~/components/shared/Tooltip';
 import { useVersion } from '~/hooks/useVersion';
 import { getClashAPIConfig } from '~/store/app';
 import { connect } from '~/store/StateProvider';
@@ -109,11 +107,6 @@ function SideBar(props: Props) {
       </div>
       <div className={s.footer}>
         <ThemeSwitcher />
-        <Tooltip label={t('about')}>
-          <Link to="/about" className={s.iconWrapper}>
-            <Info size={20} />
-          </Link>
-        </Tooltip>
       </div>
     </div>
   );

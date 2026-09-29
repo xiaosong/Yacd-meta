@@ -70,7 +70,7 @@ export const data = {
   Closed: 'Closed',
   switch_theme: 'Switch theme',
   theme: 'theme',
-  about: 'about',
+  new_version_available: 'New version {{version}} available',
   no_logs: 'No logs yet, hang tight...',
   chart_style: 'Chart Style',
   latency_test_url: 'Latency Test URL',

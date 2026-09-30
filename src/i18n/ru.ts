@@ -43,6 +43,9 @@ export const data = {
   settings_display: 'Отображение',
   settings_behavior: 'Поведение',
   group_fixed: 'Закреплено',
+  group_fixed_resume_tip: 'Закреплено за {{name}}; нажмите, чтобы вернуть автоматический выбор',
+  resume_automatic_selection_failed:
+    'Не удалось возобновить автоматический выбор для {{group}}: {{message}}',
   switch_proxy_failed: 'Не удалось переключить {{group}}: {{message}}',
   test_latency_failed: 'Не удалось проверить задержку {{name}}: {{message}}',
   group_fixed_tip:

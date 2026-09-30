@@ -219,6 +219,56 @@ export function useSwitchProxy(apiConfig: ClashAPIConfig, autoCloseOldConns: boo
   );
 }
 
+/** Release a manual override without running a latency test for the whole group. */
+export function useResumeAutomaticSelection(
+  apiConfig: ClashAPIConfig,
+  autoCloseOldConns: boolean,
+): [(groupName: string) => void, boolean] {
+  const { queryClient, queryKey } = useProxiesCache(apiConfig);
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (groupName: string) => {
+      const res = await proxiesAPI.requestToUnfixProxy(apiConfig, groupName);
+      if (!res.ok) throw new Error(await readErrorMessage(res));
+    },
+    onError: (err, groupName) => {
+      toast(
+        'error',
+        i18n.t('resume_automatic_selection_failed', { group: groupName, message: err.message }),
+      );
+    },
+    onSuccess: async (_data, groupName) => {
+      // The backend has already released the pin, so drop `fixed` right away; the refetch
+      // below only exists to learn the new `now`.
+      queryClient.setQueryData<ProxiesData>(queryKey, (old) => {
+        const group = old?.proxies[groupName];
+        if (!old || !group) return old;
+        return {
+          ...old,
+          proxies: { ...old.proxies, [groupName]: { ...group, fixed: undefined } },
+        };
+      });
+      // Anything thrown from onSuccess turns the mutation into an error and fires onError,
+      // which would report a successful DELETE as a failed resume.
+      let data: ProxiesData;
+      try {
+        data = await queryClient.fetchQuery({
+          queryKey,
+          queryFn: () => fetchProxiesData(apiConfig),
+          staleTime: 0,
+        });
+      } catch {
+        return;
+      }
+      const now = data.proxies[groupName]?.now;
+      if (autoCloseOldConns && now) {
+        closePrevConns(apiConfig, data.proxies, { groupName, itemName: now });
+      }
+    },
+  });
+
+  return [mutate, isPending];
+}
+
 /**
  * 单个节点测速。结果只落在 delay patch 里，不动查询缓存——后端的 history 会在
  * 下一次刷新时带上同样的数字。失败原因走 toast，patch 里只留 failed 标志。

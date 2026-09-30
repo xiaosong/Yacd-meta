@@ -52,6 +52,8 @@ export const data = {
   settings_display: '显示',
   settings_behavior: '行为',
   group_fixed: '已固定',
+  group_fixed_resume_tip: '已固定为 {{name}}，点击恢复自动选择',
+  resume_automatic_selection_failed: '恢复 {{group}} 自动选择失败：{{message}}',
   expire_at: '到期 {{date}}',
   updated_ago: '{{time}}前更新',
   sort_in_grp: '代理组条目排序',

@@ -39,6 +39,9 @@ export const data = {
   settings_display: 'Hiển thị',
   settings_behavior: 'Hành vi',
   group_fixed: 'Đã ghim',
+  group_fixed_resume_tip: 'Đã ghim vào {{name}}; bấm để khôi phục lựa chọn tự động',
+  resume_automatic_selection_failed:
+    'Không thể khôi phục lựa chọn tự động cho {{group}}: {{message}}',
   switch_proxy_failed: 'Không thể chuyển {{group}}: {{message}}',
   test_latency_failed: 'Kiểm tra độ trễ {{name}} thất bại: {{message}}',
   group_fixed_tip: 'Nhóm này đang ghim lựa chọn thủ công; chạy kiểm tra độ trễ để bỏ ghim',

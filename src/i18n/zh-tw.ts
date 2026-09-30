@@ -48,6 +48,8 @@ export const data = {
   settings_display: '顯示',
   settings_behavior: '行為',
   group_fixed: '已固定',
+  group_fixed_resume_tip: '已固定為 {{name}}，點擊恢復自動選擇',
+  resume_automatic_selection_failed: '恢復 {{group}} 自動選擇失敗：{{message}}',
   expire_at: '到期 {{date}}',
   updated_ago: '{{time}}前更新',
   sort_in_grp: '依代理群組排序',

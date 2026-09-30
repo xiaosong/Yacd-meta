@@ -51,6 +51,9 @@ export const data = {
   settings_display: 'Display',
   settings_behavior: 'Behavior',
   group_fixed: 'Fixed',
+  group_fixed_resume_tip: 'Fixed to {{name}}; click to resume automatic selection',
+  resume_automatic_selection_failed:
+    'Failed to resume automatic selection for {{group}}: {{message}}',
   expire_at: 'Expires {{date}}',
   updated_ago: 'Updated {{time}} ago',
   sort_in_grp: 'Sorting in group',

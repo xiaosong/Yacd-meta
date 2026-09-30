@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
+import { LuPin, LuPinOff } from 'react-icons/lu';
 
 import Collapsible from '~/components/shared/Collapsible';
 import { useVersion } from '~/hooks/useVersion';
@@ -7,6 +8,7 @@ import {
   useFilterAwareCollapse,
   useFilteredAndSorted,
   useFilterSegments,
+  useResumeAutomaticSelection,
   useSwitchProxy,
   useTestGroupLatency,
   useTestProxyLatency,
@@ -100,15 +102,22 @@ export const ProxyGroup = memo(function ProxyGroup({
   const [effectiveIsOpen, toggle] = useFilterAwareCollapse({ isOpen, nameMatched, onToggle });
 
   const switchProxy = useSwitchProxy(apiConfig, appConfig.autoCloseOldConns);
+  const [resumeAutomaticSelection, isResuming] = useResumeAutomaticSelection(
+    apiConfig,
+    appConfig.autoCloseOldConns,
+  );
+  const canResumeAutomaticSelection =
+    version.meta && !version.premium && Boolean(fixed) && ['URLTest', 'Fallback'].includes(type);
   const itemOnTapCallback = useCallback(
     (proxyName: string) => {
-      if (!isSelectable) return;
+      if (!isSelectable || isResuming) return;
       switchProxy(name, proxyName);
     },
-    [switchProxy, name, isSelectable],
+    [switchProxy, name, isSelectable, isResuming],
   );
 
   const [testGroup, isTestingLatency] = useTestGroupLatency(apiConfig, appConfig);
+  const isResumeBlocked = isResuming || isTestingLatency;
   const testLatency = useCallback(
     () => testGroup({ groupName: name, isMeta: version.meta === true, memberNames: all }),
     [testGroup, name, version.meta, all],
@@ -121,7 +130,7 @@ export const ProxyGroup = memo(function ProxyGroup({
     delay,
     httpsLatencyTest,
     now,
-    isSelectable,
+    isSelectable: isSelectable && !isResuming,
     itemOnTapCallback,
     onTestLatency,
     proxies,
@@ -139,7 +148,27 @@ export const ProxyGroup = memo(function ProxyGroup({
         onTest={testLatency}
         isTesting={isTestingLatency}
         badges={
-          fixed ? (
+          canResumeAutomaticSelection ? (
+            // The pin sits inside the header's click-to-collapse row, so both click and key
+            // events must stop here. aria-disabled instead of disabled: a click on a disabled
+            // button is not guaranteed to stay off the header across browsers.
+            <button
+              type="button"
+              className={s0.fixedPin}
+              title={t('group_fixed_resume_tip', { name: fixed })}
+              aria-label={t('group_fixed_resume_tip', { name: fixed })}
+              aria-disabled={isResumeBlocked}
+              aria-busy={isResuming}
+              onClick={(event) => {
+                event.stopPropagation();
+                if (!isResumeBlocked) resumeAutomaticSelection(name);
+              }}
+              onKeyDown={(event) => event.stopPropagation()}
+            >
+              <LuPin className={s0.pinIcon} aria-hidden />
+              <LuPinOff className={s0.pinOffIcon} aria-hidden />
+            </button>
+          ) : fixed ? (
             <span className={s0.fixedBadge} title={t('group_fixed_tip')}>
               {t('group_fixed')}
             </span>

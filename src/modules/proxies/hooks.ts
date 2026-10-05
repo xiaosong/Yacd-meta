@@ -186,7 +186,7 @@ export function useSwitchProxy(apiConfig: ClashAPIConfig, autoCloseOldConns: boo
   const { mutate } = useMutation({
     mutationFn: async ({ groupName, itemName }: SwitchTo) => {
       const res = await proxiesAPI.requestToSwitchProxy(apiConfig, groupName, itemName);
-      if (!res.ok) throw new Error(await readErrorMessage(res));
+      if (!res.ok) throw new Error(await readErrorMessage(res, 'Error switch proxy'));
     },
     onMutate: async ({ groupName, itemName }: SwitchTo) => {
       await queryClient.cancelQueries({ queryKey });
@@ -202,6 +202,7 @@ export function useSwitchProxy(apiConfig: ClashAPIConfig, autoCloseOldConns: boo
       return { snapshot };
     },
     onError: (err, { groupName }, ctx) => {
+      console.error('Error switch proxy', err);
       if (ctx?.snapshot) queryClient.setQueryData(queryKey, ctx.snapshot);
       toast('error', i18n.t('switch_proxy_failed', { group: groupName, message: err.message }));
     },
@@ -228,9 +229,12 @@ export function useResumeAutomaticSelection(
   const { mutate, isPending } = useMutation({
     mutationFn: async (groupName: string) => {
       const res = await proxiesAPI.requestToUnfixProxy(apiConfig, groupName);
-      if (!res.ok) throw new Error(await readErrorMessage(res));
+      if (!res.ok) {
+        throw new Error(await readErrorMessage(res, 'Error resume automatic selection'));
+      }
     },
     onError: (err, groupName) => {
+      console.error('Error resume automatic selection', err);
       toast(
         'error',
         i18n.t('resume_automatic_selection_failed', { group: groupName, message: err.message }),
@@ -304,9 +308,10 @@ export function useTestProxyLatency(apiConfig: ClashAPIConfig, appConfig: Proxie
           const body = await res.json().catch((): undefined => undefined);
           delayNumber = body?.delay;
         } else {
-          message = await readErrorMessage(res);
+          message = await readErrorMessage(res, `Error test latency: ${name}`);
         }
       } catch (err) {
+        console.error(`Error test latency: ${name}`, err);
         message = (err as Error).message || 'Request failed';
       }
 

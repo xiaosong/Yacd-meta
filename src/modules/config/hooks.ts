@@ -1,12 +1,13 @@
-import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 
 import * as configsAPI from '~/api/configs';
 import type { UpgradeChannel } from '~/api/configs';
 import * as logsApi from '~/api/logs';
-import { fetchVersion } from '~/api/version';
+import { fetchVersion, requestVersion } from '~/api/version';
 import { useCoreUpdate } from '~/hooks/useCoreUpdate';
+import { versionQueryKey } from '~/hooks/useVersion';
 import { readErrorMessage } from '~/misc/request-helper';
 import { fetchConfigs, updateConfigs } from '~/store/configs';
 import { openModal } from '~/store/modals';
@@ -79,9 +80,29 @@ type UpdateAppConfigFn = (name: string, value: unknown) => void;
 
 function useConfigVersionQuery(apiConfig: ClashAPIConfig) {
   return useSuspenseQuery({
-    queryKey: ['/version', apiConfig],
+    queryKey: versionQueryKey(apiConfig),
     queryFn: () => fetchVersion('/version', apiConfig),
   });
+}
+
+const CORE_RESTART_POLL_INTERVAL_MS = 1000;
+const CORE_RESTART_POLL_ATTEMPTS = 30;
+
+// 内核更新后回 200 再重启，重启前旧进程还会应答 /version，所以要等到版本号变了才算数。
+// 不能直接 invalidate：fetchVersion 在重启窗口内会吞掉错误返回 {}，把 meta 标记冲掉
+async function waitForUpgradedVersion(apiConfig: ClashAPIConfig, previous: string | undefined) {
+  for (let i = 0; i < CORE_RESTART_POLL_ATTEMPTS; i++) {
+    await new Promise((resolve) => setTimeout(resolve, CORE_RESTART_POLL_INTERVAL_MS));
+    try {
+      const res = await requestVersion(apiConfig);
+      if (!res.ok) continue;
+      const data: Awaited<ReturnType<typeof fetchVersion>> = await res.json();
+      if (data.version !== previous) return data;
+    } catch {
+      // 内核还在重启
+    }
+  }
+  return null;
 }
 
 export function useConfigState(configs: ClashGeneralConfig) {
@@ -125,6 +146,7 @@ export function useConfigPage({
   updateAppConfig: UpdateAppConfigFn;
 }) {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     dispatch(fetchConfigs(apiConfig));
@@ -221,6 +243,15 @@ export function useConfigPage({
       if (CONFIG_ACTIONS[action].refetchConfigs) dispatch(fetchConfigs(apiConfig));
       // 留一点时间让通知露个面，再带着清缓存整页刷新
       if (action === 'upgrade_ui') setTimeout(unregisterAndReload, UI_RELOAD_DELAY_MS);
+      if (action === 'upgrade_core') {
+        const key = versionQueryKey(apiConfig);
+        const previous = queryClient.getQueryData<{ version?: string }>(key)?.version;
+        void waitForUpgradedVersion(apiConfig, previous).then((data) => {
+          if (!data) return;
+          queryClient.setQueryData(key, data);
+          void queryClient.invalidateQueries({ queryKey: ['mihomo-latest'] });
+        });
+      }
     },
     onError: (err, { action }) => {
       console.error(CONFIG_ACTIONS[action].logLabel, err);
